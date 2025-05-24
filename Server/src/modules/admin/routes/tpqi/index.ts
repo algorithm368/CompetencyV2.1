@@ -1,0 +1,46 @@
+import { Router } from "express";
+import allDetailsRoutes from "./allDetailsRoutes";
+import careerLevelRoutes from "./careerLevelRoutes";
+import careerRoutes from "./careerRoutes";
+import clKnowledgeRoutes from "./clKnowledgeRoutes";
+import clSkillsRoutes from "./clSkillsRoutes";
+import clUcRoutes from "./clUcRoutes";
+import detailsRoutes from "./detailsRoutes";
+import knowledgeRoutes from "./knowledgeRoutes";
+import levelRoutes from "./levelRoutes";
+import occupationalRoutes from "./occupationalRoutes";
+import sectorRoutes from "./sectorRoutes";
+import skillRoutes from "./skillRoutes";
+import tpqiSummaryDataRoutes from "./tpqiSummaryDataRoutes";
+import uKnowledgeRoutes from "./uKnowledgeRoutes";
+import uSkillRoutes from "./uSkillRoutes";
+import unitCodeRoutes from "./unitCodeRoutes";
+import unitOccupationalRoutes from "./unitOccupationalRoutes";
+import unitSectorRoutes from "./unitSectorRoutes";
+import usersKnowledgeRoutes from "./usersKnowledgeRoutes";
+import usersSkillsRoutes from "./usersSkillsRoutes";
+
+const router = Router();
+
+router.use("/category", allDetailsRoutes);
+router.use("/career-level", careerLevelRoutes);
+router.use("/career", careerRoutes);
+router.use("/cl-knowledge", clKnowledgeRoutes);
+router.use("/cl-skills", clSkillsRoutes);
+router.use("/cl-uc", clUcRoutes);
+router.use("/details", detailsRoutes);
+router.use("/knowledge", knowledgeRoutes);
+router.use("/level", levelRoutes);
+router.use("/occupational", occupationalRoutes);
+router.use("/sector", sectorRoutes);
+router.use("/skill", skillRoutes);
+router.use("/tpqi-summary-data", tpqiSummaryDataRoutes);
+router.use("/u-knowledge", uKnowledgeRoutes);
+router.use("/u-skill", uSkillRoutes);
+router.use("/unit-code", unitCodeRoutes);
+router.use("/unit-occupational", unitOccupationalRoutes);
+router.use("/unit-sector", unitSectorRoutes);
+router.use("/users-knowledge", usersKnowledgeRoutes);
+router.use("/users-skills", usersSkillsRoutes);
+
+export default router;

@@ -4,6 +4,6 @@ import { BaseService } from "../BaseService";
 
 export class ClUcService extends BaseService<cl_uc, keyof cl_uc> {
   constructor() {
-    super(ClUcRepo, ["id_career_level"], "id_cl_uc");
+    super(new ClUcRepo(), ["id_career_level"], "id_cl_uc");
   }
 }

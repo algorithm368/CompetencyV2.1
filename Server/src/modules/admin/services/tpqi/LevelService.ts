@@ -4,6 +4,6 @@ import { BaseService } from "../BaseService";
 
 export class LevelService extends BaseService<level, keyof level> {
   constructor() {
-    super(LevelRepo, ["name_level"], "id_level");
+    super(new LevelRepo(), ["name_level"], "id_level");
   }
 }

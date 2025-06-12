@@ -4,6 +4,6 @@ import { BaseService } from "../BaseService";
 
 export class PortfolioService extends BaseService<Portfolio, keyof Portfolio> {
   constructor() {
-    super(PortfolioRepo, ["user_id", "id"], "id");
+    super(new PortfolioRepo(), ["user_id", "id"], "id");
   }
 }

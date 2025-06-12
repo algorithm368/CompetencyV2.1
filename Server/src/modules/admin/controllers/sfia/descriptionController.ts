@@ -7,7 +7,10 @@ const descService = new DescriptionService();
 export class DescriptionController {
   static async getAll(req: Request, res: Response, next: NextFunction) {
     try {
-      const items = await descService.getAll();
+      const search = typeof req.query.search === "string" ? req.query.search : undefined;
+      const page = req.query.page ? parseInt(req.query.page as string, 10) : undefined;
+      const perPage = req.query.perPage ? parseInt(req.query.perPage as string, 10) : undefined;
+      const items = await descService.getAll(search, page, perPage);
       res.json(items);
     } catch (err) {
       next(err);

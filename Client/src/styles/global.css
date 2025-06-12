@@ -1,0 +1,131 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* 1) พื้นหลังไล่สีเคลื่อนไหวช้า ๆ */
+@keyframes backgroundShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+.animate-bg-shift {
+  background-size: 200% 200%;
+  animation: backgroundShift 12s ease infinite;
+}
+
+/* 2) ซูมเข้า–ออกเบา ๆ ของทั้ง Banner */
+@keyframes bannerPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.015);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.animate-banner-pulse {
+  animation: bannerPulse 20s ease-in-out infinite;
+}
+
+/* 3) วงกลมลอยขึ้น–ลง (เร็ว) */
+@keyframes floatCircleFast {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.18;
+  }
+  50% {
+    transform: translateY(-20px) scale(1.1);
+    opacity: 0.34;
+  }
+}
+.animate-circle-fast {
+  animation: floatCircleFast 6s ease-in-out infinite;
+}
+
+/* 4) วงกลมลอยขึ้น–ลง (ช้า) */
+@keyframes floatCircleSlow {
+  0%,
+  100% {
+    transform: translateY(0) scale(0.9);
+    opacity: 0.12;
+  }
+  50% {
+    transform: translateY(-10px) scale(1);
+    opacity: 0.24;
+  }
+}
+.animate-circle-slow {
+  animation: floatCircleSlow 10s ease-in-out infinite;
+}
+
+/* 5) สี่เหลี่ยมหมุนพร้อมลอยขึ้นเล็กน้อย */
+@keyframes rotateSquare {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0.14;
+  }
+  50% {
+    transform: translateY(-15px) rotate(45deg);
+    opacity: 0.28;
+  }
+  100% {
+    transform: translateY(0) rotate(90deg);
+    opacity: 0.14;
+  }
+}
+.animate-square {
+  animation: rotateSquare 8s ease-in-out infinite;
+}
+
+/* 6) ไตรแองเกิลเลื่อนซ้าย⇄ขวา */
+@keyframes slideTriangle {
+  0% {
+    transform: translateX(-20px) scale(0.9);
+    opacity: 0.08;
+  }
+  50% {
+    transform: translateX(20px) scale(1);
+    opacity: 0.2;
+  }
+  100% {
+    transform: translateX(-20px) scale(0.9);
+    opacity: 0.08;
+  }
+}
+.animate-triangle {
+  animation: slideTriangle 7s ease-in-out infinite;
+}
+
+/* 7) คลาสกำหนดดีเลย์ เพื่อไล่จังหวะ */
+.delay-1 {
+  animation-delay: 1s;
+}
+.delay-2 {
+  animation-delay: 2s;
+}
+.delay-3 {
+  animation-delay: 3s;
+}
+.delay-4 {
+  animation-delay: 4s;
+}
+
+.shape-circle {
+  border-radius: 9999px;
+}
+
+.shape-triangle {
+  width: 0;
+  height: 0;
+  border-left: 20px solid transparent;
+  border-right: 20px solid transparent;
+  border-bottom: 32px solid rgba(255, 255, 255, 0.16);
+}

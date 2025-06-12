@@ -4,6 +4,6 @@ import { BaseService } from "../BaseService";
 
 export class SummaryDataService extends BaseService<sfia_summary_data, keyof sfia_summary_data> {
   constructor() {
-    super(SummaryDataRepo, ["user_email", "code_job", "id", "level_id", "skillPercentage"], "id");
+    super(new SummaryDataRepo(), ["user_email", "code_job", "id", "level_id", "skillPercentage"], "id");
   }
 }

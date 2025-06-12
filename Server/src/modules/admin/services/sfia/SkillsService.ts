@@ -4,6 +4,6 @@ import { BaseService } from "../BaseService";
 
 export class SkillsService extends BaseService<Skills, keyof Skills> {
   constructor() {
-    super(SkillsRepo, ["skill_text", "description_id"], "id");
+    super(new SkillsRepo(), ["skill_text", "description_id"], "id");
   }
 }

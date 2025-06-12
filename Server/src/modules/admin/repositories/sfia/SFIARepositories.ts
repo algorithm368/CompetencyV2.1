@@ -1,39 +1,88 @@
 import { BaseRepository } from "../BaseRepository";
 import { SFIA } from "@Database/dbManagers";
 import type { Category, Datacollection, Description, Education, Experience, Information, Jobs, Levels, Portfolio, Skills, Subcategory, sfia_summary_data } from "@prisma/client_sfia";
+import { DatabaseManagement } from "@Utils/DatabaseManagement";
 
 // Category Repository
-export const CategoryRepo = new BaseRepository<Category, "id">(SFIA.category, "id");
+export class CategoryRepo extends BaseRepository<Category, "id"> {
+  constructor(manager: DatabaseManagement<any> = SFIA.category, pkField: "id" = "id") {
+    super(manager, pkField);
+  }
+}
 
 // Datacollection Repository
-export const DatacollectionRepo = new BaseRepository<Datacollection, "id">(SFIA.datacollection, "id");
+export class DatacollectionRepo extends BaseRepository<Datacollection, "id"> {
+  constructor(manager: DatabaseManagement<any> = SFIA.datacollection, pkField: "id" = "id") {
+    super(manager, pkField);
+  }
+}
 
 // Description Repository
-export const DescriptionRepo = new BaseRepository<Description, "id">(SFIA.description, "id");
+export class DescriptionRepo extends BaseRepository<Description, "id"> {
+  constructor(manager: DatabaseManagement<any> = SFIA.description, pkField: "id" = "id") {
+    super(manager, pkField);
+  }
+}
 
 // Education Repository
-export const EducationRepo = new BaseRepository<Education, "id">(SFIA.education, "id");
+export class EducationRepo extends BaseRepository<Education, "id"> {
+  constructor(manager: DatabaseManagement<any> = SFIA.education, pkField: "id" = "id") {
+    super(manager, pkField);
+  }
+}
 
 // Experience Repository
-export const ExperienceRepo = new BaseRepository<Experience, "id">(SFIA.experience, "id");
+export class ExperienceRepo extends BaseRepository<Experience, "id"> {
+  constructor(manager: DatabaseManagement<any> = SFIA.experience, pkField: "id" = "id") {
+    super(manager, pkField);
+  }
+}
 
 // Information Repository
-export const InformationRepo = new BaseRepository<Information, "id">(SFIA.information, "id");
+export class InformationRepo extends BaseRepository<Information, "id"> {
+  constructor(manager: DatabaseManagement<any> = SFIA.information, pkField: "id" = "id") {
+    super(manager, pkField);
+  }
+}
 
 // Jobs Repository
-export const JobsRepo = new BaseRepository<Jobs, "code_job">(SFIA.jobs, "code_job");
+export class JobsRepo extends BaseRepository<Jobs, "code_job"> {
+  constructor(manager: DatabaseManagement<any> = SFIA.jobs, pkField: "code_job" = "code_job") {
+    super(manager, pkField);
+  }
+}
 
 // Levels Repository
-export const LevelsRepo = new BaseRepository<Levels, "id">(SFIA.levels, "id");
+export class LevelsRepo extends BaseRepository<Levels, "id"> {
+  constructor(manager: DatabaseManagement<any> = SFIA.levels, pkField: "id" = "id") {
+    super(manager, pkField);
+  }
+}
 
 // Portfolio Repository
-export const PortfolioRepo = new BaseRepository<Portfolio, "id">(SFIA.portfolio, "id");
+export class PortfolioRepo extends BaseRepository<Portfolio, "id"> {
+  constructor(manager: DatabaseManagement<any> = SFIA.portfolio, pkField: "id" = "id") {
+    super(manager, pkField);
+  }
+}
 
 // Skills Repository
-export const SkillsRepo = new BaseRepository<Skills, "id">(SFIA.skills, "id");
+export class SkillsRepo extends BaseRepository<Skills, "id"> {
+  constructor(manager: DatabaseManagement<any> = SFIA.skills, pkField: "id" = "id") {
+    super(manager, pkField);
+  }
+}
 
 // Subcategory Repository
-export const SubcategoryRepo = new BaseRepository<Subcategory, "id">(SFIA.subcategory, "id");
+export class SubcategoryRepo extends BaseRepository<Subcategory, "id"> {
+  constructor(manager: DatabaseManagement<any> = SFIA.subcategory, pkField: "id" = "id") {
+    super(manager, pkField);
+  }
+}
 
 // SFIA Summary Data Repository
-export const SummaryDataRepo = new BaseRepository<sfia_summary_data, "id">(SFIA.sfia_summary_data, "id");
+export class SummaryDataRepo extends BaseRepository<sfia_summary_data, "id"> {
+  constructor(manager: DatabaseManagement<any> = SFIA.sfia_summary_data, pkField: "id" = "id") {
+    super(manager, pkField);
+  }
+}

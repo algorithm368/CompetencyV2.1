@@ -4,6 +4,6 @@ import { BaseService } from "../BaseService";
 
 export class TpqiSummaryDataService extends BaseService<tpqi_summary_data, keyof tpqi_summary_data> {
   constructor() {
-    super(TpqiSummaryDataRepo, ["user_email", "career_id", "level_id", "id_career_level", "skillPercentage", "knowledgePercentage"], "id");
+    super(new TpqiSummaryDataRepo(), ["user_email", "career_id", "level_id", "id_career_level", "skillPercentage", "knowledgePercentage"], "id");
   }
 }

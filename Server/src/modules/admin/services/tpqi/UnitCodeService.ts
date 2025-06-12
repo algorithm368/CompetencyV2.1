@@ -4,6 +4,6 @@ import { BaseService } from "../BaseService";
 
 export class UnitCodeService extends BaseService<unit_code, keyof unit_code> {
   constructor() {
-    super(UnitCodeRepo, ["name", "description_unitcode", "unit_code"], "id_unit_code");
+    super(new UnitCodeRepo(), ["name", "description_unitcode", "unit_code"], "id_unit_code");
   }
 }

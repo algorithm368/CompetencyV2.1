@@ -4,6 +4,6 @@ import { BaseService } from "../BaseService";
 
 export class DatacollectionService extends BaseService<Datacollection, keyof Datacollection> {
   constructor() {
-    super(DatacollectionRepo, ["user_id", "id"], "id");
+    super(new DatacollectionRepo(), ["user_id", "id"], "id");
   }
 }

@@ -29,7 +29,6 @@ export class BaseRepository<T extends Record<string, any>, K extends keyof T> {
   }
 
   /** Paginate with offset */
-  /** Paginate with offset */
   async paginateOffset(page: number, perPage: number, args?: Parameters<DatabaseManagement<any>["findMany"]>[0]): Promise<{ data: T[]; total: number }> {
     const skip = (page - 1) * perPage;
     const findManyArgs = { ...(args || {}), skip, take: perPage };

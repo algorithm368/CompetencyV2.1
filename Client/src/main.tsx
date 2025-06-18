@@ -6,7 +6,7 @@ import { ThemeProvider } from "@Contexts/ThemeContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import App from "./App";
-// import { AuthProvider } from "./contexts/AuthContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import "./styles/global.css";
 
 const rootElement = document.getElementById("root");
@@ -28,7 +28,9 @@ ReactDOM.createRoot(rootElement).render(
       <ThemeProvider>
         <QueryClientProvider client={queryClient}>
           <React.Suspense fallback={<Loading />}>
-            <App />
+            <AuthProvider>
+              <App />
+            </AuthProvider>
           </React.Suspense>
         </QueryClientProvider>
       </ThemeProvider>

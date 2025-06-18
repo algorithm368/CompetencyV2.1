@@ -1,4 +1,4 @@
-import { DatabaseManagement } from "@Utils/DatabaseManagement";
+import { DatabaseManagement } from "@Utils/databaseUtils";
 import { prismaCompetency, prismaTpqi, prismaSfia } from "./prismaClients";
 
 /**

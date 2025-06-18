@@ -22,7 +22,7 @@ import type {
   users_knowledge,
   users_skills,
 } from "@prisma/client_tpqi";
-import { DatabaseManagement } from "@Utils/DatabaseManagement";
+import { DatabaseManagement } from "@Utils/databaseUtils";
 
 // all_details Repository
 export class AllDetailsRepo extends BaseRepository<all_details, "id_all_details"> {

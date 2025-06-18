@@ -11,6 +11,9 @@
     "test": "jest",
     "swagger": "ts-node src/swagger.ts",
     "prisma:generate": "prisma generate",
+    "prisma:generate:sfia": "prisma generate --schema=prisma/schema_sfia.prisma",
+    "prisma:generate:competency": "prisma generate --schema=prisma/schema_competency.prisma",
+    "prisma:generate:tpqi": "prisma generate --schema=prisma/schema_tpqi.prisma",
     "prisma:migrate": "prisma migrate deploy",
     "prisma:push": "prisma db push",
     "prisma:studio": "prisma studio"
@@ -31,6 +34,7 @@
     "fs": "^0.0.1-security",
     "fuse.js": "^7.1.0",
     "fuzzysort": "^3.1.0",
+    "google-auth-library": "^10.1.0",
     "http-status-codes": "^2.3.0",
     "jsonwebtoken": "^9.0.2",
     "node-cron": "^3.0.3",

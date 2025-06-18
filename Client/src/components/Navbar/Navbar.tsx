@@ -1,29 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { FaSignInAlt } from "react-icons/fa";
 import ProfileDisplay from "./ProfileDisplay";
 import Login from "./Login";
-
-export interface RawProfile {
-  givenName?: string;
-  familyName?: string;
-  imageUrl?: string;
-  email?: string;
-  role?: string;
-}
-
-export interface CredentialResponse {
-  credential?: string;
-}
-
-interface NavbarProps {
-  isTop: boolean;
-  isLoggedIn: boolean;
-  profile: RawProfile | null;
-  handleLogin: (response: CredentialResponse | { credential: string }) => void;
-  handleLogout: () => void;
-}
+import AuthContext from "@Contexts/AuthContext";
 
 const NAV_ITEMS: { name: string; path: string }[] = [
   { name: "Home", path: "/" },
@@ -34,7 +15,12 @@ const NAV_ITEMS: { name: string; path: string }[] = [
   { name: "Contact", path: "/contact" },
 ];
 
-const Navbar: React.FC<NavbarProps> = ({ isTop, isLoggedIn, profile, handleLogin, handleLogout }) => {
+interface NavbarProps {
+  isTop: boolean;
+}
+
+const Navbar: React.FC<NavbarProps> = ({ isTop }) => {
+  const auth = useContext(AuthContext);
   const [menuOpen, setMenuOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
 
@@ -48,14 +34,34 @@ const Navbar: React.FC<NavbarProps> = ({ isTop, isLoggedIn, profile, handleLogin
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const isLoggedIn = !!auth?.user;
+
+  const handleLogin = async (response: { credential?: string }) => {
+    if (response.credential) {
+      try {
+        await auth?.login(response.credential);
+      } catch (error) {
+        console.error("Login failed:", error);
+      }
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await auth?.logout();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
   return (
     <>
       <nav
         className={`
-          fixed top-0 left-0 w-full z-50
-          transition-colors duration-300
-          ${isTop ? "bg-transparent" : "bg-white  dark:bg-gray-900 shadow"}
-        `}
+            fixed top-0 left-0 w-full z-50
+            transition-colors duration-300
+            ${isTop ? "bg-transparent" : "bg-white dark:bg-gray-900 shadow"}
+          `}
       >
         <div className="max-w-7xl mx-auto px-5 py-3 flex items-center justify-between">
           <Link
@@ -64,6 +70,8 @@ const Navbar: React.FC<NavbarProps> = ({ isTop, isLoggedIn, profile, handleLogin
           >
             Competency
           </Link>
+
+          {/* Mobile menu toggle */}
           <div className="sm:hidden">
             <button
               onClick={() => setMenuOpen((prev) => !prev)}
@@ -73,6 +81,8 @@ const Navbar: React.FC<NavbarProps> = ({ isTop, isLoggedIn, profile, handleLogin
               {menuOpen ? <XMarkIcon className="h-6 w-6 text-white dark:text-white" /> : <Bars3Icon className="h-6 w-6 text-white dark:text-white" />}
             </button>
           </div>
+
+          {/* Desktop nav items */}
           <div className="hidden sm:flex space-x-6">
             {NAV_ITEMS.map((item) => (
               <Link
@@ -84,28 +94,18 @@ const Navbar: React.FC<NavbarProps> = ({ isTop, isLoggedIn, profile, handleLogin
               </Link>
             ))}
           </div>
+
+          {/* Desktop profile/login */}
           <div className="hidden sm:flex items-center space-x-4">
             {isLoggedIn ? (
               <ProfileDisplay
-                profile={profile}
+                profile={auth?.user}
                 onLogout={handleLogout}
               />
             ) : (
               <button
                 onClick={() => setLoginOpen(true)}
-                className="
-                  flex items-center space-x-1
-                  bg-black text-white text-sm font-medium
-                  px-5 py-2 rounded-lg
-                  shadow
-                  hover:bg-blue-50 hover:text-blue-700
-                  focus:outline-none focus:ring-1 focus:ring-blue-300
-                  transition transform duration-200 ease-in-out
-                  hover:scale-105
-                  dark:bg-gray-800 dark:text-gray-200
-                  dark:hover:bg-gray-700 dark:hover:text-white
-                  dark:focus:ring-gray-500
-                "
+                className="flex items-center space-x-1 bg-black text-white text-sm font-medium px-5 py-2 rounded-lg shadow hover:bg-blue-50 hover:text-blue-700 focus:outline-none focus:ring-1 focus:ring-blue-300 transition transform duration-200 ease-in-out hover:scale-105 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:ring-gray-500"
               >
                 <FaSignInAlt className="h-4 w-4" />
                 <span>Login</span>
@@ -113,13 +113,15 @@ const Navbar: React.FC<NavbarProps> = ({ isTop, isLoggedIn, profile, handleLogin
             )}
           </div>
         </div>
+
+        {/* Mobile menu */}
         {menuOpen && (
           <div
             className={`
-              sm:hidden transition-all duration-300
-              ${isTop ? "bg-white/90 backdrop-blur-md" : "bg-white dark:bg-gray-900"}
-              shadow-md
-            `}
+                sm:hidden transition-all duration-300
+                ${isTop ? "bg-white/90 backdrop-blur-md" : "bg-white dark:bg-gray-900"}
+                shadow-md
+              `}
           >
             <div className="px-4 pt-2 pb-4 flex flex-col space-y-2">
               {NAV_ITEMS.map((item) => (
@@ -134,35 +136,22 @@ const Navbar: React.FC<NavbarProps> = ({ isTop, isLoggedIn, profile, handleLogin
               ))}
 
               {isLoggedIn ? (
-                <div className="mt-2">
-                  <button
-                    onClick={() => {
-                      handleLogout();
-                      setMenuOpen(false);
-                    }}
-                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100 dark:hover:bg-gray-700 rounded"
-                  >
-                    SignOut
-                  </button>
-                </div>
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setMenuOpen(false);
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100 dark:hover:bg-gray-700 rounded"
+                >
+                  SignOut
+                </button>
               ) : (
                 <button
                   onClick={() => {
                     setLoginOpen(true);
                     setMenuOpen(false);
                   }}
-                  className="
-                  flex items-center space-x-2
-                text-blue-600 font-medium
-                  px-5 py-2 rounded-2xl
-                  hover:bg-blue-50 hover:text-blue-700
-                  focus:outline-none focus:ring-2 focus:ring-blue-300
-                  transition transform duration-200 ease-in-out
-                  hover:scale-105
-                  dark:bg-gray-800 dark:text-gray-200
-                  dark:hover:bg-gray-700 dark:hover:text-white
-                  
-                "
+                  className="flex items-center space-x-2 text-blue-600 font-medium px-5 py-2 rounded-2xl hover:bg-blue-50 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 transition transform duration-200 ease-in-out hover:scale-105 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
                 >
                   <FaSignInAlt className="h-5 w-5" />
                   Login
@@ -173,6 +162,7 @@ const Navbar: React.FC<NavbarProps> = ({ isTop, isLoggedIn, profile, handleLogin
         )}
       </nav>
 
+      {/* Login modal */}
       <Login
         open={loginOpen}
         onClose={() => setLoginOpen(false)}

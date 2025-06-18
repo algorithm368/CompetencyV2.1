@@ -2,9 +2,9 @@ import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 interface RawProfile {
-  givenName?: string;
-  familyName?: string;
-  imageUrl?: string;
+  firstName?: string;
+  lastName?: string;
+  profileImage?: string;
   email?: string;
   role?: string;
 }
@@ -30,6 +30,12 @@ const ProfileDisplay: React.FC<ProfileDisplayProps> = ({ profile, onLogout }) =>
 
   const defaultProfileImage = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
 
+  const handleImgError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const target = e.currentTarget;
+    target.onerror = null;
+    target.src = defaultProfileImage;
+  };
+
   useEffect(() => {
     if (!profile) {
       setUserProfile(null);
@@ -37,12 +43,13 @@ const ProfileDisplay: React.FC<ProfileDisplayProps> = ({ profile, onLogout }) =>
     }
 
     const sanitized: SanitizedProfile = {
-      firstName: profile.givenName || profile.email?.split("@")[0] || "User",
-      lastName: profile.familyName || "",
-      imageUrl: profile.imageUrl || defaultProfileImage,
+      firstName: profile.firstName || profile.email?.split("@")[0] || "User",
+      lastName: profile.lastName || "",
+      imageUrl: profile.profileImage || defaultProfileImage,
       email: profile.email || "No email provided",
       role: profile.role || "user",
     };
+    console.log(sanitized.imageUrl);
 
     setUserProfile(sanitized);
   }, [profile]);
@@ -86,11 +93,7 @@ const ProfileDisplay: React.FC<ProfileDisplayProps> = ({ profile, onLogout }) =>
           src={userProfile.imageUrl}
           alt="Profile"
           className="h-8 w-8 rounded-full object-cover"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            target.onerror = null;
-            target.src = defaultProfileImage;
-          }}
+          onError={handleImgError}
         />
       </button>
 
@@ -104,11 +107,7 @@ const ProfileDisplay: React.FC<ProfileDisplayProps> = ({ profile, onLogout }) =>
               src={userProfile.imageUrl}
               alt="Profile"
               className="h-10 w-10 rounded-full object-cover"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.onerror = null;
-                target.src = defaultProfileImage;
-              }}
+              onError={handleImgError}
             />
             <div className="flex flex-col">
               <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
@@ -141,4 +140,4 @@ const ProfileDisplay: React.FC<ProfileDisplayProps> = ({ profile, onLogout }) =>
   );
 };
 
-export default ProfileDisplay;
+export default React.memo(ProfileDisplay);

@@ -1,4 +1,4 @@
-import { DatabaseManagement } from "@Utils/DatabaseManagement";
+import { DatabaseManagement } from "@Utils/databaseUtils";
 
 export class BaseRepository<T extends Record<string, any>, K extends keyof T> {
   constructor(protected readonly manager: DatabaseManagement<any>, private readonly pkField: K) {}

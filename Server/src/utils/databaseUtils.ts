@@ -22,17 +22,18 @@ export class FileLogger implements Logger {
   private buffer: LogEvent[] = [];
   private flushing = false;
 
-  constructor(private readonly dirPath: string = __dirname, private readonly prefix: string = "application", private readonly daily: boolean = true) {
-    if (!path.isAbsolute(dirPath)) {
-      this.dirPath = path.join(__dirname, dirPath);
-    }
-  }
+  /**
+   * @param dirPath - base directory for log files; defaults to "<project-root>/logs"
+   * @param prefix   - filename prefix (e.g. "application")
+   * @param daily    - whether to roll files daily
+   */
+  constructor(private readonly dirPath: string = path.resolve(process.cwd(), "logs"), private readonly prefix: string = "application", private readonly daily: boolean = true) {}
 
   public async log(event: LogEvent): Promise<void> {
     this.buffer.push(event);
     if (!this.flushing) {
       this.flushing = true;
-      setTimeout(() => this.flushBuffer().catch(console.error), 1000);
+      setTimeout(() => this.flushBuffer().catch(console.error), 1_000);
     }
   }
 
@@ -53,7 +54,7 @@ export class FileLogger implements Logger {
       entries
         .map((evt) => {
           const dataStr = `[${JSON.stringify(evt.data)}]`;
-          const reqIdStr = evt.requestId != null ? `[${evt.requestId}]` : `[]`;
+          const reqIdStr = evt.requestId ? `[${evt.requestId}]` : `[]`;
           return [`[${evt.timestamp}]`, `[${evt.level}]`, `[${evt.actor}]`, `[${evt.action}]`, `[${evt.model}]`, dataStr, reqIdStr].join(",");
         })
         .join("\n") + "\n";
@@ -149,6 +150,16 @@ export class DatabaseManagement<M extends Record<string, any>> {
     }
   }
 
+  /** Find the first record that matches the condition */
+  public async findFirst<T>(params: Parameters<M["findFirst"]>[0] = {} as any): Promise<T | null> {
+    try {
+      const result = await (this.model as any).findFirst(params);
+      return result as T | null;
+    } catch (err: any) {
+      throw new DatabaseError("READ_FIRST", this.modelName, err);
+    }
+  }
+
   /**
    * Create a new record (with optional hooks).
    *
@@ -164,10 +175,8 @@ export class DatabaseManagement<M extends Record<string, any>> {
       if (this.hooks.beforeCreate) {
         await this.hooks.beforeCreate(ctx);
       }
-
       const result = await this.model.create(params);
       ctx.result = result;
-
       await this.logEvent("INFO", "CREATE", result, actor, requestId, logger);
 
       if (this.hooks.afterCreate) {
@@ -176,6 +185,7 @@ export class DatabaseManagement<M extends Record<string, any>> {
 
       return result;
     } catch (err: any) {
+      console.error("[CREATE] Error:", err.message);
       await this.logEvent("ERROR", "CREATE", { error: err.message }, actor, requestId, logger);
       throw new DatabaseError("CREATE", this.modelName, err);
     }
@@ -202,6 +212,26 @@ export class DatabaseManagement<M extends Record<string, any>> {
   }
 
   /**
+   * Bulk update multiple records.
+   *
+   * @param params       Arguments for model.updateMany(...)
+   * @param actor        (optional) defaults to this.defaultActor
+   * @param requestId    (optional) a request‐correlation ID
+   * @param logger       (optional) defaults to this.defaultLogger
+   * @returns             The updateMany result ({ count: number })
+   */
+  public async updateMany(params: Parameters<M["updateMany"]>[0], actor: string = this.defaultActor, requestId?: string, logger: Logger = this.defaultLogger): Promise<Awaited<ReturnType<M["updateMany"]>>> {
+    try {
+      const result = await (this.model as any).updateMany(params);
+      await this.logEvent("INFO", "UPDATE_MANY", result, actor, requestId, logger);
+      return result as Awaited<ReturnType<M["updateMany"]>>;
+    } catch (err: any) {
+      await this.logEvent("ERROR", "UPDATE_MANY", { error: err.message }, actor, requestId, logger);
+      throw new DatabaseError("UPDATE_MANY", this.modelName, err);
+    }
+  }
+
+  /**
    * Delete a single record.
    *
    * @param params       Arguments for model.delete(...)
@@ -213,6 +243,17 @@ export class DatabaseManagement<M extends Record<string, any>> {
   public async delete<T>(params: Parameters<M["delete"]>[0], actor: string = this.defaultActor, requestId?: string, logger: Logger = this.defaultLogger): Promise<T> {
     try {
       const result = await this.model.delete(params);
+      await this.logEvent("INFO", "DELETE", result, actor, requestId, logger);
+      return result;
+    } catch (err: any) {
+      await this.logEvent("ERROR", "DELETE", { error: err.message }, actor, requestId, logger);
+      throw new DatabaseError("DELETE", this.modelName, err);
+    }
+  }
+
+  public async deleteByCompositeKey<T>(compositeKey: Record<string, any>, actor: string = this.defaultActor, requestId?: string, logger: Logger = this.defaultLogger): Promise<T> {
+    try {
+      const result = await this.model.delete({ where: compositeKey });
       await this.logEvent("INFO", "DELETE", result, actor, requestId, logger);
       return result;
     } catch (err: any) {

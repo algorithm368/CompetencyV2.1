@@ -18,15 +18,6 @@ model Category {
   @@index([subcategory_id], map: "subcategory_id")
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-model Category_backup {
-  id             String  @db.VarChar(255)
-  category_text  String? @db.Text
-  subcategory_id String? @db.VarChar(255)
-
-  @@ignore
-}
-
 model Datacollection {
   id          Int           @id @default(autoincrement())
   user_id     String?       @db.Char(36)

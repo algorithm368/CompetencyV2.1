@@ -130,3 +130,7 @@
   border-right: 20px solid transparent;
   border-bottom: 32px solid rgba(255, 255, 255, 0.16);
 }
+
+body {
+  font-family: 'Niramit', sans-serif;
+}

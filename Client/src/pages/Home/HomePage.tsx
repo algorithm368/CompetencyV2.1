@@ -60,34 +60,89 @@ const features = [
   },
 ];
 
+// Smooth animation variants
+const fadeInUp = {
+  initial: { opacity: 0, y: 60 },
+  animate: { opacity: 1, y: 0 },
+  transition: { 
+    duration: 0.8, 
+    ease: [0.25, 0.46, 0.45, 0.94] // Custom cubic-bezier for smoother easing
+  }
+};
+
+const fadeInLeft = {
+  initial: { opacity: 0, x: -60 },
+  animate: { opacity: 1, x: 0 },
+  transition: { 
+    duration: 0.8, 
+    ease: [0.25, 0.46, 0.45, 0.94]
+  }
+};
+
+const fadeInRight = {
+  initial: { opacity: 0, x: 60 },
+  animate: { opacity: 1, x: 0 },
+  transition: { 
+    duration: 0.8, 
+    ease: [0.25, 0.46, 0.45, 0.94]
+  }
+};
+
+const scaleIn = {
+  initial: { opacity: 0, scale: 0.8 },
+  animate: { opacity: 1, scale: 1 },
+  transition: { 
+    duration: 0.8, 
+    ease: [0.25, 0.46, 0.45, 0.94]
+  }
+};
+
 const StatItem: React.FC<StatItemProps> = ({ label, value }) => {
   const ref = useRef<HTMLDivElement>(null);
   const motionVal = useMotionValue(0);
-  const springVal = useSpring(motionVal, { damping: 20, stiffness: 100 });
-  const isInView = useInView(ref, { once: true });
+  // Improved spring configuration for smoother animation
+  const springVal = useSpring(motionVal, { 
+    damping: 25, 
+    stiffness: 80,
+    mass: 1.2
+  });
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   useEffect(() => {
     if (isInView) {
-      motionVal.set(value);
+      // Add a small delay for more natural feel
+      setTimeout(() => {
+        motionVal.set(value);
+      }, 200);
     }
   }, [isInView, value, motionVal]);
 
   useEffect(() => {
-    springVal.on("change", (v) => {
+    const unsubscribe = springVal.on("change", (v) => {
       if (ref.current) {
-        ref.current.textContent = Math.floor(v).toString();
+        ref.current.textContent = Math.floor(v).toLocaleString();
       }
     });
+    return unsubscribe;
   }, [springVal]);
 
   return (
-    <div className="flex flex-col items-center">
+    <motion.div 
+      className="flex flex-col items-center"
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ 
+        duration: 0.8, 
+        ease: [0.25, 0.46, 0.45, 0.94]
+      }}
+    >
       <div
         ref={ref}
         className="text-4xl md:text-5xl font-semibold text-emerald-500"
-      ></div>
+      >0</div>
       <p className="mt-1 text-gray-700">{label}</p>
-    </div>
+    </motion.div>
   );
 };
 
@@ -122,37 +177,79 @@ const HomePage: React.FC = () => {
 
           <motion.div
             className="relative text-center px-6"
-            initial={{ opacity: 0, y: -60 }}
+            initial={{ opacity: 0, y: -80 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1 }}
+            transition={{ 
+              duration: 1.2, 
+              ease: [0.25, 0.46, 0.45, 0.94],
+              delay: 0.2
+            }}
           >
-            <h1 className="text-5xl md:text-6xl font-bold text-blue-400 drop-shadow-lg mb-3">Competency Database</h1>
-            <p className="text-xl md:text-2xl text-gray-100 drop-shadow-md mb-6">ค้นหาและเปรียบเทียบกรอบสมรรถนะ SFIA & TPQI อย่างมีประสิทธิภาพ</p>
+            <motion.h1 
+              className="text-5xl md:text-6xl font-bold text-blue-400 drop-shadow-lg mb-3"
+              initial={{ opacity: 0, y: -40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ 
+                duration: 1, 
+                ease: [0.25, 0.46, 0.45, 0.94],
+                delay: 0.4
+              }}
+            >
+              Competency Database
+            </motion.h1>
+            
+            <motion.p 
+              className="text-xl md:text-2xl text-gray-100 drop-shadow-md mb-6"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ 
+                duration: 1, 
+                ease: [0.25, 0.46, 0.45, 0.94],
+                delay: 0.6
+              }}
+            >
+              ค้นหาและเปรียบเทียบกรอบสมรรถนะ SFIA & TPQI อย่างมีประสิทธิภาพ
+            </motion.p>
 
-            <motion.div className="relative flex justify-center">
-              <div className="relative w-full max-w-sm md:max-w-md transition-all duration-300 ease-in-out focus-within:max-w-lg">
+            <motion.div 
+              className="relative flex justify-center"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ 
+                duration: 0.8, 
+                ease: [0.25, 0.46, 0.45, 0.94],
+                delay: 0.8
+              }}
+            >
+              <div className="relative w-full max-w-sm md:max-w-md transition-all duration-500 ease-out focus-within:max-w-lg">
                 <FaSearch
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-500 z-10"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-500 z-10 transition-colors duration-300"
                   size={20}
                 />
 
                 <motion.input
                   type="text"
                   placeholder="ค้นหาอาชีพ..."
-                  className="w-full pl-12 pr-10 py-3 bg-white/90 backdrop-blur-sm text-gray-900 rounded-full border border-gray-300 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent transition-all duration-300 ease-in-out"
+                  className="w-full pl-12 pr-10 py-3 bg-white/90 backdrop-blur-sm text-gray-900 rounded-full border border-gray-300 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent transition-all duration-500 ease-out"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  whileFocus={{ scale: 1.02 }}
-                  transition={{ duration: 0.3 }}
+                  whileFocus={{ 
+                    scale: 1.02,
+                    boxShadow: "0 0 0 4px rgba(59, 130, 246, 0.15)"
+                  }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
                 />
 
-                <button
+                <motion.button
                   onClick={handleSearchClick}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow-sm transition"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow-sm transition-all duration-300 ease-out"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
                 >
                   <FaSearch size={14} />
-                </button>
+                </motion.button>
               </div>
             </motion.div>
           </motion.div>
@@ -165,10 +262,10 @@ const HomePage: React.FC = () => {
         >
           <motion.h2
             className="text-3xl md:text-4xl font-semibold text-center mb-8 text-black"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
+            {...fadeInUp}
+            viewport={{ once: true, margin: "-100px" }}
+            whileInView="animate"
+            initial="initial"
           >
             เกี่ยวกับกรอบสมรรถนะ
           </motion.h2>
@@ -178,16 +275,31 @@ const HomePage: React.FC = () => {
               <motion.div
                 key={idx}
                 className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-6"
-                initial={{ opacity: 0, x: idx % 2 === 0 ? -40 : 40 }}
+                initial={{ opacity: 0, x: idx % 2 === 0 ? -60 : 60 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ 
+                  duration: 0.8, 
+                  ease: [0.25, 0.46, 0.45, 0.94],
+                  delay: idx * 0.2
+                }}
+                whileHover={{ 
+                  x: idx % 2 === 0 ? 10 : -10,
+                  transition: { duration: 0.3, ease: "easeOut" }
+                }}
               >
-                <div className="flex-shrink-0">
-                  <div className="h-16 w-16 flex items-center justify-center bg-blue-100 rounded-full">
+                <motion.div 
+                  className="flex-shrink-0"
+                  whileHover={{ 
+                    scale: 1.1,
+                    rotate: 5
+                  }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                >
+                  <div className="h-16 w-16 flex items-center justify-center bg-blue-100 rounded-full transition-colors duration-300 hover:bg-blue-200">
                     <span className="text-xl font-bold text-blue-600">{fw.name.charAt(0)}</span>
                   </div>
-                </div>
+                </motion.div>
                 <div>
                   <h3 className="text-xl font-bold">{fw.name}</h3>
                   <p className="text-gray-700 leading-relaxed">{fw.desc}</p>
@@ -208,10 +320,10 @@ const HomePage: React.FC = () => {
         >
           <motion.h2
             className="text-3xl md:text-4xl font-semibold text-center mb-8 text-black"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
+            {...fadeInUp}
+            viewport={{ once: true, margin: "-100px" }}
+            whileInView="animate"
+            initial="initial"
           >
             Occupation
           </motion.h2>
@@ -233,10 +345,10 @@ const HomePage: React.FC = () => {
         >
           <motion.h2
             className="text-4xl font-semibold text-center mb-16 text-black"
-            initial={{ scale: 0.8 }}
-            whileInView={{ scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
+            {...scaleIn}
+            viewport={{ once: true, margin: "-100px" }}
+            whileInView="animate"
+            initial="initial"
           >
             FEATURES
           </motion.h2>
@@ -244,9 +356,23 @@ const HomePage: React.FC = () => {
             {features.map((f, idx) => (
               <motion.div
                 key={idx}
-                className="p-8 bg-gray-50 rounded-2xl shadow hover:shadow-lg transition-shadow duration-300 text-black"
-                whileHover={{ y: -10 }}
-                transition={{ type: "spring", stiffness: 200 }}
+                className="p-8 bg-gray-50 rounded-2xl shadow transition-all duration-500 ease-out hover:shadow-xl text-black"
+                initial={{ opacity: 0, y: 60 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ 
+                  duration: 0.8, 
+                  ease: [0.25, 0.46, 0.45, 0.94],
+                  delay: idx * 0.1
+                }}
+                whileHover={{ 
+                  y: -15,
+                  scale: 1.02,
+                  transition: { 
+                    duration: 0.4, 
+                    ease: [0.25, 0.46, 0.45, 0.94]
+                  }
+                }}
               >
                 <h4 className="text-xl font-bold mb-3">{f.title}</h4>
                 <p className="text-gray-600">{f.desc}</p>
@@ -262,10 +388,10 @@ const HomePage: React.FC = () => {
         >
           <motion.h2
             className="text-4xl font-semibold text-center mb-16 text-black"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
+            {...fadeInUp}
+            viewport={{ once: true, margin: "-100px" }}
+            whileInView="animate"
+            initial="initial"
           >
             เปรียบเทียบสมรรถนะ
           </motion.h2>
@@ -273,9 +399,23 @@ const HomePage: React.FC = () => {
             {competencies.map((item, idx) => (
               <motion.div
                 key={idx}
-                className="p-8 bg-white rounded-2xl shadow hover:shadow-lg transition-shadow duration-300 text-black"
-                whileHover={{ scale: 1.05 }}
-                transition={{ delay: idx * 0.1 }}
+                className="p-8 bg-white rounded-2xl shadow transition-all duration-500 ease-out hover:shadow-xl text-black"
+                initial={{ opacity: 0, y: 60, scale: 0.9 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ 
+                  duration: 0.8, 
+                  ease: [0.25, 0.46, 0.45, 0.94],
+                  delay: idx * 0.1
+                }}
+                whileHover={{ 
+                  scale: 1.05,
+                  y: -10,
+                  transition: { 
+                    duration: 0.4, 
+                    ease: [0.25, 0.46, 0.45, 0.94]
+                  }
+                }}
               >
                 <h4 className="text-xl font-bold mb-2">{item.name}</h4>
                 <p className="text-gray-600 text-base mb-1">Framework: {item.framework}</p>
@@ -292,10 +432,10 @@ const HomePage: React.FC = () => {
         >
           <motion.h2
             className="text-3xl md:text-4xl font-semibold text-center mb-8 text-black"
-            initial={{ y: 40 }}
-            whileInView={{ y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
+            {...fadeInUp}
+            viewport={{ once: true, margin: "-100px" }}
+            whileInView="animate"
+            initial="initial"
           >
             TEAM
           </motion.h2>
@@ -308,14 +448,29 @@ const HomePage: React.FC = () => {
               <motion.div
                 key={i}
                 className="flex flex-col items-center space-y-2"
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.2 }}
+                initial={{ opacity: 0, scale: 0.8, y: 40 }}
+                whileInView={{ opacity: 1, scale: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ 
+                  duration: 0.8, 
+                  ease: [0.25, 0.46, 0.45, 0.94],
+                  delay: i * 0.2
+                }}
+                whileHover={{ 
+                  y: -10,
+                  transition: { duration: 0.3, ease: "easeOut" }
+                }}
               >
-                <div className="h-20 w-20 flex items-center justify-center bg-emerald-200 rounded-full">
+                <motion.div 
+                  className="h-20 w-20 flex items-center justify-center bg-emerald-200 rounded-full transition-colors duration-300"
+                  whileHover={{ 
+                    scale: 1.1,
+                    backgroundColor: "#10b981",
+                    transition: { duration: 0.3 }
+                  }}
+                >
                   <span className="text-2xl font-bold text-white">{member.name.charAt(0)}</span>
-                </div>
+                </motion.div>
                 <h4 className="text-xl font-semibold">{member.name}</h4>
                 <p className="text-gray-600">{member.role}</p>
               </motion.div>

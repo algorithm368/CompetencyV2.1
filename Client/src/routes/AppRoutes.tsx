@@ -9,58 +9,36 @@ import { sfiaRoutes } from "./sfiaRoutes";
 import { tpqiRoutes } from "./tpqiRoutes";
 import CompetencyRoutes from "./competencyRoutes";
 
-import { HomePage, ResultsPage, OccupationDetailPage, ProfilePage } from "@Pages/ExportPages";
+import {
+  HomePage,
+  ResultsPage,
+  OccupationDetailPage,
+  ProfilePage,
+  AboutPage,
+} from "@Pages/ExportPages";
 
 const AppRoutes: React.FC = () => (
   // <ErrorBoundary>
   <Routes>
     {/* Public Routes */}
-    <Route
-      path="/"
-      element={
-        <Navigate
-          to="/Home"
-          replace
-        />
-      }
-    />
-    <Route
-      path="/results"
-      element={<ResultsPage />}
-    />
-    <Route
-      path="/Home"
-      element={<HomePage />}
-    />
-    <Route
-      path="/occupation/:id"
-      element={<OccupationDetailPage />}
-    />
-    <Route
-      path="/profile"
-      element={<ProfilePage />}
-    />
+    <Route path="/" element={<Navigate to="/Home" replace />} />
+    <Route path="/results" element={<ResultsPage />} />
+    <Route path="/Home" element={<HomePage />} />
+    <Route path="/occupation/:id" element={<OccupationDetailPage />} />
+    <Route path="/profile" element={<ProfilePage />} />
+    <Route path="/about" element={<AboutPage />} />
 
     {/* Protected Routes */}
     {/* <Route element={<ProtectedRoute />}> */}
     <Route>
       {/* Admin Module */}
-      <Route
-        path="admin/*"
-        element={<RouteWrapper routes={adminRoutes} />}
-      />
+      <Route path="admin/*" element={<RouteWrapper routes={adminRoutes} />} />
 
       {/* SFIA Module */}
-      <Route
-        path="sfia/*"
-        element={<RouteWrapper routes={sfiaRoutes} />}
-      />
+      <Route path="sfia/*" element={<RouteWrapper routes={sfiaRoutes} />} />
 
       {/* TPQI Module */}
-      <Route
-        path="tpqi/*"
-        element={<RouteWrapper routes={tpqiRoutes} />}
-      />
+      <Route path="tpqi/*" element={<RouteWrapper routes={tpqiRoutes} />} />
 
       {/* Competency Module */}
       <Route

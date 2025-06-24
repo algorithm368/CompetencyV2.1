@@ -19,7 +19,7 @@ export class SubcategoryController {
 
   static async getById(req: Request, res: Response, next: NextFunction) {
     try {
-      const id = req.params.id;
+      const id = parseInt(req.params.id, 10);
       const item = await subcatService.getById(id);
       if (!item) {
         return res.status(404).json({ error: `Subcategory with id ${id} not found` });
@@ -44,7 +44,7 @@ export class SubcategoryController {
   static async update(req: Request, res: Response, next: NextFunction) {
     try {
       const actor = req.headers["x-actor-id"] as string;
-      const id = req.params.id;
+      const id = parseInt(req.params.id, 10);
       const updates = req.body as Partial<Omit<Subcategory, "id">>;
       const updated = await subcatService.update(id, updates, actor);
       res.json(updated);
@@ -59,7 +59,7 @@ export class SubcategoryController {
   static async delete(req: Request, res: Response, next: NextFunction) {
     try {
       const actor = req.headers["x-actor-id"] as string;
-      const id = req.params.id;
+      const id = parseInt(req.params.id, 10);
       await subcatService.delete(id, actor);
       res.status(204).send();
     } catch (err: any) {

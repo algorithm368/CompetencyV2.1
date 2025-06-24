@@ -2,6 +2,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { SubcategoryService } from "@Services/admin/sfia/subcategoryServices";
 import { Subcategory, CreateSubcategoryDto, UpdateSubcategoryDto, SubcategoryPageResult } from "@Types/sfia/subcategoryTypes";
 
+type ToastCallback = (message: string, type?: "success" | "error" | "info") => void;
+
 export function useSubcategoryManager(
   actorId: string,
   options?: {
@@ -9,7 +11,8 @@ export function useSubcategoryManager(
     search?: string;
     page?: number;
     perPage?: number;
-  }
+  },
+  onToast?: ToastCallback
 ) {
   const { id = null, search, page, perPage } = options || {};
   const queryClient = useQueryClient();
@@ -18,7 +21,6 @@ export function useSubcategoryManager(
     queryKey: ["subcategories", { search, page, perPage }],
     queryFn: () => SubcategoryService.getAll(search, page, perPage),
   });
-  console.log(subcategoriesQuery.data);
 
   const subcategoryQuery = useQuery<Subcategory, Error>({
     queryKey: ["subcategory", id],
@@ -31,20 +33,36 @@ export function useSubcategoryManager(
 
   const createSubcategory = useMutation<Subcategory, Error, CreateSubcategoryDto>({
     mutationFn: (dto) => SubcategoryService.create(dto, actorId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["subcategories"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["subcategories"] });
+      onToast?.("Subcategory created successfully", "success");
+    },
+    onError: () => {
+      onToast?.("Failed to create subcategory", "error");
+    },
   });
 
   const updateSubcategory = useMutation<Subcategory, Error, { id: number; data: UpdateSubcategoryDto }>({
     mutationFn: ({ id, data }) => SubcategoryService.update(id, data, actorId),
-    onSuccess: (upd) => {
+    onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: ["subcategories"] });
-      queryClient.invalidateQueries({ queryKey: ["subcategory", upd.id] });
+      queryClient.invalidateQueries({ queryKey: ["subcategory", updated.id] });
+      onToast?.("Subcategory updated successfully", "success");
+    },
+    onError: () => {
+      onToast?.("Failed to update subcategory", "error");
     },
   });
 
   const deleteSubcategory = useMutation<void, Error, number>({
     mutationFn: (delId) => SubcategoryService.delete(delId, actorId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["subcategories"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["subcategories"] });
+      onToast?.("Subcategory deleted successfully", "success");
+    },
+    onError: () => {
+      onToast?.("Failed to delete subcategory", "error");
+    },
   });
 
   return {

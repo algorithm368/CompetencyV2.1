@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { FiPlus, FiSearch, FiSettings } from "react-icons/fi";
-import { DataTable, RowActions, Button, Input } from "@Components/Common/ExportComponent";
+import { DataTable, RowActions, Button, Input, Toast } from "@Components/Common/ExportComponent";
 import { AdminLayout } from "@Layouts/AdminLayout";
 import { useSubcategoryManager } from "@Hooks/admin/sfia/useSubcategoryHooks";
 import { Subcategory, CreateSubcategoryDto, UpdateSubcategoryDto, SubcategoryPageResult } from "@Types/sfia/subcategoryTypes";
@@ -13,6 +13,11 @@ export default function SubcategoryTablePage() {
   const [selectedSubcategory, setSelectedSubcategory] = useState<Subcategory | null>(null);
   const [items, setItems] = useState<Subcategory[]>([]);
 
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
+  const handleToast = (message: string, type: "success" | "error" | "info" = "info") => {
+    setToast({ message, type });
+  };
+
   // Debounce search input
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -24,7 +29,8 @@ export default function SubcategoryTablePage() {
   }, [searchText]);
 
   const actorId = "admin-user-id";
-  const { subcategoriesQuery, createSubcategory, updateSubcategory, deleteSubcategory } = useSubcategoryManager(actorId, { search: debouncedSearchText });
+  const { subcategoriesQuery, createSubcategory, updateSubcategory, deleteSubcategory } = useSubcategoryManager(actorId, { search: debouncedSearchText }, handleToast);
+  const { isLoading, isError, error, refetch } = subcategoriesQuery;
 
   // Flatten pages or take data array
   useEffect(() => {
@@ -70,7 +76,7 @@ export default function SubcategoryTablePage() {
     if (!selectedSubcategory) return;
     const dto: UpdateSubcategoryDto = {
       subcategory_text: text,
-      ...(categoryId !== null && { category_id: categoryId }),
+      ...(categoryId !== null && { id: categoryId }),
     };
     updateSubcategory.mutate({ id: selectedSubcategory.id, data: dto });
     closeModal();
@@ -133,6 +139,10 @@ export default function SubcategoryTablePage() {
         columns={columns}
         pageSizes={[5, 10, 20]}
         initialPageSize={10}
+        isLoading={isLoading}
+        isError={isError}
+        errorMessage={error?.message || "An error occurred while fetching data"}
+        onRetry={() => refetch()}
       />
 
       <AddEditSubcategoryModal
@@ -150,6 +160,13 @@ export default function SubcategoryTablePage() {
         onClose={closeModal}
         onConfirm={confirmDelete}
       />
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </AdminLayout>
   );
 }

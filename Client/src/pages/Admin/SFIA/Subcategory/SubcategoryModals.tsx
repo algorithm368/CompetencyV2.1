@@ -38,10 +38,11 @@ export const AddEditSubcategoryModal: React.FC<AddEditSubcategoryModalProps> = (
       }
     >
       <div className="space-y-3">
-        <div>
-          <label className="block text-sm">Subcategory Name</label>
+        <div className="flex flex-col">
+          <label className="block text-sm mb-1 ml-0.5">Subcategory Name</label>
           <Input
             value={name}
+            className="!rounded-xl"
             onChange={(e) => setName(e.target.value)}
           />
         </div>

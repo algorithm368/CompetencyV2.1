@@ -34,7 +34,7 @@ export const Modal: FC<ModalProps> = ({ isOpen, onClose, title, children, action
       <div className="absolute inset-0 bg-black opacity-50 z-[51]" />
       {/* Modal Content */}
       <div
-        className="relative bg-white rounded-lg shadow-lg max-w-lg w-full mx-4 p-6 z-[52]"
+        className="relative bg-white rounded-2xl shadow-lg max-w-lg w-full mx-4 p-6 z-[52]"
         onClick={stopPropagation}
       >
         {title && (

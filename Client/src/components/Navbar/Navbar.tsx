@@ -23,6 +23,13 @@ const Navbar: React.FC<NavbarProps> = ({ isTop }) => {
   const auth = useContext(AuthContext);
   const [menuOpen, setMenuOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    // Smooth visibility animation on mount
+    const timer = setTimeout(() => setIsVisible(true), 50);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     function handleResize() {
@@ -58,15 +65,24 @@ const Navbar: React.FC<NavbarProps> = ({ isTop }) => {
     <>
       <nav
         className={`
-            fixed top-0 left-0 w-full z-50
-            transition-colors duration-300
-            ${isTop ? "bg-transparent" : "bg-white dark:bg-gray-900 shadow"}
-          `}
+          fixed top-0 left-0 w-full z-50
+          transition-all duration-300 ease-out
+          ${
+            isVisible
+              ? "translate-y-0 opacity-100"
+              : "-translate-y-full opacity-0"
+          }
+          bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-sm border-b border-gray-200/30 dark:border-gray-700/30
+        `}
       >
-        <div className="max-w-7xl mx-auto px-5 py-3 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between min-h-[56px] sm:min-h-[64px]">
+          {/* Logo */}
           <Link
             to="/"
-            className="text-xl font-bold text-gray-900 dark:text-white"
+            className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white 
+                     transition-colors duration-200 ease-out
+                     hover:text-blue-600 dark:hover:text-blue-400
+                     touch-manipulation"
           >
             Competency
           </Link>
@@ -76,36 +92,70 @@ const Navbar: React.FC<NavbarProps> = ({ isTop }) => {
             <button
               onClick={() => setMenuOpen((prev) => !prev)}
               aria-label={menuOpen ? "Close menu" : "Open menu"}
-              className="focus:outline-none"
+              className="p-3 rounded-xl transition-all duration-200 ease-out
+                       hover:bg-gray-100 dark:hover:bg-gray-800
+                       active:bg-gray-200 dark:active:bg-gray-700 active:scale-95
+                       focus:outline-none focus:ring-2 focus:ring-blue-500/30
+                       touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
             >
-              {menuOpen ? <XMarkIcon className="h-6 w-6 text-white dark:text-white" /> : <Bars3Icon className="h-6 w-6 text-white dark:text-white" />}
+              <div className="w-6 h-6 relative">
+                <Bars3Icon
+                  className={`absolute inset-0 h-6 w-6 text-gray-700 dark:text-gray-300
+                           transition-all duration-200 ease-out
+                           ${
+                             menuOpen
+                               ? "opacity-0 rotate-45"
+                               : "opacity-100 rotate-0"
+                           }`}
+                />
+                <XMarkIcon
+                  className={`absolute inset-0 h-6 w-6 text-gray-700 dark:text-gray-300
+                           transition-all duration-200 ease-out
+                           ${
+                             menuOpen
+                               ? "opacity-100 rotate-0"
+                               : "opacity-0 -rotate-45"
+                           }`}
+                />
+              </div>
             </button>
           </div>
 
-          {/* Desktop nav items */}
-          <div className="hidden sm:flex space-x-6">
+          {/* Desktop navigation */}
+          <div className="hidden sm:flex items-center space-x-6 lg:space-x-8">
             {NAV_ITEMS.map((item) => (
               <Link
                 key={item.name}
                 to={item.path}
-                className="hover:underline text-gray-900 dark:text-white font-medium"
+                className="relative text-gray-700 dark:text-gray-300 font-medium text-sm lg:text-base
+                         transition-colors duration-200 ease-out
+                         hover:text-gray-900 dark:hover:text-white
+                         group touch-manipulation py-2"
               >
                 {item.name}
+                <span
+                  className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 
+                           group-hover:w-full transition-all duration-200 ease-out"
+                />
               </Link>
             ))}
           </div>
 
-          {/* Desktop profile/login */}
-          <div className="hidden sm:flex items-center space-x-4">
+          {/* Desktop auth section */}
+          <div className="hidden sm:flex items-center">
             {isLoggedIn ? (
-              <ProfileDisplay
-                profile={auth?.user}
-                onLogout={handleLogout}
-              />
+              <div className="touch-manipulation">
+                <ProfileDisplay profile={auth?.user} onLogout={handleLogout} />
+              </div>
             ) : (
               <button
                 onClick={() => setLoginOpen(true)}
-                className="flex items-center space-x-1 bg-black text-white text-sm font-medium px-5 py-2 rounded-lg shadow hover:bg-blue-50 hover:text-blue-700 focus:outline-none focus:ring-1 focus:ring-blue-300 transition transform duration-200 ease-in-out hover:scale-105 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:ring-gray-500"
+                className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 
+                         text-white text-sm font-medium px-4 py-2 rounded-lg
+                         transition-all duration-200 ease-out
+                         active:bg-blue-800 active:scale-95
+                         focus:outline-none focus:ring-2 focus:ring-blue-500/30
+                         touch-manipulation min-h-[40px]"
               >
                 <FaSignInAlt className="h-4 w-4" />
                 <span>Login</span>
@@ -115,51 +165,114 @@ const Navbar: React.FC<NavbarProps> = ({ isTop }) => {
         </div>
 
         {/* Mobile menu */}
-        {menuOpen && (
+        <div
+          className={`sm:hidden transition-all duration-300 ease-out overflow-hidden
+                     ${
+                       menuOpen
+                         ? "max-h-screen opacity-100"
+                         : "max-h-0 opacity-0"
+                     }`}
+        >
           <div
             className={`
-                sm:hidden transition-all duration-300
-                ${isTop ? "bg-white/90 backdrop-blur-md" : "bg-white dark:bg-gray-900"}
-                shadow-md
-              `}
+              ${
+                isTop
+                  ? "bg-white/96 dark:bg-gray-900/96 backdrop-blur-sm"
+                  : "bg-white dark:bg-gray-900"
+              }
+              border-t border-gray-200/40 dark:border-gray-700/40
+              shadow-lg
+            `}
           >
-            <div className="px-4 pt-2 pb-4 flex flex-col space-y-2">
-              {NAV_ITEMS.map((item) => (
+            <div className="px-4 py-6 space-y-1 max-h-[70vh] overflow-y-auto overscroll-contain">
+              {NAV_ITEMS.map((item, index) => (
                 <Link
                   key={item.name}
                   to={item.path}
                   onClick={() => setMenuOpen(false)}
-                  className="block hover:underline text-black dark:text-white font-medium"
+                  className="block py-4 px-4 rounded-xl text-gray-700 dark:text-gray-300 font-medium text-base
+                           transition-all duration-200 ease-out
+                           hover:bg-gray-50 dark:hover:bg-gray-800
+                           hover:text-gray-900 dark:hover:text-white
+                           active:bg-gray-100 dark:active:bg-gray-700 active:scale-[0.98]
+                           touch-manipulation min-h-[52px] flex items-center
+                           border-l-4 border-transparent hover:border-blue-500/20"
+                  style={{
+                    animationDelay: `${index * 50}ms`,
+                    animation: menuOpen
+                      ? "slideIn 0.3s ease-out forwards"
+                      : "none",
+                  }}
                 >
-                  {item.name}
+                  <span className="flex-1">{item.name}</span>
+                  <span className="text-gray-400 dark:text-gray-500 text-sm">
+                    ›
+                  </span>
                 </Link>
               ))}
 
-              {isLoggedIn ? (
-                <button
-                  onClick={() => {
-                    handleLogout();
-                    setMenuOpen(false);
-                  }}
-                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100 dark:hover:bg-gray-700 rounded"
-                >
-                  SignOut
-                </button>
-              ) : (
-                <button
-                  onClick={() => {
-                    setLoginOpen(true);
-                    setMenuOpen(false);
-                  }}
-                  className="flex items-center space-x-2 text-blue-600 font-medium px-5 py-2 rounded-2xl hover:bg-blue-50 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 transition transform duration-200 ease-in-out hover:scale-105 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
-                >
-                  <FaSignInAlt className="h-5 w-5" />
-                  Login
-                </button>
-              )}
+              {/* Mobile auth section */}
+              <div className="pt-6 border-t border-gray-200/60 dark:border-gray-700/60 mt-6">
+                {isLoggedIn ? (
+                  <div className="space-y-3">
+                    {/* User info section */}
+                    <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                          <span className="text-white text-sm font-medium">
+                            {auth?.user?.name?.charAt(0) || "U"}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                            {auth?.user?.name || "User"}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {auth?.user?.email || "user@example.com"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setMenuOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-4 text-red-600 dark:text-red-400 font-medium
+                               rounded-xl transition-all duration-200 ease-out
+                               hover:bg-red-50 dark:hover:bg-red-900/20
+                               active:bg-red-100 dark:active:bg-red-900/30 active:scale-[0.98]
+                               touch-manipulation min-h-[52px] flex items-center justify-center
+                               border-2 border-red-200/50 dark:border-red-800/50"
+                    >
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setLoginOpen(true);
+                      setMenuOpen(false);
+                    }}
+                    className="flex items-center justify-center space-x-3 w-full bg-blue-600 hover:bg-blue-700
+                             text-white font-medium px-4 py-4 rounded-xl
+                             transition-all duration-200 ease-out
+                             active:bg-blue-800 active:scale-[0.98]
+                             touch-manipulation min-h-[52px]
+                             shadow-lg shadow-blue-600/20"
+                  >
+                    <FaSignInAlt className="h-5 w-5" />
+                    <span className="text-base">Login to Continue</span>
+                  </button>
+                )}
+              </div>
             </div>
+
+            {/* Safe area for mobile devices */}
+            <div className="h-safe-area-inset-bottom bg-transparent"></div>
           </div>
-        )}
+        </div>
       </nav>
 
       {/* Login modal */}
@@ -171,6 +284,53 @@ const Navbar: React.FC<NavbarProps> = ({ isTop }) => {
           setLoginOpen(false);
         }}
       />
+
+      {/* Minimal CSS animations */}
+      <style jsx>{`
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        /* Mobile-specific optimizations */
+        @media (max-width: 640px) {
+          .touch-manipulation {
+            touch-action: manipulation;
+          }
+
+          /* Prevent zoom on input focus */
+          input,
+          select,
+          textarea {
+            font-size: 16px;
+          }
+
+          /* Better scrolling for mobile menu */
+          .overscroll-contain {
+            overscroll-behavior: contain;
+          }
+
+          /* Safe area handling for devices with notches */
+          .h-safe-area-inset-bottom {
+            height: env(safe-area-inset-bottom);
+          }
+        }
+
+        /* Improve touch targets */
+        @media (hover: none) and (pointer: coarse) {
+          /* This targets touch devices */
+          button,
+          a {
+            min-height: 44px;
+          }
+        }
+      `}</style>
     </>
   );
 };

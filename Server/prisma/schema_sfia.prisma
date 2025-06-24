@@ -9,13 +9,10 @@ datasource db {
 }
 
 model Category {
-  id             Int          @id @default(autoincrement())
-  category_text  String?      @db.Text
-  subcategory_id String?      @db.VarChar(255)
-  Subcategory    Subcategory? @relation(fields: [subcategory_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "category_ibfk_1")
+  id             Int     @id @default(autoincrement())
+  category_text  String? @db.Text
+  subcategory_id Int?
   Jobs           Jobs[]
-
-  @@index([subcategory_id], map: "subcategory_id")
 }
 
 model Datacollection {
@@ -89,18 +86,6 @@ model Jobs {
   @@index([category_id], map: "fk_jobs_category")
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-model Jobs_backup {
-  code_job    String  @db.VarChar(255)
-  job_name    String? @db.VarChar(255)
-  overall     String? @db.Text
-  note        String? @db.Text
-  category_id String? @db.VarChar(255)
-  level_id    Int?
-
-  @@ignore
-}
-
 model Levels {
   id                Int                 @id @default(autoincrement())
   level_name        String?             @db.VarChar(255)
@@ -132,9 +117,8 @@ model Skills {
 }
 
 model Subcategory {
-  id               String     @id @db.VarChar(255)
-  subcategory_text String?    @db.Text
-  Category         Category[]
+  id               Int     @id @default(autoincrement())
+  subcategory_text String? @db.Text
 }
 
 model sfia_summary_data {

@@ -11,5 +11,9 @@ export const adminRoutes = (
       path="/sfia/level"
       element={<ExportPages.LevelPage />}
     />
+    <Route
+      path="/sfia/subcategory"
+      element={<ExportPages.SubcategoryPage />}
+    />
   </>
 );

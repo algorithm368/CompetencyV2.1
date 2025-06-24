@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { GoogleOAuthProvider, GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { FaGithub, FaLinkedin } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
 
 interface LoginProps {
   open: boolean;
@@ -53,19 +54,18 @@ const Login: React.FC<LoginProps> = ({ open, onClose, handleLogin }) => {
         onClick={onClose}
       />
 
-      {/* 3. Modal Content */}
-      <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-2xl mx-4 overflow-hidden z-10">
+      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-2xl mx-4 overflow-hidden z-10">
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white focus:outline-none"
+          className="absolute top-3 right-3 text-gray-600 hover:text-gray-800 focus:outline-none"
           aria-label="Close"
         >
           <XMarkIcon className="h-6 w-6" />
         </button>
 
         <div className="flex flex-col md:flex-row min-h-[380px]">
-          <div className="md:w-5/12 w-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center p-6">
-            <div className="text-center text-blue-800 dark:text-blue-200">
+          <div className="md:w-5/12 w-full bg-blue-100 flex items-center justify-center p-6">
+            <div className="text-center text-blue-800 ">
               <h2 className="text-2xl font-bold mb-2">Competency Database</h2>
               <p className="text-sm opacity-80">Accurate Competency Assessment System</p>
             </div>
@@ -73,14 +73,21 @@ const Login: React.FC<LoginProps> = ({ open, onClose, handleLogin }) => {
 
           <div className="md:w-7/12 w-full flex items-center justify-center p-6">
             <div className="w-full max-w-xs">
-              <h3 className="text-2xl font-bold text-center mb-4 dark:text-gray-100">Sign In</h3>
-              <div className="flex justify-center mb-4">
+              <h3 className="text-2xl font-bold text-center mb-4">Sign In</h3>
+
+              <div className="flex justify-center mb-4 relative w-[300px] h-[40px] mx-auto">
+                {/* Custom-looking Google button */}
+                <div className="absolute inset-0 z-10 flex items-center justify-center border border-gray-600 text-gray-700 rounded-3xl bg-white hover:bg-gray-100 transition cursor-pointer">
+                  <FcGoogle className="h-5 w-5 mr-2" />
+                  <span className="text-sm">Sign in with Google</span>
+                </div>
+
+                {/* Transparent GoogleLogin underlay */}
                 <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-                  <div className="w-[300px]">
+                  <div className="absolute inset-0 opacity-0 z-20">
                     <GoogleLogin
                       onSuccess={handleGoogleSuccess}
                       onError={handleGoogleError}
-                      shape="rectangular"
                       width="300"
                       useOneTap={false}
                     />
@@ -90,7 +97,7 @@ const Login: React.FC<LoginProps> = ({ open, onClose, handleLogin }) => {
 
               <button
                 onClick={handleGitHubLogin}
-                className="flex items-center justify-center w-[300px] mb-3 px-4 py-2 border border-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition mx-auto"
+                className="flex items-center justify-center w-[300px] mb-3 px-4 py-2 border border-gray-600 text-gray-700 rounded-3xl hover:bg-gray-100 transition mx-auto"
               >
                 <FaGithub className="h-5 w-5 mr-2" />
                 <span className="text-sm">Sign in with GitHub</span>
@@ -98,7 +105,7 @@ const Login: React.FC<LoginProps> = ({ open, onClose, handleLogin }) => {
 
               <button
                 onClick={handleLinkedInLogin}
-                className="flex items-center justify-center w-[300px] px-4 py-2 border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-blue-700 transition mx-auto"
+                className="flex items-center justify-center w-[300px] px-4 py-2 border border-gray-700 text-gray-700 rounded-3xl hover:bg-blue-50 transition mx-auto"
               >
                 <FaLinkedin className="h-5 w-5 mr-2" />
                 <span className="text-sm">Sign in with LinkedIn</span>

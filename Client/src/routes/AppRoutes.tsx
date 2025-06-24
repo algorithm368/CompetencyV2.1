@@ -4,7 +4,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 // import ErrorBoundary from "./guards/ErrorBoundary";
 import RouteWrapper from "./guards/RouteWrapper";
 
-import { adminRoutes } from "./adminRoutes";
+import { adminRoutes } from "./admin/adminRoutes";
 import { sfiaRoutes } from "./sfiaRoutes";
 import { tpqiRoutes } from "./tpqiRoutes";
 import CompetencyRoutes from "./competencyRoutes";

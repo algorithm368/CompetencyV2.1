@@ -1,4 +1,5 @@
 @import "tailwindcss";
+
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* 1) พื้นหลังไล่สีเคลื่อนไหวช้า ๆ */

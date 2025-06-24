@@ -83,7 +83,10 @@ const ProfileDisplay: React.FC<ProfileDisplayProps> = ({ profile, onLogout }) =>
   if (!userProfile) return null;
 
   return (
-    <div className="relative">
+    <div
+      className="relative"
+      ref={menuRef}
+    >
       <button
         onClick={toggleMenu}
         aria-label="Open profile menu"
@@ -98,10 +101,7 @@ const ProfileDisplay: React.FC<ProfileDisplayProps> = ({ profile, onLogout }) =>
       </button>
 
       {showMenu && (
-        <div
-          ref={menuRef}
-          className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 z-50"
-        >
+        <div className="fixed right-4 top-14 w-64 bg-white rounded-xl shadow-lg ring-1 ring-gray-200 ring-opacity-5 z-[9999]">
           <div className="px-4 py-3 flex items-center space-x-3">
             <img
               src={userProfile.imageUrl}
@@ -110,27 +110,27 @@ const ProfileDisplay: React.FC<ProfileDisplayProps> = ({ profile, onLogout }) =>
               onError={handleImgError}
             />
             <div className="flex flex-col">
-              <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+              <span className="text-sm font-semibold text-gray-900">
                 {userProfile.firstName} {userProfile.lastName}
               </span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">{userProfile.email}</span>
+              <span className="text-xs text-gray-500">{userProfile.email}</span>
             </div>
           </div>
 
-          <div className="border-t border-gray-200 dark:border-gray-700"></div>
+          <div className="border-t border-gray-200"></div>
 
           <button
             onClick={goProfilePage}
-            className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
           >
             Profile
           </button>
 
-          <div className="border-t border-gray-200 dark:border-gray-700"></div>
+          <div className="border-t border-gray-200"></div>
 
           <button
             onClick={onLogout}
-            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100 dark:hover:bg-red-700"
+            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100"
           >
             Sign Out
           </button>

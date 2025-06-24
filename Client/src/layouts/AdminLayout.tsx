@@ -1,32 +1,55 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { AdminSidebar, AdminNavbar } from "@Components/ExportComponent";
-interface AdminLayoutProps {
-  children: React.ReactNode;
-}
 
-export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
+/**
+ * Wraps admin pages with responsive sidebar and navbar.
+ */
+export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  const handleToggleSidebar = () => {
+  const toggleSidebar = useCallback(() => {
     setSidebarCollapsed((prev) => !prev);
-  };
+  }, []);
 
-  const sidebarWidth = sidebarCollapsed ? 0 : 256;
+  const toggleMobile = useCallback(() => {
+    setMobileOpen((prev) => !prev);
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setMobileOpen(false);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
-    <>
-      <AdminSidebar collapsed={sidebarCollapsed} />
-      <div
-        className="flex flex-col h-screen transition-[margin-left] duration-200"
-        style={{ marginLeft: `${sidebarWidth}px` }}
-      >
+    <div className="flex h-screen overflow-hidden">
+      <AdminSidebar
+        collapsed={sidebarCollapsed}
+        mobileOpen={mobileOpen}
+        onToggle={toggleSidebar}
+        onMobileClose={() => setMobileOpen(false)}
+      />
+
+      {/* Main content panel */}
+      <div className={`flex-1 flex flex-col bg-gray-100 transition-all duration-200 pt-16 ` + (sidebarCollapsed ? "md:pl-0" : "md:pl-64")}>
         <AdminNavbar
-          onToggleSidebar={handleToggleSidebar}
           collapsed={sidebarCollapsed}
+          onToggleSidebar={() => {
+            if (window.innerWidth < 768) {
+              toggleMobile();
+            } else {
+              toggleSidebar();
+            }
+          }}
         />
 
-        <main className="mt-13 p-5 flex-1 overflow-auto bg-gray-50">{children}</main>
+        <main className="flex-1 p-4 overflow-auto">{children}</main>
       </div>
-    </>
+    </div>
   );
 };

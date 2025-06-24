@@ -2,18 +2,18 @@ import React, { useState, useMemo, useEffect } from "react";
 import { FiPlus, FiSearch, FiSettings } from "react-icons/fi";
 import { DataTable, RowActions, Button, Input } from "@Components/Common/ExportComponent";
 import { AdminLayout } from "@Layouts/AdminLayout";
-import { useCategoryManager } from "@Hooks/admin/sfia/useCategoryHooks";
-import { Category, CreateCategoryDto, UpdateCategoryDto, CategoryPageResult } from "@Types/sfia/categoryTypes";
-import { AddEditModal, DeleteModal } from "./CategoryModals";
+import { useSubcategoryManager } from "@Hooks/admin/sfia/useSubcategoryHooks";
+import { Subcategory, CreateSubcategoryDto, UpdateSubcategoryDto, SubcategoryPageResult } from "@Types/sfia/subcategoryTypes";
+import { AddEditSubcategoryModal, DeleteSubcategoryModal } from "./SubcategoryModals";
 
-export default function CategoryTablePage() {
+export default function SubcategoryTablePage() {
   const [searchText, setSearchText] = useState<string>("");
   const [debouncedSearchText, setDebouncedSearchText] = useState<string>("");
-
   const [modalType, setModalType] = useState<"add" | "edit" | "delete" | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-  const [items, setItems] = useState<Category[]>([]);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<Subcategory | null>(null);
+  const [items, setItems] = useState<Subcategory[]>([]);
 
+  // Debounce search input
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchText(searchText);
@@ -24,64 +24,74 @@ export default function CategoryTablePage() {
   }, [searchText]);
 
   const actorId = "admin-user-id";
-  const { categoriesQuery, createCategory, updateCategory, deleteCategory } = useCategoryManager(actorId, {
-    search: debouncedSearchText,
-  });
+  const { subcategoriesQuery, createSubcategory, updateSubcategory, deleteSubcategory } = useSubcategoryManager(actorId, { search: debouncedSearchText });
 
+  // Flatten pages or take data array
   useEffect(() => {
-    const q = categoriesQuery.data;
+    const q = subcategoriesQuery.data;
     if (!q) return;
-
+    // If paginated result type
     if ("pages" in q && Array.isArray(q.pages)) {
-      const all = q.pages.flatMap((pg: CategoryPageResult) => pg.data);
+      const all = q.pages.flatMap((pg: SubcategoryPageResult) => pg.data);
       setItems(all);
     } else if ("data" in q && Array.isArray(q.data)) {
       setItems(q.data);
     }
-  }, [categoriesQuery.data]);
+  }, [subcategoriesQuery.data]);
 
+  // Modal handlers
   const openAddModal = () => {
-    setSelectedCategory(null);
+    setSelectedSubcategory(null);
     setModalType("add");
   };
-  const openEditModal = (cat: Category) => {
-    setSelectedCategory(cat);
+  const openEditModal = (sub: Subcategory) => {
+    setSelectedSubcategory(sub);
     setModalType("edit");
   };
-  const openDeleteModal = (cat: Category) => {
-    setSelectedCategory(cat);
+  const openDeleteModal = (sub: Subcategory) => {
+    setSelectedSubcategory(sub);
     setModalType("delete");
   };
   const closeModal = () => {
     setModalType(null);
-    setSelectedCategory(null);
+    setSelectedSubcategory(null);
   };
 
-  const confirmAdd = (text: string, subId: number | null) => {
-    const dto: CreateCategoryDto = { category_text: text || null, subcategory_id: subId };
-    createCategory.mutate(dto);
+  // Confirm operations
+  const confirmAdd = (text: string) => {
+    const dto: CreateSubcategoryDto = {
+      subcategory_text: text || null,
+    };
+    createSubcategory.mutate(dto);
     closeModal();
   };
-  const confirmEdit = (text: string, subId: number | null) => {
-    if (!selectedCategory) return;
-    const dto: UpdateCategoryDto = { category_text: text, subcategory_id: subId };
-    updateCategory.mutate({ id: selectedCategory.id, data: dto });
+
+  const confirmEdit = (text: string, categoryId: number | null) => {
+    if (!selectedSubcategory) return;
+    const dto: UpdateSubcategoryDto = {
+      subcategory_text: text,
+      ...(categoryId !== null && { category_id: categoryId }),
+    };
+    updateSubcategory.mutate({ id: selectedSubcategory.id, data: dto });
     closeModal();
   };
+
   const confirmDelete = () => {
-    if (selectedCategory) deleteCategory.mutate(selectedCategory.id);
+    if (selectedSubcategory) {
+      deleteSubcategory.mutate(selectedSubcategory.id);
+    }
     closeModal();
   };
 
+  // Table columns
   const columns = useMemo(
     () => [
       { accessorKey: "id", header: "ID" },
-      { accessorKey: "category_text", header: "Category Text" },
-      { accessorKey: "subcategory_id", header: "Subcategory ID" },
+      { accessorKey: "subcategory_text", header: "Subcategory Text" },
       {
         id: "actions",
         header: () => <FiSettings className="text-lg" />,
-        cell: ({ row }: { row: { original: Category } }) => (
+        cell: ({ row }: { row: { original: Subcategory } }) => (
           <RowActions
             onEdit={() => openEditModal(row.original)}
             onDelete={() => openDeleteModal(row.original)}
@@ -95,20 +105,20 @@ export default function CategoryTablePage() {
   return (
     <AdminLayout>
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 z-10">
-        <h1 className="text-3xl font-Poppins mb-2 sm:mb-0">Categories</h1>
+        <h1 className="text-3xl font-Poppins mb-2 sm:mb-0">Subcategories</h1>
 
         <div className="flex flex-col items-end space-y-2">
           <Button
             size="md"
             onClick={openAddModal}
-            className="flex items-center "
+            className="flex items-center"
           >
-            <FiPlus className="mr-2" /> Add Category
+            <FiPlus className="mr-2" /> Add Subcategory
           </Button>
-          <div className="relative ">
+          <div className="relative">
             <Input
               type="text"
-              placeholder="Search categories..."
+              placeholder="Search subcategories..."
               className="pl-3 pr-30 py-1 text-sm"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
@@ -118,24 +128,25 @@ export default function CategoryTablePage() {
         </div>
       </div>
 
-      <DataTable<Category>
+      <DataTable<Subcategory>
         data={items}
         columns={columns}
         pageSizes={[5, 10, 20]}
         initialPageSize={10}
       />
 
-      <AddEditModal
+      <AddEditSubcategoryModal
         isOpen={modalType === "add" || modalType === "edit"}
         mode={modalType === "edit" ? "edit" : "add"}
-        initialText={selectedCategory?.category_text || ""}
-        initialSubId={selectedCategory?.subcategory_id ?? null}
+        initialText={selectedSubcategory?.subcategory_text || ""}
+        initialCategoryId={selectedSubcategory?.id ?? null}
         onClose={closeModal}
-        onConfirm={(text, subId) => (modalType === "add" ? confirmAdd(text, subId) : confirmEdit(text, subId))}
+        onConfirm={(text, catId) => (modalType === "add" ? confirmAdd(text) : confirmEdit(text, catId))}
       />
-      <DeleteModal
+
+      <DeleteSubcategoryModal
         isOpen={modalType === "delete"}
-        categoryName={selectedCategory?.category_text ?? undefined}
+        subcategoryText={selectedSubcategory?.subcategory_text ?? undefined}
         onClose={closeModal}
         onConfirm={confirmDelete}
       />

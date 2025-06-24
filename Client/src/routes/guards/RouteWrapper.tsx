@@ -5,8 +5,6 @@ interface RouteWrapperProps {
   routes: React.ReactNode;
 }
 
-const RouteWrapper: React.FC<RouteWrapperProps> = ({ routes }) => {
+export default function RouteWrapper({ routes }: RouteWrapperProps) {
   return <Routes>{routes}</Routes>;
-};
-
-export default RouteWrapper;
+}

@@ -2,17 +2,18 @@ import React, { useRef, useEffect, useState } from "react";
 import Layout from "@Layouts/Layout";
 import { FaSearch } from "react-icons/fa";
 import { motion, useMotionValue, useSpring, useInView } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import {
   ArrowRight,
-  Star,
+  CheckCircle,
   Zap,
+  Star,
   Image,
   X,
   Database,
   RefreshCw,
   Code,
   Shield,
-  Search,
 } from "lucide-react";
 
 interface StatItemProps {
@@ -20,7 +21,7 @@ interface StatItemProps {
   value: number;
 }
 
-// Badge Component using pure Tailwind
+// Badge Component (ใช้แทน shadcn/ui)
 const Badge = ({
   children,
   variant = "default",
@@ -30,6 +31,8 @@ const Badge = ({
   variant?: "default" | "secondary" | "outline";
   className?: string;
 }) => {
+  const baseClasses =
+    "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium";
   const variantClasses = {
     default: "bg-blue-500 text-white",
     secondary: "bg-gray-100 text-gray-700",
@@ -37,32 +40,11 @@ const Badge = ({
   };
 
   return (
-    <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${variantClasses[variant]} ${className}`}
-    >
+    <span className={`${baseClasses} ${variantClasses[variant]} ${className}`}>
       {children}
     </span>
   );
 };
-
-// Card Components using pure Tailwind
-const Card = ({
-  children,
-  className = "",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) => (
-  <div className={`bg-white rounded-lg shadow-md ${className}`}>{children}</div>
-);
-
-const CardContent = ({
-  children,
-  className = "",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) => <div className={`p-6 ${className}`}>{children}</div>;
 
 const comparisonData = [
   {
@@ -98,20 +80,20 @@ const comparisonData = [
     },
   },
   {
-    category: "Data Completeness",
+    category: "Data Management",
     version1: {
-      title: "Incomplete Data Coverage",
+      title: "Basic Data Handling",
       description:
-        "Very limited data; consists of only examples or test data, not covering all professions.",
+        "Limited data processing capabilities with basic storage solutions",
       icon: <Database className="w-6 h-6 text-red-500" />,
-      status: "Incomplete",
+      status: "Basic",
     },
     version2: {
-      title: "Complete Data Integration",
+      title: "Advanced Data Processing",
       description:
-        "Comprehensive data from both SFIA and TPQI, covering all professions and competencies with complete details.",
+        "Intelligent data management with AI-powered insights and optimized storage",
       icon: <Database className="w-6 h-6 text-green-500" />,
-      status: "Complete",
+      status: "Intelligent",
     },
   },
 ];
@@ -186,6 +168,24 @@ const fadeInUp = {
   },
 };
 
+const fadeInLeft = {
+  initial: { opacity: 0, x: -60 },
+  animate: { opacity: 1, x: 0 },
+  transition: {
+    duration: 0.8,
+    ease: [0.25, 0.46, 0.45, 0.94],
+  },
+};
+
+const fadeInRight = {
+  initial: { opacity: 0, x: 60 },
+  animate: { opacity: 1, x: 0 },
+  transition: {
+    duration: 0.8,
+    ease: [0.25, 0.46, 0.45, 0.94],
+  },
+};
+
 const scaleIn = {
   initial: { opacity: 0, scale: 0.8 },
   animate: { opacity: 1, scale: 1 },
@@ -246,16 +246,17 @@ const StatItem: React.FC<StatItemProps> = ({ label, value }) => {
 
 const HomePage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const navigate = useNavigate();
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && searchTerm.trim() !== "") {
-      console.log(`Searching for: ${searchTerm.trim()}`);
+      navigate(`/results?query=${encodeURIComponent(searchTerm.trim())}`);
     }
   };
 
   const handleSearchClick = () => {
     if (searchTerm.trim() !== "") {
-      console.log(`Searching for: ${searchTerm.trim()}`);
+      navigate(`/results?query=${encodeURIComponent(searchTerm.trim())}`);
     }
   };
 
@@ -349,8 +350,8 @@ const HomePage: React.FC = () => {
         </section>
 
         {/* COMPARISON SECTION */}
-        <section className="py-16 bg-slate-50">
-          <div className="max-w-7xl mx-auto px-6">
+        <section id="comparison-versions" className="py-16 bg-white">
+          <div className="max-w-6xl mx-auto px-6">
             <motion.h2
               className="text-3xl md:text-4xl font-bold text-center mb-12 text-slate-800"
               {...fadeInUp}
@@ -358,149 +359,89 @@ const HomePage: React.FC = () => {
               whileInView="animate"
               initial="initial"
             >
-              Platform Comparison
+              System Comparison
             </motion.h2>
 
-            <div className="grid md:grid-cols-2 gap-12 mb-20">
-              {/* Version 1 */}
-              <Card className="relative overflow-hidden border-2 border-gray-200 hover:shadow-lg transition-all duration-300">
-                <div className="absolute top-4 right-4">
-                  <Badge
-                    variant="secondary"
-                    className="bg-gray-100 text-gray-600"
-                  >
-                    Version 1.0
-                  </Badge>
-                </div>
-                <CardContent className="p-8">
-                  <div className="aspect-video bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg mb-6 flex items-center justify-center">
-                    <div className="text-center">
-                      <Image className="w-16 h-16 text-gray-500 mx-auto mb-4" />
-                      <div className="space-y-2">
-                        <div className="h-3 bg-gray-400 rounded w-24 mx-auto"></div>
-                        <div className="h-3 bg-gray-300 rounded w-16 mx-auto"></div>
-                      </div>
-                    </div>
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-4">
-                    Classic Interface
-                  </h3>
-                  <ul className="space-y-3 text-gray-600">
-                    <li className="flex items-center">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full mr-3"></div>
-                      Basic image display
-                    </li>
-                    <li className="flex items-center">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full mr-3"></div>
-                      Standard processing speed
-                    </li>
-                    <li className="flex items-center">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full mr-3"></div>
-                      Limited customization
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
-
-              {/* Version 2 */}
-              <Card className="relative overflow-hidden border-2 border-blue-200 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-blue-50 to-white">
-                <div className="absolute top-4 right-4">
-                  <Badge variant="default" className="bg-blue-500 text-white">
-                    Version 2.0
-                  </Badge>
-                </div>
-                <CardContent className="p-8">
-                  <div className="aspect-video bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg mb-6 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-blue-500 rounded-full mx-auto mb-4 flex items-center justify-center">
-                        <Star className="w-8 h-8 text-white" />
-                      </div>
-                      <div className="space-y-2">
-                        <div className="h-3 bg-blue-500 rounded w-24 mx-auto"></div>
-                        <div className="h-3 bg-blue-400 rounded w-16 mx-auto"></div>
-                      </div>
-                    </div>
-                  </div>
-                  <h3 className="text-2xl font-bold text-blue-800 mb-4">
-                    Enhanced Platform
-                  </h3>
-                  <ul className="space-y-3 text-blue-700">
-                    <li className="flex items-center">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                      Advanced data integration
-                    </li>
-                    <li className="flex items-center">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                      Real-time synchronization
-                    </li>
-                    <li className="flex items-center">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                      Modular architecture
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Detailed Comparison */}
             <div className="space-y-8">
-              {comparisonData.map((item, idx) => (
+              {comparisonData.map((comparison, index) => (
                 <motion.div
-                  key={idx}
-                  className="bg-white rounded-2xl shadow-lg p-8 border border-slate-200"
-                  initial={{ opacity: 0, y: 40 }}
+                  key={index}
+                  className="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200"
+                  initial={{ opacity: 0, y: 60 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-50px" }}
                   transition={{
-                    duration: 0.6,
-                    delay: idx * 0.1,
+                    duration: 0.8,
+                    ease: [0.25, 0.46, 0.45, 0.94],
+                    delay: index * 0.1,
                   }}
                 >
-                  <h3 className="text-2xl font-bold text-slate-800 mb-6 text-center">
-                    {item.category}
-                  </h3>
+                  <div className="bg-gradient-to-r from-slate-50 to-blue-50 px-6 py-4 border-b border-slate-200">
+                    <h3 className="text-xl font-bold text-slate-800">
+                      {comparison.category}
+                    </h3>
+                  </div>
 
-                  <div className="grid md:grid-cols-2 gap-8">
+                  <div className="grid md:grid-cols-2 gap-0">
                     {/* Version 1 */}
-                    <div className="p-6 bg-red-50 rounded-xl border border-red-200">
-                      <div className="flex items-start mb-4">
-                        {item.version1.icon}
-                        <div className="ml-3 flex-1">
-                          <h4 className="font-semibold text-red-800 mb-2">
-                            {item.version1.title}
+                    <div className="p-8 border-r border-slate-200">
+                      <div className="flex items-center mb-4">
+                        <Badge
+                          variant="secondary"
+                          className="bg-red-100 text-red-700 mr-3"
+                        >
+                          Version 1.0
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className="border-red-200 text-red-600"
+                        >
+                          {comparison.version1.status}
+                        </Badge>
+                      </div>
+
+                      <div className="flex items-start space-x-4">
+                        <div className="flex-shrink-0 mt-1">
+                          {comparison.version1.icon}
+                        </div>
+                        <div>
+                          <h4 className="text-lg font-semibold text-slate-800 mb-2">
+                            {comparison.version1.title}
                           </h4>
-                          <Badge
-                            variant="outline"
-                            className="border-red-300 text-red-600 bg-red-50"
-                          >
-                            {item.version1.status}
-                          </Badge>
+                          <p className="text-slate-600 leading-relaxed">
+                            {comparison.version1.description}
+                          </p>
                         </div>
                       </div>
-                      <p className="text-red-700 text-sm leading-relaxed">
-                        {item.version1.description}
-                      </p>
                     </div>
 
                     {/* Version 2 */}
-                    <div className="p-6 bg-green-50 rounded-xl border border-green-200">
-                      <div className="flex items-start mb-4">
-                        {item.version2.icon}
-                        <div className="ml-3 flex-1">
-                          <h4 className="font-semibold text-green-800 mb-2">
-                            {item.version2.title}
+                    <div className="p-8 bg-gradient-to-br from-blue-50/50 to-indigo-50/50">
+                      <div className="flex items-center mb-4">
+                        <Badge className="bg-blue-500 text-white mr-3">
+                          Version 2.0
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className="border-green-200 text-green-600 bg-green-50"
+                        >
+                          {comparison.version2.status}
+                        </Badge>
+                      </div>
+
+                      <div className="flex items-start space-x-4">
+                        <div className="flex-shrink-0 mt-1">
+                          {comparison.version2.icon}
+                        </div>
+                        <div>
+                          <h4 className="text-lg font-semibold text-slate-800 mb-2">
+                            {comparison.version2.title}
                           </h4>
-                          <Badge
-                            variant="outline"
-                            className="border-green-300 text-green-600 bg-green-50"
-                          >
-                            {item.version2.status}
-                          </Badge>
+                          <p className="text-slate-600 leading-relaxed">
+                            {comparison.version2.description}
+                          </p>
                         </div>
                       </div>
-                      <p className="text-green-700 text-sm leading-relaxed">
-                        {item.version2.description}
-                      </p>
                     </div>
                   </div>
                 </motion.div>
@@ -510,7 +451,7 @@ const HomePage: React.FC = () => {
         </section>
 
         {/* ABOUT FRAMEWORKS SECTION */}
-        <section id="about" className="py-16 bg-white">
+        <section id="about" className="py-16 bg-slate-50">
           <div className="max-w-6xl mx-auto px-6">
             <motion.h2
               className="text-3xl md:text-4xl font-bold text-center mb-12 text-slate-800"
@@ -526,7 +467,7 @@ const HomePage: React.FC = () => {
               {frameworks.map((fw, idx) => (
                 <motion.div
                   key={idx}
-                  className="flex flex-col lg:flex-row items-start lg:items-center space-y-4 lg:space-y-0 lg:space-x-8 p-8 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl shadow-lg border border-blue-100 hover:shadow-xl transition-all duration-300"
+                  className="flex flex-col lg:flex-row items-start lg:items-center space-y-4 lg:space-y-0 lg:space-x-8 p-8 bg-white rounded-2xl shadow-lg"
                   initial={{ opacity: 0, x: idx % 2 === 0 ? -60 : 60 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true, margin: "-50px" }}
@@ -559,18 +500,16 @@ const HomePage: React.FC = () => {
                     <h3 className="text-2xl font-bold text-slate-800 mb-3">
                       {fw.name}
                     </h3>
-                    <p className="text-slate-600 leading-relaxed mb-4">
+                    <p className="text-slate-600 leading-relaxed mb-3">
                       {fw.desc}
                     </p>
-                    <div className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium border border-blue-200">
+                    <div className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
                       <span className="font-semibold mr-1">
                         {fw.name === "SFIA"
                           ? "ทักษะทั้งหมด: "
                           : "อาชีพมาตรฐาน: "}
                       </span>
-                      <span className="text-blue-800 font-bold">
-                        {fw.stats.toLocaleString()}
-                      </span>
+                      {fw.stats.toLocaleString()}
                     </div>
                   </div>
                 </motion.div>
@@ -580,7 +519,7 @@ const HomePage: React.FC = () => {
         </section>
 
         {/* STATISTICS SECTION */}
-        <section id="statistics" className="py-16 bg-slate-50">
+        <section id="statistics" className="py-16 bg-white">
           <div className="max-w-4xl mx-auto px-6">
             <motion.h2
               className="text-3xl md:text-4xl font-bold text-center mb-12 text-slate-800"
@@ -601,7 +540,7 @@ const HomePage: React.FC = () => {
         </section>
 
         {/* FEATURES SECTION */}
-        <section id="features" className="py-16 bg-white">
+        <section id="features" className="py-16 bg-slate-50">
           <div className="max-w-6xl mx-auto px-6">
             <motion.h2
               className="text-3xl md:text-4xl font-bold text-center mb-12 text-slate-800"
@@ -617,7 +556,7 @@ const HomePage: React.FC = () => {
               {features.map((feature, idx) => (
                 <motion.div
                   key={idx}
-                  className="p-8 bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-lg border border-slate-200 hover:shadow-xl hover:border-blue-200 transition-all duration-300"
+                  className="p-8 bg-white rounded-2xl shadow-lg border border-slate-200 hover:shadow-xl hover:border-blue-200 transition-all duration-300"
                   initial={{ opacity: 0, y: 60 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-50px" }}
@@ -636,9 +575,7 @@ const HomePage: React.FC = () => {
                   }}
                 >
                   <div className="flex items-center mb-4">
-                    <div className="mr-4 p-2 bg-blue-100 rounded-lg">
-                      {feature.icon}
-                    </div>
+                    <div className="mr-4">{feature.icon}</div>
                     <h4 className="text-xl font-bold text-slate-800">
                       {feature.title}
                     </h4>
@@ -653,7 +590,7 @@ const HomePage: React.FC = () => {
         </section>
 
         {/* COMPETENCY COMPARISON SECTION */}
-        <section id="competency-comparison" className="py-16 bg-slate-50">
+        <section id="competency-comparison" className="py-16 bg-white">
           <div className="max-w-6xl mx-auto px-6">
             <motion.h2
               className="text-3xl md:text-4xl font-bold text-center mb-12 text-slate-800"
@@ -669,7 +606,7 @@ const HomePage: React.FC = () => {
               {competencies.map((item, idx) => (
                 <motion.div
                   key={idx}
-                  className="p-6 bg-white rounded-2xl shadow-lg border border-slate-200 hover:shadow-xl hover:border-blue-200 transition-all duration-300"
+                  className="p-6 bg-gradient-to-br from-slate-50 to-blue-50 rounded-2xl shadow-lg border border-slate-200 hover:shadow-xl hover:border-blue-200 transition-all duration-300"
                   initial={{ opacity: 0, y: 60, scale: 0.9 }}
                   whileInView={{ opacity: 1, y: 0, scale: 1 }}
                   viewport={{ once: true, margin: "-50px" }}
@@ -711,7 +648,7 @@ const HomePage: React.FC = () => {
         </section>
 
         {/* TEAM SECTION */}
-        <section id="team" className="py-16 bg-white">
+        <section id="team" className="py-16 bg-slate-50">
           <div className="max-w-4xl mx-auto px-6">
             <motion.h2
               className="text-3xl md:text-4xl font-bold text-center mb-12 text-slate-800"
@@ -727,7 +664,7 @@ const HomePage: React.FC = () => {
               {teamMembers.map((member, i) => (
                 <motion.div
                   key={i}
-                  className="flex flex-col items-center p-8 bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-lg border border-slate-200 hover:shadow-xl hover:border-blue-200 transition-all duration-300"
+                  className="flex flex-col items-center p-8 bg-white rounded-2xl shadow-lg"
                   initial={{ opacity: 0, scale: 0.8, y: 40 }}
                   whileInView={{ opacity: 1, scale: 1, y: 0 }}
                   viewport={{ once: true, margin: "-50px" }}
@@ -743,7 +680,7 @@ const HomePage: React.FC = () => {
                   }}
                 >
                   <motion.div
-                    className="h-24 w-24 flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 rounded-full shadow-lg mb-4 border-4 border-white"
+                    className="h-24 w-24 flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 rounded-full shadow-lg mb-4"
                     whileHover={{
                       scale: 1.1,
                       rotate: 10,
@@ -757,9 +694,7 @@ const HomePage: React.FC = () => {
                   <h4 className="text-xl font-bold text-slate-800 mb-2">
                     {member.name}
                   </h4>
-                  <p className="text-slate-600 text-center font-medium">
-                    {member.role}
-                  </p>
+                  <p className="text-slate-600 text-center">{member.role}</p>
                 </motion.div>
               ))}
             </div>

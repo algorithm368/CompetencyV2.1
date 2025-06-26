@@ -19,6 +19,18 @@
   animation: backgroundShift 12s ease infinite;
 }
 
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 /* 2) ซูมเข้า–ออกเบา ๆ ของทั้ง Banner */
 @keyframes bannerPulse {
   0% {
@@ -132,5 +144,5 @@
 }
 
 body {
-  font-family: 'Niramit', sans-serif;
+  font-family: "Niramit", sans-serif;
 }

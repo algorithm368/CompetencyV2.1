@@ -245,20 +245,6 @@ const Navbar: React.FC<NavbarProps> = ({ isTop }) => {
           setLoginOpen(false);
         }}
       />
-
-      {/* Add custom CSS for animations */}
-      <style jsx>{`
-        @keyframes slideInRight {
-          from {
-            opacity: 0;
-            transform: translateX(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-      `}</style>
     </>
   );
 };

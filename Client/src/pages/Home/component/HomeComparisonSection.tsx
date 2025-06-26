@@ -30,8 +30,9 @@ export const HomeComparisonSection = () => {
           Platform Comparison
         </motion.h2>
 
+        {/* High-level summary cards comparing the two versions */}
         <div className="grid md:grid-cols-2 gap-12 mb-20">
-          {/* Version 1 */}
+          {/* Version 1 Card: Represents the older, more basic version with neutral styling. */}
           <Card className="relative overflow-hidden border-2 border-gray-200 hover:shadow-lg transition-all duration-300">
             <div className="absolute top-4 right-4">
               <Badge variant="secondary" className="bg-gray-100 text-gray-600">
@@ -68,7 +69,7 @@ export const HomeComparisonSection = () => {
             </CardContent>
           </Card>
 
-          {/* Version 2 */}
+          {/* Version 2 Card: Represents the new, enhanced version with vibrant blue styling to highlight its superiority. */}
           <Card className="relative overflow-hidden border-2 border-blue-200 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-blue-50 to-white">
             <div className="absolute top-4 right-4">
               <Badge variant="default" className="bg-blue-500 text-white">
@@ -108,9 +109,12 @@ export const HomeComparisonSection = () => {
           </Card>
         </div>
 
-        {/* Detailed Comparison */}
+        {/* Detailed Feature-by-Feature Comparison Section */}
         <div className="space-y-8">
+          {/* Map through the comparison data to render each feature category. */}
           {comparisonData.map((item, idx) => (
+            // Each comparison row animates into view as the user scrolls.
+            // `delay: idx * 0.1` creates a staggered or "waterfall" animation effect.
             <motion.div
               key={idx}
               className="bg-white rounded-2xl shadow-lg p-8 border border-slate-200"
@@ -127,7 +131,7 @@ export const HomeComparisonSection = () => {
               </h3>
 
               <div className="grid md:grid-cols-2 gap-8">
-                {/* Version 1 */}
+                {/* Column for Version 1 features (styled with red to indicate limitations) */}
                 <div className="p-6 bg-red-50 rounded-xl border border-red-200">
                   <div className="flex items-start mb-4">
                     {item.version1.icon}
@@ -148,7 +152,7 @@ export const HomeComparisonSection = () => {
                   </p>
                 </div>
 
-                {/* Version 2 */}
+                {/* Column for Version 2 features (styled with green to indicate improvements) */}
                 <div className="p-6 bg-green-50 rounded-xl border border-green-200">
                   <div className="flex items-start mb-4">
                     {item.version2.icon}

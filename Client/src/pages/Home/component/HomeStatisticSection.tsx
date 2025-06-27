@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { motion, useMotionValue, useSpring, useInView } from "framer-motion";
 import { fadeInUp } from "./HomeAnimation";
 import { frameworks } from "../data/HomeData";
@@ -7,8 +7,37 @@ interface StatItemProps {
   label: string;
   value: number;
 }
+
+/**
+ * `StatItem` is a React functional component that displays an animated statistic value with a label.
+ *
+ * This component animates the numeric value from 0 to the specified `value` prop when it enters the viewport,
+ * using Framer Motion's `useMotionValue` and `useSpring` for smooth transitions. The animation is triggered
+ * only once per mount, and the value is updated in the DOM using a ref for performance.
+ *
+ * ## Props
+ * - `label` (`string`): The descriptive label displayed below the animated value.
+ * - `value` (`number`): The target number to animate to when the component comes into view.
+ *
+ * ## Features
+ * - Animates the number from 0 to `value` with a spring effect when scrolled into view.
+ * - Uses a ref to update the DOM directly for efficient number rendering.
+ * - Applies a fade-in and upward motion effect to the entire component on entry.
+ * - Responsive and styled for center alignment.
+ * - No flash on initial load - displays 0 until animation starts.
+ *
+ * ## Usage
+ * ```tsx
+ * <StatItem label="Total Users" value={12345} />
+ * ```
+ *
+ * @component
+ * @param {StatItemProps} props - The props for the StatItem component.
+ * @returns {JSX.Element} The rendered animated statistic item.
+ */
 const StatItem: React.FC<StatItemProps> = ({ label, value }) => {
   const ref = useRef<HTMLDivElement>(null);
+  const [displayValue, setDisplayValue] = useState("0");
   const motionVal = useMotionValue(0);
   const springVal = useSpring(motionVal, {
     damping: 25,
@@ -27,9 +56,8 @@ const StatItem: React.FC<StatItemProps> = ({ label, value }) => {
 
   useEffect(() => {
     const unsubscribe = springVal.on("change", (v) => {
-      if (ref.current) {
-        ref.current.textContent = Math.floor(v).toLocaleString();
-      }
+      const formattedValue = Math.floor(v).toLocaleString();
+      setDisplayValue(formattedValue);
     });
     return unsubscribe;
   }, [springVal]);
@@ -37,7 +65,7 @@ const StatItem: React.FC<StatItemProps> = ({ label, value }) => {
   return (
     <motion.div
       className="flex flex-col items-center p-6"
-      initial={{ opacity: 0, y: 40 }}
+      initial={{ opacity: 1, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
       transition={{
@@ -49,7 +77,7 @@ const StatItem: React.FC<StatItemProps> = ({ label, value }) => {
         ref={ref}
         className="text-4xl md:text-5xl font-bold text-blue-600 mb-2"
       >
-        0
+        {displayValue}
       </div>
       <p className="text-slate-600 text-center font-medium">{label}</p>
     </motion.div>
@@ -65,7 +93,7 @@ export const HomeStatisticSection = () => {
           {...fadeInUp}
           viewport={{ once: true, margin: "-100px" }}
           whileInView="animate"
-          initial="initial"
+          initial="visible"
         >
           Occupation Statistics
         </motion.h2>

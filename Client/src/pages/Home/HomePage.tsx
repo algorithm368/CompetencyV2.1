@@ -8,26 +8,10 @@ import { HomeFeaturesSection } from "./component/HomeFeatureSection";
 import { HomeCompetencyComparisonSection } from "./component/HomeCompetencyComparisonSection";
 import { HomeTeamSection } from "./component/HomeTeamSection";
 
-/**
- * HomePage component serves as the main landing page of the application.
- * 
- * It composes several sections to provide an overview of the platform, including:
- * - Hero section
- * - Comparison section
- * - About frameworks section
- * - Statistics section
- * - Features section
- * - Competency comparison section
- * - Team section
- *
- * All sections are wrapped within a common `Layout` component for consistent styling and structure.
- *
- * @component
- */
 const HomePage: React.FC = () => {
   return (
     <Layout>
-      <div className="relative">
+      <div className="min-h-screen bg-black">
         {/* HERO SECTION */}
         <HomeHeroSection />
 

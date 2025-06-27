@@ -6,7 +6,7 @@ import Login from "./Login";
 import AuthContext from "@Contexts/AuthContext";
 
 const NAV_ITEMS: { name: string; path: string }[] = [
-  { name: "Home", path: "/" },
+  { name: "Home", path: "/home" },
   { name: "About", path: "/about" },
   { name: "Features", path: "/features" },
   { name: "Comparison", path: "/comparison" },

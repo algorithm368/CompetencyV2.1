@@ -116,7 +116,7 @@ export const features = [
 ];
 
 export const teamMembers = [
-  { name: "Natthaphat K.", role: "Full Stack Developer" },
-  { name: "Somchai P.", role: "UI/UX Designer" },
-  { name: "Araya S.", role: "Backend Engineer" },
+  { name: "Natthaphat J.", role: "Full Stack Developer" },
+  { name: "Siriwat C.", role: "UI/UX Designer" },
+  { name: "Jirapat K.", role: "Backend Engineer" },
 ];

@@ -2,7 +2,6 @@ import { motion } from "framer-motion";
 import { fadeInUp } from "./HomeAnimation";
 import { teamMembers } from "../data/HomeData";
 
-
 export const HomeTeamSection = () => {
   return (
     <section id="team" className="py-16 bg-white">

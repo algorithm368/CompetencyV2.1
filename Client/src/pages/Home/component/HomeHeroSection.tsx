@@ -1,25 +1,56 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { FaSearch } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+
+/**
+ * Renders the hero section of the Home page, featuring a visually appealing background,
+ * animated title and subtitle, and a search input for users to find and compare SFIA & TPQI competency frameworks.
+ *
+ * ## Features
+ * - Full-screen section with layered background image and gradient overlays for enhanced readability.
+ * - Animated entrance for the section, title, subtitle, and search bar using Framer Motion.
+ * - Prominent title ("Competency Database") and subtitle in both English and Thai.
+ * - Search input field with real-time value binding and keyboard event handling.
+ * - Search button and input field both trigger a search action (currently logs the search term).
+ * - Accessible and responsive design with Tailwind CSS utility classes.
+ *
+ * ## Usage
+ * Place this component at the top of the Home page to provide users with an engaging entry point and search functionality.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered hero section for the Home page.
+ *
+ * @example
+ * ```tsx
+ * <HomeHeroSection />
+ * ```
+ *
+ * @remarks
+ * - The search functionality currently logs the search term to the console; integrate with actual search logic as needed.
+ * - Requires `Framer Motion` for animations and `react-icons` for the search icon.
+ * - The background image path should be valid and accessible from the public directory or assets folder.
+ */
 
 export const HomeHeroSection = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const navigate = useNavigate();
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && searchTerm.trim() !== "") {
-      console.log(`Searching for: ${searchTerm.trim()}`);
+      navigate(`/results?query=${encodeURIComponent(searchTerm.trim())}`);
     }
   };
 
   const handleSearchClick = () => {
     if (searchTerm.trim() !== "") {
-      console.log(`Searching for: ${searchTerm.trim()}`);
+      navigate(`/results?query=${encodeURIComponent(searchTerm.trim())}`);
     }
   };
 
   return (
     <section
-      id="home"
+      id="home-hero"
       className="relative min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900"
     >
       <div className="absolute inset-0 bg-[url('/src/assets/alesia-kazantceva-VWcPlbHglYc-unsplash.jpg')] bg-cover bg-center opacity-20"></div>

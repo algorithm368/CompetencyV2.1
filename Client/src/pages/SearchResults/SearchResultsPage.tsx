@@ -67,7 +67,10 @@ const ResultsPage: React.FC = () => {
 
   const filteredResults = mockData.filter((item) => {
     const lowerQuery = query.toLowerCase();
-    return item.name.toLowerCase().includes(lowerQuery) || item.framework.toLowerCase().includes(lowerQuery);
+    return (
+      item.name.toLowerCase().includes(lowerQuery) ||
+      item.framework.toLowerCase().includes(lowerQuery)
+    );
   });
 
   const totalPages = Math.ceil(filteredResults.length / ITEMS_PER_PAGE);
@@ -160,7 +163,9 @@ const ResultsPage: React.FC = () => {
           "
         ></div>
         <div className="relative flex items-center justify-center h-full">
-          <h1 className="text-2xl md:text-4xl lg:text-5xl font-extrabold text-white drop-shadow-lg">ผลลัพธ์การค้นหา</h1>
+          <h1 className="text-2xl md:text-4xl lg:text-5xl font-extrabold text-white drop-shadow-lg">
+            ผลลัพธ์การค้นหา
+          </h1>
         </div>
       </section>
       <div className="pt-8 pb-16 px-4 md:px-8 lg:px-16">
@@ -206,8 +211,12 @@ const ResultsPage: React.FC = () => {
                     className="bg-white rounded-2xl shadow hover:shadow-lg transition p-6 flex flex-col justify-between"
                   >
                     <div>
-                      <h2 className="text-xl font-semibold text-gray-800 mb-2">{item.name}</h2>
-                      <p className="text-sm text-gray-500">กรอบสมรรถนะ: {item.framework}</p>
+                      <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                        {item.name}
+                      </h2>
+                      <p className="text-sm text-gray-500">
+                        กรอบสมรรถนะ: {item.framework}
+                      </p>
                     </div>
                     <div className="mt-4">
                       <button
@@ -221,41 +230,61 @@ const ResultsPage: React.FC = () => {
                 ))}
               </div>
             ) : (
-              <p className="text-center text-gray-500">ไม่พบผลลัพธ์ที่ตรงกับคำค้น “{query}”</p>
+              <p className="text-center text-gray-500">
+                ไม่พบผลลัพธ์ที่ตรงกับคำค้น “{query}”
+              </p>
             )}
 
             {totalPages > 1 && (
               <div className="mt-8 flex justify-center items-center space-x-2">
                 <button
-                  onClick={() => currentPage > 1 && setCurrentPage(currentPage - 1)}
+                  onClick={() =>
+                    currentPage > 1 && setCurrentPage(currentPage - 1)
+                  }
                   disabled={currentPage === 1}
                   className={`
                     px-3 py-1 rounded-full transition
-                    ${currentPage === 1 ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}
+                    ${
+                      currentPage === 1
+                        ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    }
                   `}
                 >
                   ◀
                 </button>
 
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`
                         px-3 py-1 rounded-full transition
-                        ${page === currentPage ? "bg-blue-500 text-white shadow-lg" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}
+                        ${
+                          page === currentPage
+                            ? "bg-blue-500 text-white shadow-lg"
+                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                        }
                       `}
-                  >
-                    {page}
-                  </button>
-                ))}
+                    >
+                      {page}
+                    </button>
+                  )
+                )}
 
                 <button
-                  onClick={() => currentPage < totalPages && setCurrentPage(currentPage + 1)}
+                  onClick={() =>
+                    currentPage < totalPages && setCurrentPage(currentPage + 1)
+                  }
                   disabled={currentPage === totalPages}
                   className={`
                     px-3 py-1 rounded-full transition
-                    ${currentPage === totalPages ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}
+                    ${
+                      currentPage === totalPages
+                        ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    }
                   `}
                 >
                   ▶

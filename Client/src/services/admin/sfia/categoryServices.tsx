@@ -19,29 +19,17 @@ export const CategoryService = {
     return res.data;
   },
 
-  async create(data: CreateCategoryDto, actorId: string) {
-    const res = await api.post<Category>(BASE_URL, data, {
-      headers: {
-        "x-actor-id": actorId,
-      },
-    });
+  async create(data: CreateCategoryDto) {
+    const res = await api.post<Category>(BASE_URL, data);
     return res.data;
   },
 
-  async update(id: number, data: UpdateCategoryDto, actorId: string) {
-    const res = await api.put<Category>(`${BASE_URL}/${id}`, data, {
-      headers: {
-        "x-actor-id": actorId,
-      },
-    });
+  async update(id: number, data: UpdateCategoryDto) {
+    const res = await api.put<Category>(`${BASE_URL}/${id}`, data);
     return res.data;
   },
 
-  async delete(id: number, actorId: string) {
-    await api.delete(`${BASE_URL}/${id}`, {
-      headers: {
-        "x-actor-id": actorId,
-      },
-    });
+  async delete(id: number) {
+    await api.delete(`${BASE_URL}/${id}`);
   },
 };

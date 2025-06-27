@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { NavLink, Link } from "react-router-dom";
 import { FiHome, FiUsers, FiLock, FiChevronDown, FiChevronRight, FiCopy, FiBarChart2, FiChevronLeft } from "react-icons/fi";
 
+
 interface AdminSidebarProps {
   collapsed: boolean;
   mobileOpen: boolean;
@@ -30,8 +31,8 @@ const frameworks = [
     icon: <FiBarChart2 />,
     key: "sfia",
     items: [
-      // { label: "Skills", path: "/admin/framework/sfia/skills" },
-      // { label: "Levels", path: "/admin/framework/sfia/levels" },
+      { label: "Skills", path: "/admin/framework/sfia/skills" },
+      { label: "Levels", path: "/admin/framework/sfia/levels" },
       { label: "Categories", path: "/admin/sfia/category" },
       { label: "SubCategories", path: "/admin/sfia/subcategory" },
     ],

@@ -28,8 +28,7 @@ export default function SubcategoryTablePage() {
     };
   }, [searchText]);
 
-  const actorId = "admin-user-id";
-  const { subcategoriesQuery, createSubcategory, updateSubcategory, deleteSubcategory } = useSubcategoryManager(actorId, { search: debouncedSearchText }, handleToast);
+  const { subcategoriesQuery, createSubcategory, updateSubcategory, deleteSubcategory } = useSubcategoryManager({ search: debouncedSearchText }, handleToast);
   const { isLoading, isError, error, refetch } = subcategoriesQuery;
 
   // Flatten pages or take data array
@@ -68,8 +67,16 @@ export default function SubcategoryTablePage() {
     const dto: CreateSubcategoryDto = {
       subcategory_text: text || null,
     };
-    createSubcategory.mutate(dto);
-    closeModal();
+    createSubcategory.mutate(dto, {
+      onSuccess: () => {
+        handleToast("Created successfully", "success");
+        closeModal();
+        refetch();
+      },
+      onError: (error) => {
+        handleToast("Failed to create: " + (error?.message ?? ""), "error");
+      },
+    }); 
   };
 
   const confirmEdit = (text: string, categoryId: number | null) => {
@@ -78,15 +85,33 @@ export default function SubcategoryTablePage() {
       subcategory_text: text,
       ...(categoryId !== null && { id: categoryId }),
     };
-    updateSubcategory.mutate({ id: selectedSubcategory.id, data: dto });
-    closeModal();
+    updateSubcategory.mutate(
+      { id: selectedSubcategory.id, data: dto },
+      {
+        onSuccess: () => {
+          handleToast("Updated successfully", "success");
+          closeModal();
+          refetch();
+        },
+        onError: (error) => {
+          handleToast("Failed to update: " + (error?.message ?? ""), "error");
+        },
+      }
+    );
   };
 
   const confirmDelete = () => {
-    if (selectedSubcategory) {
-      deleteSubcategory.mutate(selectedSubcategory.id);
-    }
-    closeModal();
+    if (!selectedSubcategory) return;
+    deleteSubcategory.mutate(selectedSubcategory.id, {
+      onSuccess: () => {
+        handleToast("Deleted successfully", "success");
+        closeModal();
+        refetch();
+      },
+      onError: (error) => {
+        handleToast("Failed to delete: " + (error?.message ?? ""), "error");
+      },
+    });
   };
 
   // Table columns
@@ -145,21 +170,23 @@ export default function SubcategoryTablePage() {
         onRetry={() => refetch()}
       />
 
-      <AddEditSubcategoryModal
-        isOpen={modalType === "add" || modalType === "edit"}
-        mode={modalType === "edit" ? "edit" : "add"}
-        initialText={selectedSubcategory?.subcategory_text || ""}
-        initialCategoryId={selectedSubcategory?.id ?? null}
-        onClose={closeModal}
-        onConfirm={(text, catId) => (modalType === "add" ? confirmAdd(text) : confirmEdit(text, catId))}
-      />
+    <AddEditSubcategoryModal
+      isOpen={modalType === "add" || modalType === "edit"}
+      mode={modalType === "edit" ? "edit" : "add"}
+      initialText={selectedSubcategory?.subcategory_text || ""}
+      initialCategoryId={selectedSubcategory?.id ?? null}
+      onClose={closeModal}
+      onConfirm={(text, catId) => (modalType === "add" ? confirmAdd(text) : confirmEdit(text, catId))}
+     isLoading={createSubcategory.status === "pending" || updateSubcategory.status === "pending"}
+    />
 
-      <DeleteSubcategoryModal
-        isOpen={modalType === "delete"}
-        subcategoryText={selectedSubcategory?.subcategory_text ?? undefined}
-        onClose={closeModal}
-        onConfirm={confirmDelete}
-      />
+     <DeleteSubcategoryModal
+      isOpen={modalType === "delete"}
+      subcategoryText={selectedSubcategory?.subcategory_text ?? undefined}
+      onClose={closeModal}
+      onConfirm={confirmDelete}
+      isLoading={deleteSubcategory.status === "pending"}
+    />
       {toast && (
         <Toast
           message={toast.message}

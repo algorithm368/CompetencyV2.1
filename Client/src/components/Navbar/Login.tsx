@@ -84,7 +84,7 @@ const Login: React.FC<LoginProps> = ({ open, onClose, handleLogin }) => {
 
                 {/* Transparent GoogleLogin underlay */}
                 <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-                  <div className="absolute inset-0 opacity-0 z-20">
+                  <div className="absolute inset-0 opacity-1 z-20 ">
                     <GoogleLogin
                       onSuccess={handleGoogleSuccess}
                       onError={handleGoogleError}

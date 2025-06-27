@@ -27,6 +27,7 @@ export default function CategoryTablePage() {
   const { categoriesQuery, createCategory, updateCategory, deleteCategory } = useCategoryManager(actorId, {
     search: debouncedSearchText,
   });
+    const { isLoading, isError, error, refetch } = categoriesQuery;
 
   useEffect(() => {
     const q = categoriesQuery.data;
@@ -118,12 +119,16 @@ export default function CategoryTablePage() {
         </div>
       </div>
 
-      <DataTable<Category>
-        data={items}
-        columns={columns}
-        pageSizes={[5, 10, 20]}
-        initialPageSize={10}
-      />
+       <DataTable<Category>
+          data={items}
+          columns={columns}
+          pageSizes={[5, 10, 20]}
+          initialPageSize={10}
+          isLoading={isLoading}
+          isError={isError}
+          errorMessage={error?.message || "An error occurred while fetching data"}
+          onRetry={() => refetch()}
+        />
 
       <AddEditModal
         isOpen={modalType === "add" || modalType === "edit"}

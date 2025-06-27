@@ -1,8 +1,8 @@
 import React, { useContext, useState } from "react";
 import { FiMenu, FiBell } from "react-icons/fi";
 import AuthContext from "@Contexts/AuthContext";
-import Login from "../Navbar/Login";
-import ProfileDisplay from "../Navbar/ProfileDisplay";
+import Login from "../../Navbar/Login";
+import ProfileDisplay from "../../Navbar/ProfileDisplay";
 
 interface AdminNavbarProps {
   collapsed: boolean;

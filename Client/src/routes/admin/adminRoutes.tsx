@@ -4,6 +4,20 @@ import { Route } from "react-router-dom";
 export const adminRoutes = (
   <>
     <Route
+      path="/dashboard"
+      element={<ExportPages.DashboardPage />}
+    />
+        <Route
+      path="/users"
+      element={<ExportPages.UserPage />}
+    />
+    <Route
+      path="/permissions"
+      element={<ExportPages.PermissionPage />}
+    />
+
+
+    <Route
       path="/sfia/category"
       element={<ExportPages.CategoryPage />}
     />
@@ -15,5 +29,6 @@ export const adminRoutes = (
       path="/sfia/subcategory"
       element={<ExportPages.SubcategoryPage />}
     />
+
   </>
 );

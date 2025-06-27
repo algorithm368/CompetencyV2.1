@@ -5,7 +5,6 @@ import { Subcategory, CreateSubcategoryDto, UpdateSubcategoryDto, SubcategoryPag
 type ToastCallback = (message: string, type?: "success" | "error" | "info") => void;
 
 export function useSubcategoryManager(
-  actorId: string,
   options?: {
     id?: number | null;
     search?: string;
@@ -32,7 +31,7 @@ export function useSubcategoryManager(
   });
 
   const createSubcategory = useMutation<Subcategory, Error, CreateSubcategoryDto>({
-    mutationFn: (dto) => SubcategoryService.create(dto, actorId),
+    mutationFn: (dto) => SubcategoryService.create(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["subcategories"] });
       onToast?.("Subcategory created successfully", "success");
@@ -43,7 +42,7 @@ export function useSubcategoryManager(
   });
 
   const updateSubcategory = useMutation<Subcategory, Error, { id: number; data: UpdateSubcategoryDto }>({
-    mutationFn: ({ id, data }) => SubcategoryService.update(id, data, actorId),
+    mutationFn: ({ id, data }) => SubcategoryService.update(id, data),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: ["subcategories"] });
       queryClient.invalidateQueries({ queryKey: ["subcategory", updated.id] });
@@ -55,7 +54,7 @@ export function useSubcategoryManager(
   });
 
   const deleteSubcategory = useMutation<void, Error, number>({
-    mutationFn: (delId) => SubcategoryService.delete(delId, actorId),
+    mutationFn: (delId) => SubcategoryService.delete(delId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["subcategories"] });
       onToast?.("Subcategory deleted successfully", "success");

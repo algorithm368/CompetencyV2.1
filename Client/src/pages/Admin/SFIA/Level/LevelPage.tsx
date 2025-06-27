@@ -1,9 +1,11 @@
-const CategoryPage = () => {
+
+
+const LevelPage = () => {
   return (
     <div>
-      <h1>Category Page</h1>
+      <h1>Level Page</h1>
     </div>
   );
 };
 
-export default CategoryPage;
+export default LevelPage;

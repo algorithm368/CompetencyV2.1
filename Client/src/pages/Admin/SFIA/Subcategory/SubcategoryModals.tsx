@@ -1,5 +1,5 @@
 import React from "react";
-import { Modal, Button, Input } from "@Components/Common/ExportComponent";
+import { Modal, Button, Input, LoadingButton } from "@Components/Common/ExportComponent";
 
 interface AddEditSubcategoryModalProps {
   isOpen: boolean;
@@ -8,9 +8,18 @@ interface AddEditSubcategoryModalProps {
   initialCategoryId: number | null;
   onClose: () => void;
   onConfirm: (name: string, categoryId: number | null) => void;
+  isLoading?: boolean;  // เพิ่ม prop isLoading
 }
 
-export const AddEditSubcategoryModal: React.FC<AddEditSubcategoryModalProps> = ({ isOpen, mode, initialText, initialCategoryId, onClose, onConfirm }) => {
+export const AddEditSubcategoryModal: React.FC<AddEditSubcategoryModalProps> = ({
+  isOpen,
+  mode,
+  initialText,
+  initialCategoryId,
+  onClose,
+  onConfirm,
+  isLoading = false,
+}) => {
   const [name, setName] = React.useState(initialText);
   const [categoryId, setCategoryId] = React.useState<number | null>(initialCategoryId);
 
@@ -30,10 +39,17 @@ export const AddEditSubcategoryModal: React.FC<AddEditSubcategoryModalProps> = (
           <Button
             className="!bg-black !text-white hover:!bg-gray-800"
             onClick={onClose}
+            disabled={isLoading}  // disable ปุ่ม Cancel ตอนโหลด
           >
             Cancel
           </Button>
-          <Button onClick={() => onConfirm(name, categoryId)}>{mode === "add" ? "Create" : "Save"}</Button>
+          <LoadingButton
+            onClick={() => onConfirm(name, categoryId)}
+            isLoading={isLoading}
+            loadingText={mode === "add" ? "Creating..." : "Saving..."}
+          >
+            {mode === "add" ? "Create" : "Save"}
+          </LoadingButton>
         </>
       }
     >
@@ -44,6 +60,7 @@ export const AddEditSubcategoryModal: React.FC<AddEditSubcategoryModalProps> = (
             value={name}
             className="!rounded-xl"
             onChange={(e) => setName(e.target.value)}
+            disabled={isLoading} // disable input ตอนโหลด
           />
         </div>
       </div>
@@ -56,9 +73,16 @@ interface DeleteSubcategoryModalProps {
   subcategoryText?: string;
   onClose: () => void;
   onConfirm: () => void;
+  isLoading?: boolean;  // เพิ่ม prop isLoading
 }
 
-export const DeleteSubcategoryModal: React.FC<DeleteSubcategoryModalProps> = ({ isOpen, subcategoryText, onClose, onConfirm }) => (
+export const DeleteSubcategoryModal: React.FC<DeleteSubcategoryModalProps> = ({
+  isOpen,
+  subcategoryText,
+  onClose,
+  onConfirm,
+  isLoading = false,
+}) => (
   <Modal
     className="z-50"
     isOpen={isOpen}
@@ -69,15 +93,18 @@ export const DeleteSubcategoryModal: React.FC<DeleteSubcategoryModalProps> = ({ 
         <Button
           className="!bg-black !text-white hover:!bg-gray-800"
           onClick={onClose}
+          disabled={isLoading}  // disable ปุ่ม Cancel ตอนโหลด
         >
           Cancel
         </Button>
-        <Button
-          className="!bg-red-600 !text-white hover:!bg-red-700"
+        <LoadingButton
           onClick={onConfirm}
+          isLoading={isLoading}
+          loadingText="Deleting..."
+          className="!bg-red-600 !text-white hover:!bg-red-700"
         >
           Delete
-        </Button>
+        </LoadingButton>
       </>
     }
   >

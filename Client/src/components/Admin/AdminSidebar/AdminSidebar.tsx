@@ -22,8 +22,8 @@ const frameworks = [
     icon: <FiCopy />,
     key: "tpqi",
     items: [
-      { label: "Sector", path: "/admin/framework/tpqi/sector" },
-      { label: "Category", path: "/admin/framework/tpqi/category" },
+      { label: "Sector", path: "/admin/tpqi/sector" },
+      { label: "Category", path: "/admin/tpqi/category" },
     ],
   },
   {
@@ -31,8 +31,8 @@ const frameworks = [
     icon: <FiBarChart2 />,
     key: "sfia",
     items: [
-      { label: "Skills", path: "/admin/framework/sfia/skills" },
-      { label: "Levels", path: "/admin/framework/sfia/levels" },
+      { label: "Skills", path: "/admin/sfia/skill" },
+      { label: "Levels", path: "/admin/sfia/level" },
       { label: "Categories", path: "/admin/sfia/category" },
       { label: "SubCategories", path: "/admin/sfia/subcategory" },
     ],

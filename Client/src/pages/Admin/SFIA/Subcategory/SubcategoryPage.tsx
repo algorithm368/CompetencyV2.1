@@ -12,8 +12,8 @@ export default function SubcategoryTablePage() {
   const [modalType, setModalType] = useState<"add" | "edit" | "delete" | null>(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState<Subcategory | null>(null);
   const [items, setItems] = useState<Subcategory[]>([]);
-const [page, setPage] = useState(1);
-const perPage = 10;
+  const [page, setPage] = useState(1);
+  const perPage = 10;
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
   const handleToast = (message: string, type: "success" | "error" | "info" = "info") => {
     setToast({ message, type });
@@ -29,22 +29,29 @@ const perPage = 10;
     };
   }, [searchText]);
 
- const { subcategoriesQuery, createSubcategory, updateSubcategory, deleteSubcategory } =
-  useSubcategoryManager({ search: debouncedSearchText, page, perPage }, handleToast);
+  const { subcategoriesQuery, createSubcategory, updateSubcategory, deleteSubcategory } =
+    useSubcategoryManager({ search: debouncedSearchText, page, perPage }, handleToast);
+
+  const uniqueById = (arr: Subcategory[]) => {
+    const map = new Map();
+    arr.forEach((item) => map.set(item.id, item));
+    return Array.from(map.values());
+  };
 
   useEffect(() => {
     const q = subcategoriesQuery.data;
     if (!q) return;
-   if ("pages" in q && Array.isArray(q.pages)) {
-  const all = q.pages.flatMap((pg: SubcategoryPageResult) => pg.data);
-  setItems(all); 
-} else if ("data" in q && Array.isArray(q.data)) {
-  if (page === 1) {
-    setItems(q.data);
-  } else {
-    setItems((prev) => [...prev, ...q.data]); 
-  }
-}
+
+    if ("pages" in q && Array.isArray(q.pages)) {
+      const all = q.pages.flatMap((pg: SubcategoryPageResult) => pg.data);
+      setItems(uniqueById(all));
+    } else if ("data" in q && Array.isArray(q.data)) {
+      if (page === 1) {
+        setItems(q.data);
+      } else {
+        setItems((prev) => uniqueById([...prev, ...q.data]));
+      }
+    }
   }, [subcategoriesQuery.data, page]);
 
   // Modal handlers
@@ -79,7 +86,7 @@ const perPage = 10;
       onError: (error) => {
         handleToast("Failed to create: " + (error?.message ?? ""), "error");
       },
-    }); 
+    });
   };
 
   const confirmEdit = (text: string, categoryId: number | null) => {
@@ -161,7 +168,7 @@ const perPage = 10;
           </div>
         </div>
       </div>
-      
+
       <DataTable<Subcategory>
         data={items}
         columns={columns}
@@ -172,30 +179,30 @@ const perPage = 10;
         errorMessage={subcategoriesQuery.error?.message || "An error occurred while fetching data"}
         onRetry={() => subcategoriesQuery.refetch()}
         onPageChange={(newPageIndex) => {
-    const newPage = newPageIndex + 1; // react-table pageIndex เริ่มที่ 0
-    if (newPage > page) {
-      setPage(newPage);
-    }
-  }}
+          const newPage = newPageIndex + 1; // react-table pageIndex เริ่มที่ 0
+          if (newPage > page) {
+            setPage(newPage);
+          }
+        }}
       />
 
-    <AddEditSubcategoryModal
-      isOpen={modalType === "add" || modalType === "edit"}
-      mode={modalType === "edit" ? "edit" : "add"}
-      initialText={selectedSubcategory?.subcategory_text || ""}
-      initialCategoryId={selectedSubcategory?.id ?? null}
-      onClose={closeModal}
-      onConfirm={(text, catId) => (modalType === "add" ? confirmAdd(text) : confirmEdit(text, catId))}
-     isLoading={createSubcategory.status === "pending" || updateSubcategory.status === "pending"}
-    />
+      <AddEditSubcategoryModal
+        isOpen={modalType === "add" || modalType === "edit"}
+        mode={modalType === "edit" ? "edit" : "add"}
+        initialText={selectedSubcategory?.subcategory_text || ""}
+        initialCategoryId={selectedSubcategory?.id ?? null}
+        onClose={closeModal}
+        onConfirm={(text, catId) => (modalType === "add" ? confirmAdd(text) : confirmEdit(text, catId))}
+        isLoading={createSubcategory.status === "pending" || updateSubcategory.status === "pending"}
+      />
 
-     <DeleteSubcategoryModal
-      isOpen={modalType === "delete"}
-      subcategoryText={selectedSubcategory?.subcategory_text ?? undefined}
-      onClose={closeModal}
-      onConfirm={confirmDelete}
-      isLoading={deleteSubcategory.status === "pending"}
-    />
+      <DeleteSubcategoryModal
+        isOpen={modalType === "delete"}
+        subcategoryText={selectedSubcategory?.subcategory_text ?? undefined}
+        onClose={closeModal}
+        onConfirm={confirmDelete}
+        isLoading={deleteSubcategory.status === "pending"}
+      />
       {toast && (
         <Toast
           message={toast.message}

@@ -11,27 +11,8 @@ import { HomeTeamSection } from "./component/HomeTeamSection";
 const HomePage: React.FC = () => {
   return (
     <Layout>
-      <div className="min-h-screen bg-black">
-        {/* HERO SECTION */}
+      <div className="min-h-screen bg-red">
         <HomeHeroSection />
-
-        {/* COMPARISON SECTION */}
-        <HomeComparisonSection />
-
-        {/* ABOUT FRAMEWORKS SECTION */}
-        <HomeAboutFrameworksSection />
-
-        {/* STATISTICS SECTION */}
-        <HomeStatisticSection />
-
-        {/* FEATURES SECTION */}
-        <HomeFeaturesSection />
-
-        {/* COMPETENCY COMPARISON SECTION */}
-        <HomeCompetencyComparisonSection />
-
-        {/* TEAM SECTION */}
-        <HomeTeamSection />
       </div>
     </Layout>
   );

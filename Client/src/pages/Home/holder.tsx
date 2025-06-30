@@ -1,178 +1,252 @@
-import { Badge, Card, CardContent } from "./HomeComponents";
-import { motion } from "framer-motion";
-import { fadeInUp } from "./HomeAnimation";
-import { Star, Image } from "lucide-react";
-import { comparisonData } from "../data/HomeData";
+import React, { useState, useEffect, useContext } from "react";
+import { Link } from "react-router-dom";
+import { FaSignInAlt, FaBars, FaTimes } from "react-icons/fa";
+import ProfileDisplay from "./ProfileDisplay";
+import Login from "./Login";
+import AuthContext from "@Contexts/AuthContext";
 
-/**
- * Renders the platform comparison section for the homepage.
- *
- * This component is designed to visually contrast two versions of a platform ("Version 1.0" vs. "Version 2.0").
- * It's structured in two main parts:
- * 1. A high-level, side-by-side card comparison that gives a quick visual summary of each version.
- * 2. A detailed, feature-by-feature breakdown that iterates over `comparisonData` to show specific differences.
- *
- * It leverages `framer-motion` for engaging scroll-triggered animations on the section title and individual feature rows.
- * @returns {JSX.Element} The rendered comparison section component.
- */
-export const HomeComparisonSection = () => {
+const NAV_ITEMS: { name: string; path: string }[] = [
+  { name: "Home", path: "/home" },
+  { name: "About", path: "/about" },
+  { name: "Features", path: "/features" },
+  { name: "Comparison", path: "/comparison" },
+  { name: "Team", path: "/team" },
+  { name: "Contact", path: "/contact" },
+];
+
+interface NavbarProps {
+  isTop: boolean;
+}
+
+const Navbar: React.FC<NavbarProps> = ({ isTop }) => {
+  const auth = useContext(AuthContext);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
+
+  useEffect(() => {
+    function handleResize() {
+      if (window.innerWidth >= 768) {
+        setMenuOpen(false);
+      }
+    }
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      const target = event.target as HTMLElement;
+      if (
+        menuOpen &&
+        !target.closest(".mobile-menu") &&
+        !target.closest(".menu-button")
+      ) {
+        setMenuOpen(false);
+      }
+    }
+
+    if (menuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      // Prevent body scroll when menu is open
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.body.style.overflow = "unset";
+    };
+  }, [menuOpen]);
+
+  const isLoggedIn = !!auth?.user;
+
+  const handleLogin = async (response: { credential?: string }) => {
+    if (response.credential) {
+      try {
+        await auth?.login(response.credential);
+      } catch (error) {
+        console.error("Login failed:", error);
+      }
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await auth?.logout();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
   return (
-    <section className="py-16 bg-slate-50">
-      <div className="max-w-7xl mx-auto px-6">
-        {/* Section Title with entrance animation */}
-        <motion.h2
-          className="text-3xl md:text-4xl font-bold text-center mb-12 text-slate-800"
-          {...fadeInUp}
-          viewport={{ once: true, margin: "-100px" }}
-          whileInView="animate"
-          initial="initial"
-        >
-          Platform Comparison
-        </motion.h2>
-
-        <div className="grid md:grid-cols-2 gap-12 mb-20">
-          {/* Version 1 */}
-          <Card className="relative overflow-hidden border-2 border-gray-200 hover:shadow-lg transition-all duration-300">
-            <div className="absolute top-4 right-4">
-              <Badge variant="secondary" className="bg-gray-100 text-gray-600">
-                Version 1.0
-              </Badge>
-            </div>
-            <CardContent className="p-8">
-              <div className="aspect-video bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg mb-6 flex items-center justify-center">
-                <div className="text-center">
-                  <Image className="w-16 h-16 text-gray-500 mx-auto mb-4" />
-                  <div className="space-y-2">
-                    <div className="h-3 bg-gray-400 rounded w-24 mx-auto"></div>
-                    <div className="h-3 bg-gray-300 rounded w-16 mx-auto"></div>
-                  </div>
-                </div>
+    <>
+      <nav className="fixed top-0 left-0 w-full z-50 transition-all duration-300 ease-in-out bg-white border-b border-gray-200 shadow-sm">
+        <div className="w-full flex items-center justify-between py-3 px-4 md:px-6">
+          {/* Logo - More compact on mobile */}
+          <div className="flex-shrink-0 flex items-center">
+            <Link to="/home" className="flex items-center space-x-1">
+              <div className="w-8 h-8 bg-teal-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-lg">C</span>
               </div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-4">
-                Classic Interface
-              </h3>
-              <ul className="space-y-3 text-gray-600">
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full mr-3"></div>
-                  Basic image display
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full mr-3"></div>
-                  Standard processing speed
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full mr-3"></div>
-                  Limited customization
-                </li>
-              </ul>
-            </CardContent>
-          </Card>
+              <span className="text-2xl font-bold text-gray-900">
+                ompetency
+              </span>
+            </Link>
+          </div>
 
-          {/* Version 2 */}
-          <Card className="relative overflow-hidden border-2 border-blue-200 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-blue-50 to-white">
-            <div className="absolute top-4 right-4">
-              <Badge variant="default" className="bg-blue-500 text-white">
-                Version 2.0
-              </Badge>
-            </div>
-            <CardContent className="p-8">
-              <div className="aspect-video bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg mb-6 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-blue-500 rounded-full mx-auto mb-4 flex items-center justify-center">
-                    <Star className="w-8 h-8 text-white" />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="h-3 bg-blue-500 rounded w-24 mx-auto"></div>
-                    <div className="h-3 bg-blue-400 rounded w-16 mx-auto"></div>
-                  </div>
-                </div>
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex space-x-6 lg:space-x-8 flex-1 justify-center px-5">
+            {NAV_ITEMS.map((item) => (
+              <Link
+                key={item.name}
+                to={item.path}
+                className={`relative font-medium transition-all duration-300 hover:scale-105 text-sm lg:text-base ${
+                  isTop
+                    ? "text-gray-600 hover:text-teal-600 after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-teal-600 hover:after:w-full after:transition-all after:duration-300"
+                    : "text-gray-600 hover:text-teal-600 after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-teal-600 hover:after:w-full after:transition-all after:duration-300"
+                }`}
+              >
+                {item.name}
+              </Link>
+            ))}
+          </div>
+
+          {/* Desktop Login/Profile */}
+          <div className="hidden md:flex items-center space-x-4 flex-shrink-0">
+            {isLoggedIn ? (
+              <ProfileDisplay profile={auth?.user} onLogout={handleLogout} />
+            ) : (
+              <button
+                onClick={() => setLoginOpen(true)}
+                className="flex items-center space-x-2 bg-white text-teal-600 hover:bg-teal-600 hover:text-white text-sm font-medium px-4 lg:px-5 py-2 lg:py-2.5 rounded-3xl shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-2 focus:ring-offset-transparent transition-all duration-200 ease-in-out hover:scale-105 transform border border-teal-600"
+              >
+                <FaSignInAlt className="h-4 w-4" />
+                <span>Login</span>
+              </button>
+            )}
+          </div>
+
+          {/* Mobile Menu Button */}
+          <div className="md:hidden flex items-center space-x-3">
+            {/* Mobile Login Button - Show only when not logged in */}
+            {!isLoggedIn && (
+              <button
+                onClick={() => setLoginOpen(true)}
+                className="flex items-center justify-center bg-white text-teal-600 hover:bg-teal-600 hover:text-white p-2 rounded-full shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-teal-400 transition-all duration-200 ease-in-out border border-teal-600"
+                aria-label="Login"
+              >
+                <FaSignInAlt className="h-4 w-4" />
+              </button>
+            )}
+
+            {/* Profile for mobile when logged in */}
+            {isLoggedIn && (
+              <div className="scale-90">
+                <ProfileDisplay profile={auth?.user} onLogout={handleLogout} />
               </div>
-              <h3 className="text-2xl font-bold text-blue-800 mb-4">
-                Enhanced Platform
-              </h3>
-              <ul className="space-y-3 text-blue-700">
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                  Advanced data integration
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                  Real-time synchronization
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                  Modular architecture
-                </li>
-              </ul>
-            </CardContent>
-          </Card>
-        </div>
+            )}
 
-        {/* Detailed Comparison */}
-        <div className="space-y-8">
-          {comparisonData.map((item, idx) => (
-            <motion.div
-              key={idx}
-              className="bg-white rounded-2xl shadow-lg p-8 border border-slate-200"
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{
-                duration: 0.6,
-                delay: idx * 0.1,
-              }}
+            {/* Hamburger Menu Button */}
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="menu-button flex items-center justify-center w-10 h-10 text-teal-600 hover:text-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-2 focus:ring-offset-transparent rounded-lg transition-all duration-200 hover:bg-teal-50"
+              aria-label="Toggle menu"
+              aria-expanded={menuOpen}
             >
-              <h3 className="text-2xl font-bold text-slate-800 mb-6 text-center">
-                {item.category}
-              </h3>
+              {menuOpen ? (
+                <FaTimes className="h-5 w-5" />
+              ) : (
+                <FaBars className="h-5 w-5" />
+              )}
+            </button>
+          </div>
+        </div>
 
-              <div className="grid md:grid-cols-2 gap-8">
-                {/* Version 1 */}
-                <div className="p-6 bg-red-50 rounded-xl border border-red-200">
-                  <div className="flex items-start mb-4">
-                    {item.version1.icon}
-                    <div className="ml-3 flex-1">
-                      <h4 className="font-semibold text-red-800 mb-2">
-                        {item.version1.title}
-                      </h4>
-                      <Badge
-                        variant="outline"
-                        className="border-red-300 text-red-600 bg-red-50"
-                      >
-                        {item.version1.status}
-                      </Badge>
-                    </div>
-                  </div>
-                  <p className="text-red-700 text-sm leading-relaxed">
-                    {item.version1.description}
-                  </p>
-                </div>
+        {/* Mobile Menu - Full screen overlay */}
+        {menuOpen && (
+          <>
+            {/* Backdrop */}
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden" />
 
-                {/* Version 2 */}
-                <div className="p-6 bg-green-50 rounded-xl border border-green-200">
-                  <div className="flex items-start mb-4">
-                    {item.version2.icon}
-                    <div className="ml-3 flex-1">
-                      <h4 className="font-semibold text-green-800 mb-2">
-                        {item.version2.title}
-                      </h4>
-                      <Badge
-                        variant="outline"
-                        className="border-green-300 text-green-600 bg-green-50"
-                      >
-                        {item.version2.status}
-                      </Badge>
-                    </div>
-                  </div>
-                  <p className="text-green-700 text-sm leading-relaxed">
-                    {item.version2.description}
-                  </p>
+            {/* Menu Content */}
+            <div className="mobile-menu fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl z-50 md:hidden transform transition-transform duration-300 ease-out">
+              {/* Menu Header */}
+              <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                <span className="text-gray-900 font-semibold text-lg">
+                  Menu
+                </span>
+                <button
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center justify-center w-8 h-8 text-teal-600 hover:text-teal-700 focus:outline-none rounded-lg transition-colors duration-200"
+                  aria-label="Close menu"
+                >
+                  <FaTimes className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Menu Items */}
+              <div className="flex flex-col p-4 space-y-2">
+                {NAV_ITEMS.map((item, index) => (
+                  <Link
+                    key={item.name}
+                    to={item.path}
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center text-gray-700 hover:text-teal-600 font-medium py-4 px-4 rounded-xl hover:bg-teal-50 transition-all duration-200 transform hover:translate-x-1 border-b border-gray-100 last:border-b-0"
+                    style={{
+                      animationDelay: `${index * 50}ms`,
+                      animation: menuOpen
+                        ? "slideInRight 0.3s ease-out forwards"
+                        : "none",
+                    }}
+                  >
+                    <span className="text-base">{item.name}</span>
+                  </Link>
+                ))}
+
+                {/* Mobile Login/Logout at bottom */}
+                <div className="pt-6 mt-6 border-t border-gray-200">
+                  {isLoggedIn ? (
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setMenuOpen(false);
+                      }}
+                      className="flex items-center justify-center w-full text-red-600 hover:text-red-700 font-medium py-4 px-4 text-base rounded-xl hover:bg-red-50 transition-all duration-200 border border-red-200 hover:border-red-300"
+                    >
+                      <span>Sign Out</span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setLoginOpen(true);
+                        setMenuOpen(false);
+                      }}
+                      className="flex items-center justify-center space-x-3 w-full text-teal-600 font-medium py-4 px-4 text-base rounded-xl bg-white border border-teal-200 hover:bg-teal-50 hover:text-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-400 transition-all duration-200 ease-in-out hover:scale-105 transform shadow-lg"
+                    >
+                      <FaSignInAlt className="h-5 w-5" />
+                      <span>Login</span>
+                    </button>
+                  )}
                 </div>
               </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
+            </div>
+          </>
+        )}
+      </nav>
+
+      {/* Login modal */}
+      <Login
+        open={loginOpen}
+        onClose={() => setLoginOpen(false)}
+        handleLogin={(resp) => {
+          handleLogin(resp);
+          setLoginOpen(false);
+        }}
+      />
+    </>
   );
 };
+
+export default Navbar;

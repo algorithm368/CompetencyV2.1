@@ -28,7 +28,7 @@ export const AboutHeroSection = () => (
           delay: 0.4 
         }}
       >
-        เกี่ยวกับระบบ Competency Database
+        เกี่ยวกับพวกเรา
       </motion.h1>
       
       <motion.p

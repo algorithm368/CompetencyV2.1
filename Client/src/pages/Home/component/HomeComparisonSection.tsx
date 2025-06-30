@@ -17,11 +17,10 @@ import { comparisonData } from "../data/HomeData";
  */
 export const HomeComparisonSection = () => {
   return (
-    <section className="py-16 bg-slate-50">
+    <section className="py-16 bg-transparent bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">
-        {/* Section Title with entrance animation */}
         <motion.h2
-          className="text-3xl md:text-4xl font-bold text-center mb-12 text-slate-800"
+          className="text-3xl md:text-4xl font-bold text-center mb-12 text-blue-200 drop-shadow"
           {...fadeInUp}
           viewport={{ once: true, margin: "-100px" }}
           whileInView="animate"

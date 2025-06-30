@@ -21,9 +21,9 @@ const AppRoutes: React.FC = () => (
   // <ErrorBoundary>
   <Routes>
     {/* Public Routes */}
-    <Route path="/" element={<Navigate to="/Home" replace />} />
+    <Route path="/" element={<Navigate to="/home" replace />} />
     <Route path="/results" element={<ResultsPage />} />
-    <Route path="/Home" element={<HomePage />} />
+    <Route path="/home" element={<HomePage />} />
     <Route path="/occupation/:id" element={<OccupationDetailPage />} />
     <Route path="/profile" element={<ProfilePage />} />
     <Route path="/about" element={<AboutPage />} />

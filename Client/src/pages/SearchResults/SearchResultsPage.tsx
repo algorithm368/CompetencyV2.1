@@ -122,7 +122,7 @@ const ResultsPage: React.FC = () => {
             w-12 h-12 
             bg-white 
             shape-circle 
-            opacity-15 
+            opacity-20
             animate-circle-slow 
             delay-2
           "
@@ -134,7 +134,7 @@ const ResultsPage: React.FC = () => {
             w-16 h-16 
             bg-white 
             shape-square 
-            opacity-15 
+            opacity-20 
             animate-square 
             delay-1
           "

@@ -1,5 +1,9 @@
 import React, { useEffect } from "react";
-import { GoogleOAuthProvider, GoogleLogin, CredentialResponse } from "@react-oauth/google";
+import {
+  GoogleOAuthProvider,
+  GoogleLogin,
+  CredentialResponse,
+} from "@react-oauth/google";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { FaGithub, FaLinkedin } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
@@ -10,7 +14,8 @@ interface LoginProps {
   handleLogin: (response: CredentialResponse | { credential: string }) => void;
 }
 
-const GOOGLE_CLIENT_ID = "170385751378-bbtp2rf09iorhsustgqors4r1tc7hf6n.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID =
+  "170385751378-bbtp2rf09iorhsustgqors4r1tc7hf6n.apps.googleusercontent.com";
 
 const Login: React.FC<LoginProps> = ({ open, onClose, handleLogin }) => {
   useEffect(() => {
@@ -50,66 +55,100 @@ const Login: React.FC<LoginProps> = ({ open, onClose, handleLogin }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
         role="presentation"
-        className="absolute inset-0 bg-black/50"
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
 
-      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-2xl mx-4 overflow-hidden z-10">
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden z-10 border border-gray-200">
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 text-gray-600 hover:text-gray-800 focus:outline-none"
+          className="absolute top-4 right-4 text-gray-400 hover:text-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-400 rounded-lg p-1 transition-colors duration-200"
           aria-label="Close"
         >
           <XMarkIcon className="h-6 w-6" />
         </button>
 
         <div className="flex flex-col md:flex-row min-h-[380px]">
-          <div className="md:w-5/12 w-full bg-blue-100 flex items-center justify-center p-6">
-            <div className="text-center text-blue-800 ">
+          {/* Left Panel - Teal Theme */}
+          <div className="md:w-5/12 w-full bg-gradient-to-br from-teal-600 via-teal-700 to-teal-800 flex items-center justify-center p-6 relative overflow-hidden">
+            <div className="absolute inset-0 bg-teal-600/20 backdrop-blur-sm"></div>
+            <div className="text-center text-white relative z-10">
               <h2 className="text-2xl font-bold mb-2">Competency Database</h2>
-              <p className="text-sm opacity-80">Accurate Competency Assessment System</p>
+              <p className="text-sm opacity-90">
+                Accurate Competency Assessment System
+              </p>
+              <div className="mt-4 w-16 h-1 bg-white/30 rounded-full mx-auto"></div>
             </div>
           </div>
 
-          <div className="md:w-7/12 w-full flex items-center justify-center p-6">
+          {/* Right Panel - Login Form */}
+          <div className="md:w-7/12 w-full flex items-center justify-center p-6 bg-gray-50/30">
             <div className="w-full max-w-xs">
-              <h3 className="text-2xl font-bold text-center mb-4">Sign In</h3>
+              <h3 className="text-2xl font-bold text-center mb-2 text-gray-900">
+                Sign In
+              </h3>
+              <p className="text-sm text-gray-600 text-center mb-6">
+                Choose your preferred sign-in method
+              </p>
 
-              <div className="flex justify-center mb-4 relative w-[300px] h-[40px] mx-auto">
-                {/* Custom-looking Google button */}
-                <div className="absolute inset-0 z-10 flex items-center justify-center border border-gray-600 text-gray-700 rounded-3xl bg-white hover:bg-gray-100 transition cursor-pointer">
-                  <FcGoogle className="h-5 w-5 mr-2" />
-                  <span className="text-sm">Sign in with Google</span>
-                </div>
-
-                {/* Transparent GoogleLogin underlay */}
-                <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-                  <div className="absolute inset-0 opacity-1 z-20 ">
-                    <GoogleLogin
-                      onSuccess={handleGoogleSuccess}
-                      onError={handleGoogleError}
-                      width="300"
-                      useOneTap={false}
-                    />
+              <div className="space-y-3">
+                {/* Google Login Button */}
+                <div className="flex justify-center relative w-[300px] h-[45px] mx-auto">
+                  <div className="absolute inset-0 z-10 flex items-center justify-center border border-gray-300 text-gray-700 rounded-xl bg-white hover:bg-gray-50 hover:border-teal-300 transition-all duration-200 shadow-sm hover:shadow-md">
+                    <FcGoogle className="h-5 w-5 mr-3" />
+                    <span className="text-sm font-medium">
+                      Sign in with Google
+                    </span>
                   </div>
-                </GoogleOAuthProvider>
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
+                  {/* Transparent GoogleLogin underlay */}
+                  <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+                    <div className="absolute inset-0 opacity-0 z-20">
+                      <GoogleLogin
+                        onSuccess={handleGoogleSuccess}
+                        onError={handleGoogleError}
+                        width="300"
+                        useOneTap={false}
+                      />
+                    </div>
+                  </GoogleOAuthProvider>
+                </div>
+<<<<<<< Updated upstream
+=======
+
+                {/* GitHub Login Button */}
+                <button
+                  onClick={handleGitHubLogin}
+                  className="flex items-center justify-center w-[300px] h-[45px] px-4 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-teal-300 transition-all duration-200 mx-auto shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-2"
+                >
+                  <FaGithub className="h-5 w-5 mr-3" />
+                  <span className="text-sm font-medium">
+                    Sign in with GitHub
+                  </span>
+                </button>
+
+                {/* LinkedIn Login Button */}
+                <button
+                  onClick={handleLinkedInLogin}
+                  className="flex items-center justify-center w-[300px] h-[45px] px-4 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-teal-300 transition-all duration-200 mx-auto shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-2"
+                >
+                  <FaLinkedin className="h-5 w-5 mr-3 text-blue-600" />
+                  <span className="text-sm font-medium">
+                    Sign in with LinkedIn
+                  </span>
+                </button>
+>>>>>>> Stashed changes
               </div>
 
-              <button
-                onClick={handleGitHubLogin}
-                className="flex items-center justify-center w-[300px] mb-3 px-4 py-2 border border-gray-600 text-gray-700 rounded-3xl hover:bg-gray-100 transition mx-auto"
-              >
-                <FaGithub className="h-5 w-5 mr-2" />
-                <span className="text-sm">Sign in with GitHub</span>
-              </button>
-
-              <button
-                onClick={handleLinkedInLogin}
-                className="flex items-center justify-center w-[300px] px-4 py-2 border border-gray-700 text-gray-700 rounded-3xl hover:bg-blue-50 transition mx-auto"
-              >
-                <FaLinkedin className="h-5 w-5 mr-2" />
-                <span className="text-sm">Sign in with LinkedIn</span>
-              </button>
+              {/* Footer Text */}
+              <div className="mt-6 text-center">
+                <p className="text-xs text-gray-500">
+                  By signing in, you agree to our Terms of Service
+                </p>
+              </div>
             </div>
           </div>
         </div>

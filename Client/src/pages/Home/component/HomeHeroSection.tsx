@@ -21,11 +21,8 @@ import {
  * - Prominent title ("Competency Database") and subtitle in both English and Thai.
  * - Search input field with real-time value binding and keyboard event handling.
  * - Search button and input field both trigger a search action.
-<<<<<<< Updated upstream
  * - New "What's New in Version 2" section with scroll animations and feature highlights.
  * - Seamless background transition from hero to what's new section.
-=======
->>>>>>> Stashed changes
  * - Accessible and responsive design with Tailwind CSS utility classes.
  *
  * ## Usage
@@ -40,7 +37,6 @@ export const HomeHeroSection = () => {
   const navigate = useNavigate();
   const [inView, setInView] = useState(false);
 
-<<<<<<< Updated upstream
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -63,8 +59,6 @@ export const HomeHeroSection = () => {
     };
   }, []);
 
-=======
->>>>>>> Stashed changes
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && searchTerm.trim() !== "") {
       navigate(`/results?query=${encodeURIComponent(searchTerm.trim())}`);
@@ -77,7 +71,6 @@ export const HomeHeroSection = () => {
     }
   };
 
-<<<<<<< Updated upstream
   const scrollToNewFeatures = () => {
     document.getElementById("version-2-features")?.scrollIntoView({
       behavior: "smooth",
@@ -85,14 +78,11 @@ export const HomeHeroSection = () => {
     });
   };
 
-=======
->>>>>>> Stashed changes
   const fadeInUp = {
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0 },
   };
 
-<<<<<<< Updated upstream
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -165,40 +155,6 @@ export const HomeHeroSection = () => {
           >
             Competency Database
           </motion.h1>
-=======
-  return (
-    <section
-      id="home-hero"
-      className="relative min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-teal-50 via-white to-teal-100 pt-20 overflow-hidden"
-    >
-      {/* Decorative elements */}
-      <div className="absolute inset-0">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-teal-200 rounded-full mix-blend-multiply filter blur-xl opacity-30"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-teal-300 rounded-full mix-blend-multiply filter blur-xl opacity-30"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-60 h-60 bg-teal-100 rounded-full mix-blend-multiply filter blur-xl opacity-40"></div>
-      </div>
-
-      <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
-        <motion.h1
-          variants={fadeInUp} // ใช้ Variants
-          initial="initial"
-          animate="animate"
-          transition={{ duration: 0.6, ease: "easeInOut" }}
-          className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-teal-600 to-teal-800 bg-clip-text text-transparent pb-6"
-        >
-          Competency Database
-        </motion.h1>
-
-        <motion.p
-          variants={fadeInUp}
-          initial="initial"
-          animate="animate"
-          transition={{ duration: 0.6, ease: "easeInOut", delay: 0.2 }}
-          className="text-xl md:text-2xl text-gray-700 mb-8 leading-relaxed font-medium"
-        >
-          ค้นหาและเปรียบเทียบกรอบสมรรถนะ SFIA & TPQI อย่างมีประสิทธิภาพ
-        </motion.p>
->>>>>>> Stashed changes
 
           <motion.p
             variants={fadeInUp}
@@ -283,7 +239,6 @@ export const HomeHeroSection = () => {
 
         {/* Scroll indicator */}
         <motion.div
-<<<<<<< Updated upstream
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 1.2 }}
@@ -437,77 +392,5 @@ export const HomeHeroSection = () => {
         </div>
       </section>
     </>
-=======
-          variants={fadeInUp}
-          initial="initial"
-          animate="animate"
-          transition={{ duration: 0.6, ease: "easeInOut", delay: 0.4 }}
-          className="relative flex justify-center"
-        >
-          <div className="relative w-full max-w-md">
-            <svg
-              aria-hidden="true"
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-teal-600 z-10 w-5 h-5"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                clipRule="evenodd"
-              />
-            </svg>
-
-            <input
-              type="text"
-              placeholder="ค้นหาอาชีพ..."
-              className="w-full pl-12 pr-28 py-4 bg-white/90 backdrop-blur-sm text-gray-900 rounded-2xl border-2 border-teal-200 shadow-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400 transition-all duration-300 hover:border-teal-300"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyDown={handleKeyDown}
-            />
-
-            <button
-              onClick={handleSearchClick}
-              aria-label="Search" // 3. ปรับปรุง: เพิ่ม Accessibility
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white px-5 py-2 rounded-xl shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-2 hover:scale-105 active:scale-95"
-            >
-              ค้นหา
-            </button>
-          </div>
-        </motion.div>
-
-        {/* Additional call-to-action */}
-        <motion.div
-          variants={fadeInUp}
-          initial="initial"
-          animate="animate"
-          transition={{ duration: 0.6, ease: "easeInOut", delay: 0.8 }}
-          className="mt-12"
-        >
-          <p className="text-gray-600 text-sm md:text-base mb-6">
-            เริ่มต้นการค้นหาอาชีพที่เหมาะสมกับคุณ
-            หรือเรียนรู้เพิ่มเติมเกี่ยวกับเฟรมเวิร์ก
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <motion.button
-              className="px-6 py-3 bg-white text-teal-600 font-medium rounded-xl border-2 border-teal-200 hover:bg-teal-50 hover:border-teal-300 transition-all duration-300 shadow-md hover:shadow-lg"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              เรียนรู้เพิ่มเติม
-            </motion.button>
-            <motion.button
-              className="px-6 py-3 bg-teal-600 text-white font-medium rounded-xl hover:bg-teal-700 transition-all duration-300 shadow-md hover:shadow-lg"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              เปรียบเทียบเฟรมเวิร์ก
-            </motion.button>
-          </div>
-        </motion.div>
-      </div>
-    </section>
->>>>>>> Stashed changes
   );
 };

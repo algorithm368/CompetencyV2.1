@@ -100,10 +100,6 @@ const Login: React.FC<LoginProps> = ({ open, onClose, handleLogin }) => {
                       Sign in with Google
                     </span>
                   </div>
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
                   {/* Transparent GoogleLogin underlay */}
                   <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
                     <div className="absolute inset-0 opacity-0 z-20">
@@ -116,31 +112,6 @@ const Login: React.FC<LoginProps> = ({ open, onClose, handleLogin }) => {
                     </div>
                   </GoogleOAuthProvider>
                 </div>
-<<<<<<< Updated upstream
-=======
-
-                {/* GitHub Login Button */}
-                <button
-                  onClick={handleGitHubLogin}
-                  className="flex items-center justify-center w-[300px] h-[45px] px-4 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-teal-300 transition-all duration-200 mx-auto shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-2"
-                >
-                  <FaGithub className="h-5 w-5 mr-3" />
-                  <span className="text-sm font-medium">
-                    Sign in with GitHub
-                  </span>
-                </button>
-
-                {/* LinkedIn Login Button */}
-                <button
-                  onClick={handleLinkedInLogin}
-                  className="flex items-center justify-center w-[300px] h-[45px] px-4 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-teal-300 transition-all duration-200 mx-auto shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-2"
-                >
-                  <FaLinkedin className="h-5 w-5 mr-3 text-blue-600" />
-                  <span className="text-sm font-medium">
-                    Sign in with LinkedIn
-                  </span>
-                </button>
->>>>>>> Stashed changes
               </div>
 
               {/* Footer Text */}

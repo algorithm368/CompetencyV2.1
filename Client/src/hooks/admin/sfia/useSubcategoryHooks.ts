@@ -16,10 +16,21 @@ export function useSubcategoryManager(
   const { id = null, search, page, perPage } = options || {};
   const queryClient = useQueryClient();
 
-  const subcategoriesQuery = useQuery<SubcategoryPageResult[], Error>({
-    queryKey: ["subcategories", { search, page, perPage }],
-    queryFn: () => SubcategoryService.getAll(search, page, perPage),
-  });
+const subcategoriesQuery = useQuery<SubcategoryPageResult, Error>({
+  queryKey: ["subcategories", search, page, perPage],
+  queryFn: async () => {
+    // Ensure getAll returns a single SubcategoryPageResult object
+    const result = await SubcategoryService.getAll(search, page, perPage);
+    // If getAll returns an array, pick the first item or handle accordingly
+    if (Array.isArray(result)) {
+      if (result.length === 0) throw new Error("No subcategory page result found");
+      return result[0];
+    }
+    return result;
+  },
+  staleTime: 0,
+  placeholderData: (previousData) => previousData,
+});
 
   const subcategoryQuery = useQuery<Subcategory, Error>({
     queryKey: ["subcategory", id],

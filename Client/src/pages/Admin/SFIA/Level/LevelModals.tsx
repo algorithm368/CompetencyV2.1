@@ -1,39 +1,39 @@
 import React from "react";
 import { Modal, Button, Input, LoadingButton } from "@Components/Common/ExportComponent";
 
-interface AddEditSubcategoryModalProps {
+interface AddEditLevelModalProps {
   isOpen: boolean;
   mode: "add" | "edit";
   initialText: string;
-  initialCategoryId: number | null;
+  initialCodeJob?: string;
   onClose: () => void;
-  onConfirm: (name: string, categoryId: number | null) => void;
+  onConfirm: (name: string, codeJob?: string) => void;
   isLoading?: boolean;  
 }
 
-export const AddEditSubcategoryModal: React.FC<AddEditSubcategoryModalProps> = ({
+export const AddEditLevelModal: React.FC<AddEditLevelModalProps> = ({
   isOpen,
   mode,
   initialText,
-  initialCategoryId,
+  initialCodeJob,
   onClose,
   onConfirm,
   isLoading = false,
 }) => {
   const [name, setName] = React.useState(initialText);
-  const [categoryId, setCategoryId] = React.useState<number | null>(initialCategoryId);
+  const [codeJob, setCodeJob] = React.useState(initialCodeJob || "");
 
   React.useEffect(() => {
     setName(initialText);
-    setCategoryId(initialCategoryId);
-  }, [initialText, initialCategoryId]);
+    setCodeJob(initialCodeJob || "");
+  }, [initialText, initialCodeJob]);
 
   return (
     <Modal
       className="z-50"
       isOpen={isOpen}
       onClose={onClose}
-      title={mode === "add" ? "Add Subcategory" : "Edit Subcategory"}
+      title={mode === "add" ? "Add Level" : "Edit Level"}
       actions={
         <>
           <Button
@@ -44,7 +44,7 @@ export const AddEditSubcategoryModal: React.FC<AddEditSubcategoryModalProps> = (
             Cancel
           </Button>
           <LoadingButton
-            onClick={() => onConfirm(name, categoryId)}
+            onClick={() => onConfirm(name, codeJob)}
             isLoading={isLoading}
             loadingText={mode === "add" ? "Creating..." : "Saving..."}
           >
@@ -55,11 +55,20 @@ export const AddEditSubcategoryModal: React.FC<AddEditSubcategoryModalProps> = (
     >
       <div className="space-y-3">
         <div className="flex flex-col">
-          <label className="block text-sm mb-1 ml-0.5">Subcategory Name</label>
+          <label className="block text-sm mb-1 ml-0.5">Level Name</label>
           <Input
             value={name}
             className="!rounded-xl"
             onChange={(e) => setName(e.target.value)}
+            disabled={isLoading} 
+          />
+        </div>
+        <div className="flex flex-col">
+          <label className="block text-sm mb-1 ml-0.5">Code Job</label>
+          <Input
+            value={codeJob}
+            className="!rounded-xl"
+            onChange={(e) => setCodeJob(e.target.value)}
             disabled={isLoading} 
           />
         </div>
@@ -68,17 +77,17 @@ export const AddEditSubcategoryModal: React.FC<AddEditSubcategoryModalProps> = (
   );
 };
 
-interface DeleteSubcategoryModalProps {
+interface DeleteLevelModalProps {
   isOpen: boolean;
-  subcategoryText?: string;
+  levelName?: string; // เปลี่ยนจาก levelText -> levelName ให้ตรงกับ LevelTablePage
   onClose: () => void;
   onConfirm: () => void;
   isLoading?: boolean;  
 }
 
-export const DeleteSubcategoryModal: React.FC<DeleteSubcategoryModalProps> = ({
+export const DeleteLevelModal: React.FC<DeleteLevelModalProps> = ({
   isOpen,
-  subcategoryText,
+  levelName,
   onClose,
   onConfirm,
   isLoading = false,
@@ -108,6 +117,6 @@ export const DeleteSubcategoryModal: React.FC<DeleteSubcategoryModalProps> = ({
       </>
     }
   >
-    <p>Are you sure you want to delete “{subcategoryText}”?</p>
+    <p>Are you sure you want to delete “{levelName}”?</p>
   </Modal>
 );

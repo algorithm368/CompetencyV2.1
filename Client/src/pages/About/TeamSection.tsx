@@ -1,7 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
 
+import PhatnarinIMG from "../../assets/AboutPage/Phatnarin.png"
+import SukanyaIMG from "../../assets/AboutPage/Sukanya.png"
+import TanabodeeIMG from "../../assets/AboutPage/Tanabodee.png"
+import KornkanokIMG from "../../assets/AboutPage/Kornkanok.png"
+import PhannitaIMG from "../../assets/AboutPage/Phannita.png";
+
 const TEMP_IMAGE_URL =
   "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=facearea&w=256&h=256&facepad=2&q=80";
+
+
 
 interface MemberProps {
   name: string;
@@ -27,7 +35,7 @@ const teams: Team[] = [
       {
         name: "นางสาว กรกนก รินพล",
         englishName: "Ms. Kornkanok Rinphon",
-        image: TEMP_IMAGE_URL,
+        image: KornkanokIMG,
         education: "ระดับการศึกษาปริญญาตรี สาขาวิศวกรรมคอมพิวเตอร์",
         faculty: "คณะวิศวกรรมศาสตร์ มหาวิทยาลัยนเรศวร",
         email: "kornkanok@example.com",
@@ -36,7 +44,7 @@ const teams: Team[] = [
       {
         name: "นาย ธนบดี บุณรักษ์",
         englishName: "Mr. Tanabodee Boonrak",
-        image: TEMP_IMAGE_URL,
+        image: TanabodeeIMG,
         education: "ระดับการศึกษาปริญญาตรี สาขาวิศวกรรมคอมพิวเตอร์",
         faculty: "คณะวิศวกรรมศาสตร์ มหาวิทยาลัยนเรศวร",
         email: "tanabodee@example.com",
@@ -45,7 +53,7 @@ const teams: Team[] = [
       {
         name: "นางสาว พัณณิตา คำแสน",
         englishName: "Ms. Phannita Khamsaem",
-        image: TEMP_IMAGE_URL,
+        image: PhannitaIMG,
         education: "ระดับการศึกษาปริญญาตรี สาขาวิศวกรรมคอมพิวเตอร์",
         faculty: "คณะวิศวกรรมศาสตร์ มหาวิทยาลัยนเรศวร",
         email: "phannita.forwork16@gmail.com",
@@ -60,7 +68,7 @@ const teams: Team[] = [
       {
         name: "นางสาว ภัทร์นรินทร์ แซ่ว่าง",
         englishName: "Ms. Phatnarin Saewang",
-        image: TEMP_IMAGE_URL,
+        image: PhatnarinIMG,
         education: "ระดับการศึกษาปริญญาตรี สาขาวิศวกรรมคอมพิวเตอร์",
         faculty: "คณะวิศวกรรมศาสตร์ มหาวิทยาลัยนเรศวร",
         email: "phatnarin@example.com",
@@ -69,7 +77,7 @@ const teams: Team[] = [
       {
         name: "นางสาว สุกัญญา วันดี",
         englishName: "Ms. Sukanya Wandi",
-        image: TEMP_IMAGE_URL,
+        image: SukanyaIMG,
         education: "ระดับการศึกษาปริญญาตรี สาขาวิศวกรรมคอมพิวเตอร์",
         faculty: "คณะวิศวกรรมศาสตร์ มหาวิทยาลัยนเรศวร",
         email: "sukanyawandi@gmail.com",

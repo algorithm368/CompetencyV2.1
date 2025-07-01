@@ -1,6 +1,7 @@
 import Layout from "@Layouts/Layout";
 import AboutSection from "./AboutSection";
 import TeamMember from "./TeamSection";
+import AdvisorSection from "./AdvisorSection";
 
 const AboutPage: React.FC = () => {
   return (
@@ -8,6 +9,7 @@ const AboutPage: React.FC = () => {
       <div className="min-h-screen bg-white">
         <AboutSection />
         <TeamMember />
+        <AdvisorSection />
       </div>
     </Layout>
   );

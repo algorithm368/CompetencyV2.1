@@ -5,6 +5,9 @@ import SukanyaIMG from "../../assets/AboutPage/Sukanya.png"
 import TanabodeeIMG from "../../assets/AboutPage/Tanabodee.png"
 import KornkanokIMG from "../../assets/AboutPage/Kornkanok.png"
 import PhannitaIMG from "../../assets/AboutPage/Phannita.png";
+import NatthapatIMG from "../../assets/AboutPage/Natthapat.png";
+import SiriwatIMG from "../../assets/AboutPage/Siriwat.jpeg";
+import JeerapatIMG from "../../assets/AboutPage/Jeerapat.png";
 
 const TEMP_IMAGE_URL =
   "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=facearea&w=256&h=256&facepad=2&q=80";
@@ -92,7 +95,7 @@ const teams: Team[] = [
       {
         name: "นาย จีรพัฒน์ ขยายเสียง",
         englishName: "Mr. Jeerapat Kahyaisiang",
-        image: TEMP_IMAGE_URL,
+        image: JeerapatIMG,
         education: "ระดับการศึกษาปริญญาตรี สาขาวิศวกรรมคอมพิวเตอร์",
         faculty: "คณะวิศวกรรมศาสตร์ มหาวิทยาลัยนเรศวร",
         email: "jeerapat5870@gmail.com",
@@ -101,7 +104,7 @@ const teams: Team[] = [
       {
         name: "นาย ณัฎฐภัทร ใจเชื้อ",
         englishName: "Mr. Natthaphat Jaichue",
-        image: TEMP_IMAGE_URL,
+        image: NatthapatIMG,
         education: "ระดับการศึกษาปริญญาตรี สาขาวิศวกรรมคอมพิวเตอร์",
         faculty: "คณะวิศวกรรมศาสตร์ มหาวิทยาลัยนเรศวร",
         email: "natthaphat@example.com",
@@ -110,7 +113,7 @@ const teams: Team[] = [
       {
         name: "นาย สิริวัฒน์ ไชยรักษ์",
         englishName: "Mr. Siriwat Chairak",
-        image: TEMP_IMAGE_URL,
+        image: SiriwatIMG,
         education: "ระดับการศึกษาปริญญาตรี สาขาวิศวกรรมคอมพิวเตอร์",
         faculty: "คณะวิศวกรรมศาสตร์ มหาวิทยาลัยนเรศวร",
         email: "siriwat@example.com",

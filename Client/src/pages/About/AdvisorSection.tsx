@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 
-import AdvisorIMG from "../../assets/AboutPage/advisor.jpeg";
+import AdvisorIMG from "../../assets/AboutPage/Advisor.jpeg";
 
 // Custom Hook for Intersection Observer
 const useInView = (threshold = 0.1) => {
@@ -17,54 +17,20 @@ const useInView = (threshold = 0.1) => {
       { threshold }
     );
 
-    if (ref.current) {
-      observer.observe(ref.current);
+    const currentRef = ref.current;
+
+    if (currentRef) {
+      observer.observe(currentRef);
     }
 
     return () => {
-      if (ref.current) {
-        observer.unobserve(ref.current);
+      if (currentRef) {
+        observer.unobserve(currentRef);
       }
     };
   }, [threshold]);
 
   return [ref, isInView];
-};
-
-const AnimatedTitle = ({ children, delay = 0 }) => {
-  const [ref, isInView] = useInView(0.2);
-
-  return (
-    <div
-      ref={ref}
-      className={`transform transition-all duration-800 ${
-        isInView
-          ? "translate-y-0 opacity-100 scale-100"
-          : "translate-y-6 opacity-0 scale-95"
-      }`}
-      style={{
-        transitionDelay: isInView ? `${delay}ms` : "0ms",
-      }}
-    >
-      {children}
-    </div>
-  );
-};
-
-const AnimatedDivider = ({ delay = 0 }) => {
-  const [ref, isInView] = useInView(0.3);
-
-  return (
-    <div
-      ref={ref}
-      className={`w-16 h-1 bg-gradient-to-r from-teal-400 to-teal-600 mx-auto mb-12 rounded-full shadow-sm transform transition-all duration-600 ${
-        isInView ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"
-      }`}
-      style={{
-        transitionDelay: isInView ? `${delay}ms` : "0ms",
-      }}
-    />
-  );
 };
 
 const AdvisorSection = () => {

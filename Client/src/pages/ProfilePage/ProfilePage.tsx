@@ -3,7 +3,7 @@ import Layout from "@Layouts/Layout";
 import { FaUserCircle, FaCheckCircle, FaTimesCircle, FaDownload } from "react-icons/fa";
 import { mockOccupations, OccupationType, SkillType } from "../mockOccupations";
 import { mockUsers, UserType } from "../mockOccupations";
-import { generatePortfolioPdf } from "./portfolioPdf";
+import { generatePortfolioPdf } from "./PortfolioPdf";
 
 const ProfilePage: React.FC = () => {
   const userId = 1;

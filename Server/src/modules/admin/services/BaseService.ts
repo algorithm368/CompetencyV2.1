@@ -1,8 +1,9 @@
 export class BaseService<T extends Record<string, any>, K extends keyof T> {
   constructor(protected readonly repo: any, private readonly searchFields: string[], private readonly pkField: keyof T, protected readonly includes?: Record<string, boolean>) {}
 
-  async getAll(search?: string, page?: number, perPage?: number): Promise<{ data: T[]; total?: number; nextCursor?: number | null } | { error: string }> {
+  async getAll(search?: string, page?: number, perPage?: number): Promise<{ data: T[]; total: number }> {
     const where: any = {};
+
     if (search && search.trim()) {
       where.OR = this.searchFields.map((fieldPath) => {
         const parts = fieldPath.split(".");
@@ -19,14 +20,22 @@ export class BaseService<T extends Record<string, any>, K extends keyof T> {
       ...(this.includes ? { include: this.includes } : {}),
     };
 
-    if (page !== undefined && perPage !== undefined) {
-      const { data, total } = await this.repo.paginateOffset(page, perPage, commonQuery);
+    if (page !== undefined && perPage !== undefined && !isNaN(page) && !isNaN(perPage)) {
+      const data = await this.repo.findMany({
+        ...commonQuery,
+        skip: (page - 1) * perPage,
+        take: perPage,
+      });
+
+      const total = await this.repo.manager.count({ where });
+
       return { data, total };
     }
 
-    const cursor = page;
-    const { data, nextCursor } = await this.repo.paginateCursor(perPage ?? 20, cursor, commonQuery);
-    return { data, nextCursor };
+    const data = await this.repo.findMany(commonQuery);
+    const total = data.length;
+
+    return { data, total };
   }
 
   getById(id: T[typeof this.pkField]): Promise<T | null> {

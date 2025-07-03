@@ -4,13 +4,12 @@ import { Subcategory, CreateSubcategoryDto, UpdateSubcategoryDto, SubcategoryPag
 const BASE_URL = "/admin/sfia/subcategory";
 
 export const SubcategoryService = {
-  async getAll(search?: string, page?: number, perPage?: number) {
+  async getAll(search?: string, cursor?: number, perPage?: number): Promise<SubcategoryPageResult> {
     const params = new URLSearchParams();
-    if (search) params.append("search", search);
-    if (page) params.append("page", String(page));
+    if (cursor) params.append("page", String(cursor));
     if (perPage) params.append("perPage", String(perPage));
-
-    const res = await api.get<SubcategoryPageResult[]>(`${BASE_URL}?${params.toString()}`);
+    if (search) params.append("search", search);
+    const res = await api.get<SubcategoryPageResult>(`${BASE_URL}?${params.toString()}`);
     return res.data;
   },
 

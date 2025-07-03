@@ -5,7 +5,7 @@ export interface Subcategory {
 
 export interface SubcategoryPageResult {
   data: Subcategory[];
-  nextCursor?: number;
+  total?: number;
 }
 
 export type CreateSubcategoryDto = Omit<Subcategory, "id">;

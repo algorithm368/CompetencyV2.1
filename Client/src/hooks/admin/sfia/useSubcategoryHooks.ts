@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueries, useMutation, useQueryClient } from "@tanstack/react-query";
 import { SubcategoryService } from "@Services/admin/sfia/subcategoryServices";
 import { Subcategory, CreateSubcategoryDto, UpdateSubcategoryDto, SubcategoryPageResult } from "@Types/sfia/subcategoryTypes";
 
@@ -10,27 +10,57 @@ export function useSubcategoryManager(
     search?: string;
     page?: number;
     perPage?: number;
+    initialPrefetchPages?: number;
   },
   onToast?: ToastCallback
 ) {
-  const { id = null, search, page, perPage } = options || {};
+  const { id = null, search = "", page = 1, perPage = 10, initialPrefetchPages = 3 } = options || {};
   const queryClient = useQueryClient();
 
-const subcategoriesQuery = useQuery<SubcategoryPageResult, Error>({
-  queryKey: ["subcategories", search, page, perPage],
-  queryFn: async () => {
-    // Ensure getAll returns a single SubcategoryPageResult object
-    const result = await SubcategoryService.getAll(search, page, perPage);
-    // If getAll returns an array, pick the first item or handle accordingly
-    if (Array.isArray(result)) {
-      if (result.length === 0) throw new Error("No subcategory page result found");
-      return result[0];
+  // ฟังก์ชัน fetchPage ที่ใช้เรียก API หนึ่งครั้งเดียว
+  const fetchPage = async (pageIndex: number, pageSize: number): Promise<{ data: Subcategory[]; total: number }> => {
+    const pageNumber = pageIndex + 1;
+    const result = await SubcategoryService.getAll(search, pageNumber, pageSize);
+    return {
+      data: result.data ?? [],
+      total: result.total ?? 0,
+    };
+  };
+
+  // prefetch หลายหน้าแรก (ใช้ fetchPage)
+  const prefetchQueries = useQueries({
+    queries: Array.from({ length: initialPrefetchPages }, (_, i) => ({
+      queryKey: ["subcategories", search, i + 1, perPage],
+      queryFn: () => fetchPage(i, perPage),
+      staleTime: 5 * 60 * 1000,
+      enabled: true,
+    })),
+  });
+
+  // โหลดหน้าปัจจุบัน ถ้าอยู่นอก prefetch
+  const currentPageQuery = useQuery<SubcategoryPageResult, Error>({
+    queryKey: ["subcategories", search, page, perPage],
+    queryFn: () => SubcategoryService.getAll(search, page, perPage),
+    enabled: page > initialPrefetchPages,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: (previous) => previous,
+  });
+
+  // รวมข้อมูล prefetch กับหน้าปัจจุบัน
+  const mergedData: SubcategoryPageResult | undefined = (() => {
+    if (page <= initialPrefetchPages) {
+      const pre = prefetchQueries[page - 1];
+      if (pre && !pre.isLoading && !pre.isError) return pre.data;
+      return undefined;
     }
-    return result;
-  },
-  staleTime: 0,
-  placeholderData: (previousData) => previousData,
-});
+    return currentPageQuery.data;
+  })();
+
+  const isLoading = prefetchQueries.some((q) => q.isLoading) || (page > initialPrefetchPages && currentPageQuery.isLoading);
+
+  const isError = prefetchQueries.some((q) => q.isError) || (page > initialPrefetchPages && currentPageQuery.isError);
+
+  const error = prefetchQueries.find((q) => q.error)?.error || (page > initialPrefetchPages && currentPageQuery.error);
 
   const subcategoryQuery = useQuery<Subcategory, Error>({
     queryKey: ["subcategory", id],
@@ -76,7 +106,14 @@ const subcategoriesQuery = useQuery<SubcategoryPageResult, Error>({
   });
 
   return {
-    subcategoriesQuery,
+    subcategoriesQuery: {
+      data: mergedData,
+      isLoading,
+      isError,
+      error,
+      refetch: currentPageQuery.refetch,
+    },
+    fetchPage,
     subcategoryQuery,
     createSubcategory,
     updateSubcategory,

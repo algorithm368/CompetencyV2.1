@@ -40,7 +40,7 @@ export function useCategoryManager(
         ...dto,
         subcategory_id: dto.subcategory_id != null ? Number(dto.subcategory_id) : null,
       };
-      return CategoryService.create(fixedDto, actorId);
+      return CategoryService.create(fixedDto);
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["categories"] }),
   });
@@ -51,7 +51,7 @@ export function useCategoryManager(
         ...data,
         subcategory_id: data.subcategory_id != null ? Number(data.subcategory_id) : null,
       };
-      return CategoryService.update(id, fixedData, actorId);
+      return CategoryService.update(id, fixedData);
     },
     onSuccess: (upd) => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
@@ -60,7 +60,7 @@ export function useCategoryManager(
   });
 
   const deleteCategory = useMutation<void, Error, number>({
-    mutationFn: (delId) => CategoryService.delete(delId, actorId),
+    mutationFn: (delId) => CategoryService.delete(delId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["categories"] }),
   });
 

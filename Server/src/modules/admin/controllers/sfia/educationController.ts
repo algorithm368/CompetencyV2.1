@@ -7,7 +7,13 @@ const eduService = new EducationService();
 export class EducationController {
   static async getAll(req: Request, res: Response, next: NextFunction) {
     try {
-      const items = await eduService.getAll();
+      const search = typeof req.query.search === "string" ? req.query.search : undefined;
+      const pageRaw = req.query.page;
+      const perPageRaw = req.query.perPage;
+      const page = pageRaw && !isNaN(+pageRaw) ? parseInt(pageRaw as string, 10) : undefined;
+      const perPage = perPageRaw && !isNaN(+perPageRaw) ? parseInt(perPageRaw as string, 10) : undefined;
+
+      const items = await eduService.getAll(search, page, perPage);
       res.json(items);
     } catch (err) {
       next(err);

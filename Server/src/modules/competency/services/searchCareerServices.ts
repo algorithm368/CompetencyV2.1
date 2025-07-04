@@ -29,28 +29,52 @@ async function getJobs(dbType: DBType) {
   }
 }
 
-getJobs("tpqi").then((job) => console.log(job));
+async function searchCareer(
+  dbType: DBType,
+  searchTerm: string
+): Promise<string[]> {
+  const nomalizedSearchTerm = searchTerm.toLowerCase().trim();
 
-// async function searchJobByName(searchTerm: string) {
-//   try {
-//     const jobs = await prisma.jobs.findMany({
-//       where: {
-//         job_name: {
-//           contains: searchTerm,
-//         },
-//       },
-//       select: {
-//         job_name: true,
-//       },
-//       orderBy: {
-//         job_name: "asc",
-//       },
-//     });
-//     return jobs.map((job) => job.job_name);
-//   } catch (error) {
-//     console.error("Error searching jobs by name:", error);
-//     throw error;
-//   }
-// }
+  if (!nomalizedSearchTerm) {
+    return [];
+  }
 
-// searchJobByName("busi").then((job) => console.log(job));
+  if (dbType === "sfia") {
+    try {
+      const jobs = await prismaSfia.jobs.findMany({
+        where: {
+          job_name: {
+            contains: nomalizedSearchTerm,
+          },
+        },
+        select: { job_name: true },
+        orderBy: { job_name: "asc" },
+      });
+      return jobs.map((job: any) => job.job_name);
+    } catch (error) {
+      console.error("Error searching SFIA job names:", error);
+      throw error;
+    }
+  } else if (dbType === "tpqi") {
+    try {
+      const careers = await prismaTpqi.occupational.findMany({
+        where: {
+          name_occupational: {
+            contains: nomalizedSearchTerm,
+          },
+        },
+        select: { name_occupational: true },
+        orderBy: { name_occupational: "asc" },
+      });
+      return careers.map((career: any) => career.name_occupational);
+    } catch (error) {
+      console.error("Error searching TPQI career names:", error);
+      throw error;
+    }
+  }
+  return [];
+}
+
+// getJobs("tpqi").then(result => console.log(result));
+// searchCareer("sfia", "develop").then(result => console.log(result));
+searchCareer("tpqi", "ช่างติดตั้งระบบ").then((result) => console.log(result));;

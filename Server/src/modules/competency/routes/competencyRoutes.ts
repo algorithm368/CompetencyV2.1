@@ -1,5 +1,6 @@
 import { Router } from "express";
 import authRoutes from "@Competency/routes/authRoutes";
+import rbacRoutes from "@Competency/routes/rbacRoutes";
 
 const router = Router();
 
@@ -8,5 +9,6 @@ router.get("/", (req, res) => {
 });
 
 router.use("/auth", authRoutes);
+router.use("/rbac", rbacRoutes);
 
 export default router;

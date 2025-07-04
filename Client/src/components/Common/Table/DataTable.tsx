@@ -12,15 +12,21 @@ interface DataTableProps<T> {
   initialPageSize?: number;
   initialPrefetchPages?: number;
   onPageChange?: (newPageIndex: number) => void;
+  resetTrigger?: unknown;
 }
 
-function DataTable<T extends object>({ fetchPage, columns, pageSizes = [5, 10, 20, 50], initialPageSize = 10, initialPrefetchPages = 3, onPageChange }: DataTableProps<T>) {
+function DataTable<T extends object>({ fetchPage, columns, pageSizes = [5, 10, 20, 50], initialPageSize = 10, initialPrefetchPages = 3, onPageChange, resetTrigger }: DataTableProps<T>) {
   const [pageSize, setPageSize] = useState(initialPageSize);
   const [pageIndex, setPageIndex] = useState(0);
   const [cache, setCache] = useState<Record<number, T[]>>({});
   const [loadingPages, setLoadingPages] = useState<Set<number>>(new Set());
   const [errorPages, setErrorPages] = useState<Record<number, string>>({});
   const [totalRows, setTotalRows] = useState<number>(0);
+
+  useEffect(() => {
+    setCache({});
+    setPageIndex(0);
+  }, [resetTrigger]);
 
   const totalPages = Math.max(Math.ceil(totalRows / pageSize), 1);
 
@@ -33,15 +39,11 @@ function DataTable<T extends object>({ fetchPage, columns, pageSizes = [5, 10, 2
     getCoreRowModel: getCoreRowModel(),
     onPaginationChange: (updater) => {
       const next = typeof updater === "function" ? updater({ pageIndex, pageSize }) : updater;
-
       if (next.pageIndex !== pageIndex) {
         setPageIndex(next.pageIndex);
         onPageChange?.(next.pageIndex);
-        if (!cache[next.pageIndex] && !loadingPages.has(next.pageIndex)) {
-          loadPage(next.pageIndex);
-        }
+        if (!cache[next.pageIndex] && !loadingPages.has(next.pageIndex)) loadPage(next.pageIndex);
       }
-
       if (next.pageSize !== pageSize) {
         setPageSize(next.pageSize);
       }
@@ -73,18 +75,6 @@ function DataTable<T extends object>({ fetchPage, columns, pageSizes = [5, 10, 2
     },
     [fetchPage, pageSize]
   );
-  useEffect(() => {
-    setCache({});
-    setPageIndex(0);
-  }, [pageSize]);
-
-  useEffect(() => {
-    for (let i = 0; i < initialPrefetchPages && i < totalPages; i++) {
-      if (!cache[i] && !loadingPages.has(i)) {
-        loadPage(i);
-      }
-    }
-  }, [initialPrefetchPages, totalPages, cache, loadingPages, loadPage]);
 
   useEffect(() => {
     for (let i = 0; i < initialPrefetchPages && i < totalPages; i++) {
@@ -104,7 +94,7 @@ function DataTable<T extends object>({ fetchPage, columns, pageSizes = [5, 10, 2
             {table.getHeaderGroups().map((hg) => (
               <tr key={hg.id}>
                 {hg.headers.map((header) => (
-                  <th key={header.id} className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th key={header.id} className={`px-6 py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider ${header.id === "actions" ? "text-right" : "text-left"}`}>
                     {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                   </th>
                 ))}

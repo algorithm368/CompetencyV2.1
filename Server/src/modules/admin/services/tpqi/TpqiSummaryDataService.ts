@@ -1,6 +1,6 @@
 import type { tpqi_summary_data } from "@prisma/client_tpqi";
 import { TpqiSummaryDataRepo } from "@Admin/repositories/tpqi/TPQIRepositories";
-import { BaseService } from "../BaseService";
+import { BaseService } from "@Utils/BaseService";
 
 export class TpqiSummaryDataService extends BaseService<tpqi_summary_data, keyof tpqi_summary_data> {
   constructor() {

@@ -1,6 +1,6 @@
 import { SummaryDataRepo } from "@Admin/repositories/sfia/SFIARepositories";
 import type { sfia_summary_data } from "@prisma/client_sfia";
-import { BaseService } from "../BaseService";
+import { BaseService } from "@Utils/BaseService";
 
 export class SummaryDataService extends BaseService<sfia_summary_data, keyof sfia_summary_data> {
   constructor() {

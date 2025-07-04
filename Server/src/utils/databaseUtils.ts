@@ -144,6 +144,10 @@ export class DatabaseManagement<M extends Record<string, any>> {
    */
   public async findMany<T>(params: Parameters<M["findMany"]>[0] = {} as any): Promise<T[]> {
     try {
+      if (params && (params as any).$scalars && ((params as any).include || (params as any).select)) {
+        delete (params as any).$scalars;
+      }
+
       return await this.model.findMany(params);
     } catch (err: any) {
       throw new DatabaseError("READ_MANY", this.modelName, err);

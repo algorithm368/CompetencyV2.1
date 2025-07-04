@@ -1,6 +1,6 @@
 import type { all_details } from "@prisma/client_tpqi";
 import { AllDetailsRepo } from "@Admin/repositories/tpqi/TPQIRepositories";
-import { BaseService } from "../BaseService";
+import { BaseService } from "@Utils/BaseService";
 
 export class AllDetailsService extends BaseService<all_details, keyof all_details> {
   constructor() {

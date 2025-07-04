@@ -1,4 +1,4 @@
-import { BaseRepository } from "../BaseRepository";
+import { BaseRepository } from "@Utils/BaseRepository";
 import { SFIA } from "@Database/dbManagers";
 import type { Category, Datacollection, Description, Education, Experience, Information, Jobs, Levels, Portfolio, Skills, Subcategory, sfia_summary_data } from "@prisma/client_sfia";
 import { DatabaseManagement } from "@Utils/databaseUtils";

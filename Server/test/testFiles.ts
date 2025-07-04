@@ -4,7 +4,7 @@ import * as searchCareerServices from "@Competency/services/searchCareerServices
 
 // Get all jobs/careers from the specified database (sfia or tpqi)
 export const getJobs = async (req: Request, res: Response): Promise<void> => {
-  const dbType = req.params?.dbType as "sfia" | "tpqi";
+  const dbType = req.params?.dbType as "sfia" | "tpqi"; // เพิ่ม ? ป้องกัน req.params เป็น undefined
   if (!dbType || (dbType !== "sfia" && dbType !== "tpqi")) {
     res.status(StatusCodes.BAD_REQUEST).json({
       message: "Invalid or missing dbType (must be 'sfia' or 'tpqi')",
@@ -26,8 +26,8 @@ export const searchCareer = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const dbType = req.params?.dbType as "sfia" | "tpqi";
-  const searchTerm = req.body?.searchTerm;
+  const dbType = req.params?.dbType as "sfia" | "tpqi"; // เพิ่ม ? ป้องกัน req.params เป็น undefined
+  const searchTerm = req.body?.searchTerm; // เพิ่ม ? ป้องกัน req.body เป็น undefined
 
   if (!dbType || (dbType !== "sfia" && dbType !== "tpqi")) {
     res.status(StatusCodes.BAD_REQUEST).json({
@@ -35,16 +35,19 @@ export const searchCareer = async (
     });
     return;
   }
+
+  // ตรวจสอบ searchTerm ว่าต้องไม่เป็น undefined, string และไม่ใช่แค่ whitespace
   if (
     !searchTerm ||
     typeof searchTerm !== "string" ||
     searchTerm.trim() === ""
   ) {
-    res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ message: "Missing or invalid searchTerm" });
+    res.status(StatusCodes.BAD_REQUEST).json({
+      message: "Missing or invalid searchTerm",
+    });
     return;
   }
+
   try {
     const results = await searchCareerServices.searchCareer(dbType, searchTerm);
     res.status(StatusCodes.OK).json({ results });

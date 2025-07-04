@@ -46,7 +46,7 @@ async function executeQuery<T>(
 /**
  * Get all job/career names from the specified database
  */
-async function getJobs(dbType: DBType): Promise<string[]> {
+export async function getJobs(dbType: DBType): Promise<string[]> {
   return executeQuery("fetching", dbType, async (config) => {
     const results = await (config.client as any)[config.table].findMany({
       select: { [config.field]: true },
@@ -60,7 +60,7 @@ async function getJobs(dbType: DBType): Promise<string[]> {
 /**
  * Search for job/career names containing the search term
  */
-async function searchCareer(
+export async function searchCareer(
   dbType: DBType,
   searchTerm: string
 ): Promise<string[]> {
@@ -70,8 +70,8 @@ async function searchCareer(
     return [];
   }
 
-  return executeQuery("searching", dbType, async (config) => {
-    const results = await (config.client as any)[config.table].findMany({
+  return executeQuery<string[]>("searching", dbType, async (config) => {
+    const results = await(config.client as any)[config.table].findMany({
       where: {
         [config.field]: {
           contains: normalizedSearchTerm,
@@ -79,13 +79,21 @@ async function searchCareer(
       },
       select: { [config.field]: true },
       orderBy: { [config.field]: "asc" },
+      take: 100, // Limit results for performance
     });
 
-    return results.map((item: any) => item[config.field]);
+    return Object.freeze(
+      results
+        .map((item: any) => item[config.field])
+        .filter(
+          (name: any): name is string =>
+            typeof name === "string" && name.length > 0
+        )
+    );
   });
 }
 
 // Example usage
 // getJobs("tpqi").then(result => console.log(result));
-// searchCareer("sfia", "develop").then(result => console.log(result));
-searchCareer("tpqi", "ช่างติดตั้งระบบ").then((result) => console.log(result));
+// searchCareer("tpqi", "ช่างติดตั้งระบบ").then((result) => console.log(result));
+// searchCareer("sfia", "secur").then(result => console.log(result));

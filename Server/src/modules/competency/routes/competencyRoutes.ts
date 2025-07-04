@@ -6,7 +6,7 @@ import searchCareerRoutes from "@Competency/routes/searchCareerRoutes"
 const router = Router();
 
 router.get("/", (req, res) => {
-  res.send("Hello from competency");
+  res.send("Hello from Competency API");
 });
 
 router.use("/auth", authRoutes);

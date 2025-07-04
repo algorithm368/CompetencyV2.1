@@ -51,6 +51,7 @@ export async function getJobs(dbType: DBType): Promise<string[]> {
     const results = await (config.client as any)[config.table].findMany({
       select: { [config.field]: true },
       orderBy: { [config.field]: "asc" },
+      take: 100,
     });
 
     return results.map((item: any) => item[config.field]);

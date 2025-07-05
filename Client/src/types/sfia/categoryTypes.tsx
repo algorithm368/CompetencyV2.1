@@ -6,8 +6,8 @@ export interface Category {
 
 export interface CategoryPageResult {
   data: Category[];
-  nextCursor?: number;
+  total?: number;
 }
 
 export type CreateCategoryDto = Omit<Category, "id">;
-export type UpdateCategoryDto = Partial<CreateCategoryDto>;
+export type UpdateCategoryDto = Partial<Omit<CreateCategoryDto, "id">>;

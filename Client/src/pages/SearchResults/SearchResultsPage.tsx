@@ -48,7 +48,7 @@ const ResultsPage: React.FC = () => {
           searchTerm={searchTerm}
           onSearchTermChange={setSearchTerm}
           onSearch={(term) => handleSearch(term || searchTerm)}
-          placeholder="พิมพ์คำค้นหา เช่น Software Engineer หรือ Security"
+          placeholder="พิมพ์คำค้นหา เช่น Software Engineer"
         />
 
         <AnimatePresence mode="wait">

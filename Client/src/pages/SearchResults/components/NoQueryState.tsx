@@ -35,7 +35,7 @@ const NoQueryState: React.FC = () => (
         </p>
         <div className="inline-flex items-center gap-2 bg-teal-100/80 backdrop-blur-sm text-teal-700 px-4 py-2 rounded-full text-sm font-medium border border-teal-200/50">
           <Sparkles className="w-4 h-4" />
-          ค้นหาอาชีพในฝันของคุณ
+          ค้นหาสมรรถนะในฝันของคุณ
         </div>
       </motion.div>
     </div>

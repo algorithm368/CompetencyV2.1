@@ -41,7 +41,7 @@ const SearchBox: React.FC<SearchBoxProps> = React.memo(
           <input
             type="text"
             placeholder={placeholder}
-            className="w-full pl-12 pr-10 py-3 bg-white border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
+            className="w-full pl-12 pr-10 py-3 bg-white border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400 transition"
             value={searchTerm}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
@@ -49,7 +49,7 @@ const SearchBox: React.FC<SearchBoxProps> = React.memo(
           <button
             type="button"
             onClick={() => onSearch(searchTerm)}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow-md transition"
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-teal-600 hover:bg-teal-700 text-white p-2 rounded-full shadow-md transition"
             aria-label="Search"
           >
             <FaSearch size={16} />

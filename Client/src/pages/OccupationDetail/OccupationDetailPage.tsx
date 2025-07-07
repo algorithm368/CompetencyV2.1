@@ -106,7 +106,7 @@ const OccupationDetailPage: React.FC = () => {
           <FaArrowLeft className="mr-2" /> ย้อนกลับ
         </button>
 
-        {/* ชื่ออาชีพ, ชื่อผู้ใช้ และสรุปเปอร์เซ็นต์ */}
+        {/* ชื่อสมรรถนะ, ชื่อผู้ใช้ และสรุปเปอร์เซ็นต์ */}
         <header className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-4xl font-bold text-gray-800 mb-2">{occupation.name}</h1>

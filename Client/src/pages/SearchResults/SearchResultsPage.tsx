@@ -3,85 +3,74 @@ import { useNavigate } from "react-router-dom";
 import Layout from "@Layouts/Layout";
 import SearchBanner from "./components/SearchBanner";
 import SearchBox from "./components/SearchBox";
-import SearchResultsHeader from "./components/SearchResultsHeader";
-import ResultsGrid from "./components/ResultsGrid";
-import Pagination from "./components/Pagination";
 import { useCareerResults } from "./hooks/useCareerResults";
+import { AnimatePresence } from "framer-motion";
 
-/**
- * ResultsPage component
- *
- * This component is the main search results page for career-related queries.
- * It integrates the search box, displays search results with pagination,
- * and handles navigation to individual occupation details.
- *
- * The page is wrapped in a Layout component that provides consistent site styling and structure.
- */
+import BackgroundDecor from "./components/BackgroundDecor";
+import LoadingState from "./components/LoadingState";
+import ErrorState from "./components/ErrorState";
+import NoQueryState from "./components/NoQueryState";
+import EmptyState from "./components/EmptyState";
+import SuccessState from "./components/SuccessState";
+
+const DEBOUNCE_DELAY = 500;
+
 const ResultsPage: React.FC = () => {
-  // Destructure all necessary state and handlers from the custom hook managing career search logic.
   const {
-    query, // The last submitted search query string
-    searchTerm, // The current value in the search input box
-    setSearchTerm, // Function to update the search input value
-    currentPage, // The current active page number for pagination
-    setCurrentPage, // Function to update the current page number
-    pageItems, // The career items to be displayed on the current page
-    totalPages, // Total number of pages available based on results count
-    handleSearch, // Function to trigger a new search based on the current input
+    query,
+    searchTerm,
+    setSearchTerm,
+    currentPage,
+    setCurrentPage,
+    pageItems,
+    totalPages,
+    loading,
+    error,
+    handleSearch,
   } = useCareerResults();
 
-  // React Router's navigation hook for programmatic page changes
   const navigate = useNavigate();
 
-  /**
-   * Handler to navigate to the detailed occupation page.
-   * @param itemId - The unique identifier of the selected occupation item
-   */
   const handleViewDetails = (itemId: string) => {
-    // Navigate to the occupation detail route using the selected item's ID
     navigate(`/occupation/${itemId}`);
   };
 
-  return (
-    // Main layout wrapper providing site-wide structure and styling
-    <Layout>
-      {/* Banner component showing the page title */}
-      <SearchBanner title="ผลลัพธ์การค้นหา" />
+  const handleRetry = () => {
+    handleSearch(searchTerm.trim() || query);
+  };
 
-      {/* Content container with responsive padding */}
-      <div className="pt-8 pb-16 px-4 md:px-8 lg:px-16">
-        {/* Search input box with controlled value and event handlers */}
+  return (
+    <Layout>
+      <BackgroundDecor />
+      <SearchBanner title="ผลลัพธ์การค้นหา" />
+      <div className="relative pt-8 pb-16 px-4 md:px-8 lg:px-16 bg-gradient-to-b from-teal-25 via-white to-teal-25/50 min-h-screen">
         <SearchBox
           searchTerm={searchTerm}
           onSearchTermChange={setSearchTerm}
-          onSearch={handleSearch}
-          placeholder="พิมพ์คำค้นหา เช่น Software Engineer หรือ Security"
+          onSearch={(term) => handleSearch(term || searchTerm)}
+          placeholder="พิมพ์คำค้นหา เช่น Software Engineer"
         />
 
-        {/* Conditionally render search results or loading message */}
-        {query ? (
-          <div>
-            {/* Header showing the active search query */}
-            <SearchResultsHeader query={query} />
-
-            {/* Grid layout displaying the current page of career results */}
-            <ResultsGrid
-              items={pageItems}
+        <AnimatePresence mode="wait">
+          {loading && <LoadingState />}
+          {error && !loading && (
+            <ErrorState error={error} onRetry={handleRetry} />
+          )}
+          {!loading && !error && !query && <NoQueryState />}
+          {!loading && !error && query && pageItems.length === 0 && (
+            <EmptyState query={query} />
+          )}
+          {!loading && !error && query && pageItems.length > 0 && (
+            <SuccessState
               query={query}
-              onViewDetails={handleViewDetails}
-            />
-
-            {/* Pagination controls to navigate between result pages */}
-            <Pagination
+              items={pageItems}
               currentPage={currentPage}
               totalPages={totalPages}
               onPageChange={setCurrentPage}
+              onViewDetails={handleViewDetails}
             />
-          </div>
-        ) : (
-          // Fallback message displayed while no search query has been submitted or loading
-          <p className="text-center text-gray-500">กำลังโหลดคำค้นหา...</p>
-        )}
+          )}
+        </AnimatePresence>
       </div>
     </Layout>
   );

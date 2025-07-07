@@ -15,7 +15,7 @@ const SearchBanner: React.FC<SearchBannerProps> = ({ title }) => {
     <section
       className="
         relative 
-        h-40 md:h-56 lg:h-64
+        h-20 md:h-36 lg:h-44
         bg-gradient-to-b from-teal-50 via-teal-100 to-teal-200
         overflow-hidden 
         mt-20

@@ -23,7 +23,7 @@ export async function fetchCareersBySearchTerm(
 
       return { source: dbType, careers };
     } catch (err) {
-      console.error(`[${dbType}] Error:`, err);
+      console.error(`[${dbType}]`, err);
       return { source: dbType, careers: [] };
     }
   });

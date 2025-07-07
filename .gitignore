@@ -134,3 +134,10 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Ignore all files ending with .test.* or .spec.*
+*.test.*
+*.spec.*
+
+# Ignore tests inside __tests__ folders
+__tests__/

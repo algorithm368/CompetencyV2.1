@@ -1,6 +1,6 @@
 import type { CareerResponse } from "../types/careerTypes";
 
-const BASE_API = import.meta.env.VITE_API_BASE_URL;
+const BASE_API = import.meta.env.VITE_SEARCH_API;
 
 export async function fetchCareersBySearchTerm(
   searchTerm: string

@@ -1,5 +1,3 @@
-// src/features/careerSearch/services/careerApi.ts
-
 import type { CareerResponse } from "../types/careerTypes";
 
 const BASE_API = import.meta.env.VITE_API_BASE_URL;

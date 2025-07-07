@@ -55,7 +55,7 @@ const ResultsPage: React.FC = () => {
           searchTerm={searchTerm}
           onSearchTermChange={setSearchTerm}
           onSearch={handleSearch}
-          placeholder="พิมพ์คำค้น เช่น Software Engineer หรือ Security"
+          placeholder="พิมพ์คำค้นหา เช่น Software Engineer หรือ Security"
         />
 
         {/* Conditionally render search results or loading message */}

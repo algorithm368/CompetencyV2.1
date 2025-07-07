@@ -110,6 +110,7 @@ const SearchBanner: React.FC<SearchBannerProps> = ({ title }) => {
             bg-clip-text text-transparent 
             text-center
             drop-shadow-sm
+            leading-[1.4]
           "
         >
           {title}

@@ -4,7 +4,7 @@ import { FaSearch } from "react-icons/fa";
 interface SearchBoxProps {
   searchTerm: string;
   onSearchTermChange: (term: string) => void;
-  onSearch: () => void;
+  onSearch: (term: string) => void;
   placeholder?: string;
 }
 
@@ -13,15 +13,15 @@ const SearchBox: React.FC<SearchBoxProps> = React.memo(
     searchTerm,
     onSearchTermChange,
     onSearch,
-    placeholder = "พิมพ์คำค้น...",
+    placeholder = "พิมพ์คำค้นหา...",
   }) => {
     const handleKeyDown = useCallback(
       (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "Enter") {
-          onSearch();
+          onSearch(searchTerm);
         }
       },
-      [onSearch]
+      [onSearch, searchTerm]
     );
 
     const handleChange = useCallback(
@@ -48,7 +48,7 @@ const SearchBox: React.FC<SearchBoxProps> = React.memo(
           />
           <button
             type="button"
-            onClick={onSearch}
+            onClick={() => onSearch(searchTerm)}
             className="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow-md transition"
             aria-label="Search"
           >

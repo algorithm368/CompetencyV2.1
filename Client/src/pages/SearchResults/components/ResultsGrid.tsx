@@ -21,7 +21,7 @@ const ResultsGrid: React.FC<ResultsGridProps> = ({
   if (items.length === 0) {
     return (
       <p className="text-center text-gray-500">
-        ไม่พบผลลัพธ์ที่ตรงกับคำค้น "{query}"
+        ไม่พบผลลัพธ์ที่ตรงกับคำค้นหา "{query}"
       </p>
     );
   }

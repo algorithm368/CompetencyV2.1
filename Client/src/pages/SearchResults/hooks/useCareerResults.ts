@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import type { CareerResponse } from "../types/careerTypes";
 import { fetchCareersBySearchTerm } from "../services/searchCareerAPI";
 
-// Represents the normalized item structure used in the frontend display
 export type ItemType = {
   id: string;
   name: string;
@@ -10,26 +9,20 @@ export type ItemType = {
 };
 
 export function useCareerResults() {
-  // State to store API results
   const [results, setResults] = useState<CareerResponse[]>([]);
-  // Loading state indicator
   const [loading, setLoading] = useState(false);
-  // Error message (if any)
   const [error, setError] = useState<string | null>(null);
-  // Current search term from the URL query params
   const [searchTerm, setSearchTerm] = useState(() => {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get("query") ?? "";
   });
-  // Stores the last submitted query
-  const [query, setQuery] = useState("");
-  // Tracks the current pagination page
+  const [query, setQuery] = useState(searchTerm);
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Effect: fetch data from API when the search term changes
+  const safeSearchTerm = typeof searchTerm === "string" ? searchTerm : "";
+
   useEffect(() => {
-    // If search term is empty, reset to empty state
-    if (!searchTerm.trim()) {
+    if (!safeSearchTerm.trim()) {
       setResults([]);
       setError(null);
       setLoading(false);
@@ -39,60 +32,68 @@ export function useCareerResults() {
     }
 
     const fetchData = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        setLoading(true);
-        setError(null);
-        const data = await fetchCareersBySearchTerm(searchTerm);
-        setResults(data);
-        setQuery(searchTerm);
-        setCurrentPage(1); // Reset to first page for new search
+        const data = await fetchCareersBySearchTerm(safeSearchTerm);
+        setResults(Array.isArray(data) ? data : []);
+        setQuery(safeSearchTerm);
+        setCurrentPage(1);
       } catch (err) {
         console.error("Unexpected error:", err);
         setError("An unexpected error occurred.");
-        setResults([]); // Clear results on error
+        setResults([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [searchTerm]);
+  }, [safeSearchTerm]);
 
-  // Handles manual triggering of a search
-  const handleSearch = () => {
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (safeSearchTerm.trim()) {
+      url.searchParams.set("query", safeSearchTerm);
+    } else {
+      url.searchParams.delete("query");
+    }
+    window.history.replaceState({}, "", url.toString());
+  }, [safeSearchTerm]);
+
+  // Simplified handleSearch to accept term directly
+  const handleSearch = (term: string) => {
+    const trimmed = term.trim();
+    if (!trimmed) {
+      handleClearSearch();
+      return;
+    }
     setCurrentPage(1);
-    setSearchTerm(""); // clear
-    setTimeout(() => setSearchTerm(query), 0); // then reset
+    setSearchTerm(trimmed);
+    setQuery(trimmed);
   };
 
-  // New function to handle clearing search
   const handleClearSearch = () => {
     setSearchTerm("");
     setQuery("");
     setResults([]);
     setError(null);
     setCurrentPage(1);
-    // Update URL to remove query parameter
-    const url = new URL(window.location.href);
-    url.searchParams.delete("query");
-    window.history.replaceState({}, "", url.toString());
   };
 
-  // Handles logic for clicking on a career item
   const handleViewDetails = (itemId: string) => {
-    console.log("View item:", itemId); // Placeholder for future implementation
+    console.log("View details for", itemId);
   };
 
-  // Transforms raw API results into a flat list of ItemType
-  const allItems: ItemType[] = results.flatMap((group, groupIndex) =>
-    group.careers.map((careerName, i) => ({
-      id: `${group.source}-${groupIndex}-${i}`,
-      name: careerName,
-      framework: group.source,
-    }))
+  const allItems: ItemType[] = (results ?? []).flatMap(
+    (group, groupIndex) =>
+      group?.careers?.map((careerName, i) => ({
+        id: `${group.source}-${groupIndex}-${i}`,
+        name: careerName,
+        framework: group.source,
+      })) ?? []
   );
 
-  // Pagination logic
   const itemsPerPage = 9;
   const totalPages = Math.ceil(allItems.length / itemsPerPage);
   const pageItems = allItems.slice(
@@ -100,10 +101,8 @@ export function useCareerResults() {
     currentPage * itemsPerPage
   );
 
-  // Check if we're in empty search state
-  const isEmptySearch = !searchTerm.trim() && !loading;
+  const isEmptySearch = !safeSearchTerm.trim() && !loading;
 
-  // Expose state and handlers for use in components
   return {
     query,
     searchTerm,

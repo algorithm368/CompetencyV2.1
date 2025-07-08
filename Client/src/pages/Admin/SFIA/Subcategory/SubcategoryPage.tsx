@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { FiPlus, FiSearch, FiSettings } from "react-icons/fi";
-import { DataTable, RowActions, Button, Input, Toast } from "@Components/Common/ExportComponent";
+import { RowActions, Button, Input, Toast, DataTable } from "@Components/Common/ExportComponent";
 import { AdminLayout } from "@Layouts/AdminLayout";
 import { useSubcategoryManager } from "@Hooks/admin/sfia/useSubcategoryHooks";
 import { Subcategory, CreateSubcategoryDto, UpdateSubcategoryDto } from "@Types/sfia/subcategoryTypes";
@@ -13,36 +13,20 @@ export default function SubcategoryTablePage() {
   const [selectedSubcategory, setSelectedSubcategory] = useState<Subcategory | null>(null);
   const [page, setPage] = useState(1);
   const perPage = 10;
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
 
-  const [toast, setToast] = useState<{
-    message: string;
-    type: "success" | "error" | "info";
-  } | null>(null);
-
-  // Toast auto dismiss after 3 seconds
+  // Debounce search input
   useEffect(() => {
-    if (toast) {
-      const timer = setTimeout(() => setToast(null), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [toast]);
+    const handler = setTimeout(() => setDebouncedSearchText(searchText), 500);
+    return () => clearTimeout(handler);
+  }, [searchText]);
+
+  // Reset page when search changes
+  useEffect(() => setPage(1), [debouncedSearchText]);
 
   const handleToast = (message: string, type: "success" | "error" | "info" = "info") => {
     setToast({ message, type });
   };
-
-  // Debounce search input (500ms delay)
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearchText(searchText);
-    }, 500);
-    return () => clearTimeout(handler);
-  }, [searchText]);
-
-  // Reset page to 1 when debounced search changes
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedSearchText]);
 
   const { fetchPage, subcategoriesQuery, createSubcategory, updateSubcategory, deleteSubcategory } = useSubcategoryManager({ search: debouncedSearchText, page, perPage }, handleToast);
 
@@ -74,16 +58,14 @@ export default function SubcategoryTablePage() {
         subcategoriesQuery.refetch();
       },
       onError: (error) => {
-        handleToast("Failed to create: " + (error?.message ?? ""), "error");
+        handleToast("Failed to create: " + (error.message || ""), "error");
       },
     });
   };
 
   const confirmEdit = (text: string) => {
     if (!selectedSubcategory) return;
-    const dto: UpdateSubcategoryDto = {
-      subcategory_text: text,
-    };
+    const dto: UpdateSubcategoryDto = { subcategory_text: text };
     updateSubcategory.mutate(
       { id: selectedSubcategory.id, data: dto },
       {
@@ -93,7 +75,7 @@ export default function SubcategoryTablePage() {
           subcategoriesQuery.refetch();
         },
         onError: (error) => {
-          handleToast("Failed to update: " + (error?.message ?? ""), "error");
+          handleToast("Failed to update: " + (error.message || ""), "error");
         },
       }
     );
@@ -108,7 +90,7 @@ export default function SubcategoryTablePage() {
         subcategoriesQuery.refetch();
       },
       onError: (error) => {
-        handleToast("Failed to delete: " + (error?.message ?? ""), "error");
+        handleToast("Failed to delete: " + (error.message || ""), "error");
       },
     });
   };
@@ -121,9 +103,9 @@ export default function SubcategoryTablePage() {
       {
         id: "actions",
         header: () => (
-          <div className="text-right">
-            <FiSettings className="inline-block text-lg" />
-          </div>
+          <span style={{ float: "right" }}>
+            <FiSettings />
+          </span>
         ),
         cell: ({ row }: { row: { original: Subcategory } }) => (
           <div className="text-right">
@@ -139,7 +121,6 @@ export default function SubcategoryTablePage() {
     <AdminLayout>
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 z-10">
         <h1 className="text-3xl font-Poppins mb-2 sm:mb-0">Subcategories</h1>
-
         <div className="flex flex-col items-end space-y-2">
           <Button size="md" onClick={openAddModal} className="flex items-center">
             <FiPlus className="mr-2" /> Add Subcategory
@@ -151,7 +132,15 @@ export default function SubcategoryTablePage() {
         </div>
       </div>
 
-      <DataTable<Subcategory> fetchPage={fetchPage} columns={columns} pageSizes={[5, 10, 20]} initialPageSize={perPage} onPageChange={(newPageIndex) => setPage(newPageIndex + 1)} />
+      <DataTable<Subcategory>
+        key={debouncedSearchText}
+        resetTrigger={debouncedSearchText}
+        fetchPage={fetchPage}
+        columns={columns}
+        pageSizes={[5, 10, 20]}
+        initialPageSize={perPage}
+        onPageChange={(newPageIndex) => setPage(newPageIndex + 1)}
+      />
 
       <AddEditSubcategoryModal
         isOpen={modalType === "add" || modalType === "edit"}

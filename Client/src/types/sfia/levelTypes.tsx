@@ -5,8 +5,8 @@ export interface Levels {
 }
 export interface LevelPageResult {
   data: Levels[];
-  nextCursor?: number;
+  total?: number;
 }
 
 export type CreateLevelDto = Omit<Levels, "id">;
-export type UpdateLevelDto = Partial<CreateLevelDto>;
+export type UpdateLevelDto = Partial<Omit<Levels, "id">>;

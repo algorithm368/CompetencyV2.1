@@ -1,6 +1,6 @@
 import { ExperienceRepo } from "@Admin/repositories/sfia/SFIARepositories";
 import type { Experience } from "@prisma/client_sfia";
-import { BaseService } from "../BaseService";
+import { BaseService } from "@Utils/BaseService";
 
 export class ExperienceService extends BaseService<Experience, keyof Experience> {
   constructor() {

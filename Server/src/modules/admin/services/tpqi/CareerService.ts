@@ -1,6 +1,6 @@
 import type { career } from "@prisma/client_tpqi";
 import { CareerRepo } from "@Admin/repositories/tpqi/TPQIRepositories";
-import { BaseService } from "../BaseService";
+import { BaseService } from "@Utils/BaseService";
 
 export class CareerService extends BaseService<career, keyof career> {
   constructor() {

@@ -1,6 +1,6 @@
 import { EducationRepo } from "@Admin/repositories/sfia/SFIARepositories";
 import type { Education } from "@prisma/client_sfia";
-import { BaseService } from "../BaseService";
+import { BaseService } from "@Utils/BaseService";
 
 export class EducationService extends BaseService<Education, keyof Education> {
   constructor() {

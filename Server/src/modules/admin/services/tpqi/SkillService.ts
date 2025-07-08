@@ -1,6 +1,6 @@
 import type { skill } from "@prisma/client_tpqi";
 import { SkillRepo } from "@Admin/repositories/tpqi/TPQIRepositories";
-import { BaseService } from "../BaseService";
+import { BaseService } from "@Utils/BaseService";
 
 export class SkillService extends BaseService<skill, keyof skill> {
   constructor() {

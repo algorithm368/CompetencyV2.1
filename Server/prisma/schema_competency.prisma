@@ -9,35 +9,37 @@ datasource db {
 }
 
 model Users {
-  id           String           @id @default(uuid()) @db.Char(36)
-  email        String           @unique @db.VarChar(255)
-  profileImage String?          @default("noimage.jpg") @db.VarChar(255)
-  firstNameTH  String?          @db.VarChar(255)
-  lastNameTH   String?          @db.VarChar(255)
-  firstNameEN  String?          @db.VarChar(255)
-  lastNameEN   String?          @db.VarChar(255)
-  phone        String?          @db.VarChar(255)
-  line         String?          @db.VarChar(255)
-  address      String?          @db.VarChar(255)
-  created_at   DateTime         @default(now()) @db.Timestamp(0)
-  updated_at   DateTime         @updatedAt @db.Timestamp(0)
+  id             String           @id @default(uuid()) @db.Char(36)
+  email          String           @unique @db.VarChar(255)
+  profileImage   String?          @default("noimage.jpg") @db.VarChar(255)
+  firstNameTH    String?          @db.VarChar(255)
+  lastNameTH     String?          @db.VarChar(255)
+  firstNameEN    String?          @db.VarChar(255)
+  lastNameEN     String?          @db.VarChar(255)
+  phone          String?          @db.VarChar(255)
+  line           String?          @db.VarChar(255)
+  address        String?          @db.VarChar(255)
+  created_at     DateTime         @default(now()) @db.Timestamp(0)
+  updated_at     DateTime         @updatedAt @db.Timestamp(0)
 
-  profiles     Profiles?
-  tokens       Tokens[]
-  refreshTokens RefreshTokens[]
-  userRoles    UserRoles[]
+  profile        Profiles?        @relation("UserProfile")
+  tokens         Tokens[]
+  refreshTokens  RefreshTokens[]
+  userRoles      UserRoles[]
 }
 
 model Profiles {
-  email                String    @id @db.VarChar(255)
-  tpqi_summary_data_id Int?
-  sfia_summary_data_id Int?
-  is_public            Boolean?  @default(false)
+  id                   String   @id @default(uuid()) @db.Char(36)
+  user_id              String   @unique @db.Char(36)
+  tpqi_summary_data_id  Int?
+  sfia_summary_data_id  Int?
+  is_public            Boolean? @default(false)
 
-  Users                Users     @relation(fields: [email], references: [email], onDelete: Cascade, onUpdate: Restrict)
+  user                 Users    @relation("UserProfile", fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([sfia_summary_data_id], map: "idx_sfia_summary_data")
   @@index([tpqi_summary_data_id], map: "idx_tpqi_summary_data")
+  @@index([user_id])
 }
 
 model Tokens {
@@ -47,7 +49,7 @@ model Tokens {
   created_at DateTime  @default(now()) @db.Timestamp(0)
   expired_at DateTime? @db.Timestamp(0)
 
-  Users      Users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  Users      Users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([user_id], map: "idx_token_user")
 }

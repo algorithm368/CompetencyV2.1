@@ -1,23 +1,25 @@
-import React from "react";
-import { Modal, Button, Input } from "@Components/Common/ExportComponent";
+import React, { useEffect, useState } from "react";
+import { Modal, Button, Input, Select, LoadingButton } from "@Components/Common/ExportComponent";
 
-interface AddEditModalProps {
+interface AddEditCategoryModalProps {
   isOpen: boolean;
   mode: "add" | "edit";
-  initialText: string;
-  initialSubId: number | null;
+  initialCategoryText: string;
+  initialSubcategoryId: number | null;
+  subcategoryOptions: { label: string; value: number }[];
   onClose: () => void;
-  onConfirm: (text: string, subId: number | null) => void;
+  onConfirm: (categoryText: string, subcategoryId: number | null) => void;
+  isLoading?: boolean;
 }
 
-export const AddEditModal: React.FC<AddEditModalProps> = ({ isOpen, mode, initialText, initialSubId, onClose, onConfirm }) => {
-  const [text, setText] = React.useState(initialText);
-  const [subId, setSubId] = React.useState<number | null>(initialSubId);
+export const AddEditCategoryModal: React.FC<AddEditCategoryModalProps> = ({ isOpen, mode, initialCategoryText, initialSubcategoryId, subcategoryOptions, onClose, onConfirm, isLoading = false }) => {
+  const [categoryText, setCategoryText] = useState(initialCategoryText);
+  const [subcategoryId, setSubcategoryId] = useState<number | null>(initialSubcategoryId);
 
-  React.useEffect(() => {
-    setText(initialText);
-    setSubId(initialSubId);
-  }, [initialText, initialSubId]);
+  useEffect(() => {
+    setCategoryText(initialCategoryText);
+    setSubcategoryId(initialSubcategoryId);
+  }, [initialCategoryText, initialSubcategoryId]);
 
   return (
     <Modal
@@ -27,30 +29,29 @@ export const AddEditModal: React.FC<AddEditModalProps> = ({ isOpen, mode, initia
       title={mode === "add" ? "Add Category" : "Edit Category"}
       actions={
         <>
-          <Button
-            className="!bg-black !text-white hover:!bg-gray-800"
-            onClick={onClose}
-          >
+          <Button className="!bg-black !text-white hover:!bg-gray-800" onClick={onClose} disabled={isLoading}>
             Cancel
           </Button>
-          <Button onClick={() => onConfirm(text, subId)}>{mode === "add" ? "Create" : "Save"}</Button>
+          <LoadingButton onClick={() => onConfirm(categoryText, subcategoryId)} isLoading={isLoading} loadingText={mode === "add" ? "Creating..." : "Saving..."}>
+            {mode === "add" ? "Create" : "Save"}
+          </LoadingButton>
         </>
       }
     >
-      <div className="space-y-3">
-        <div>
-          <label className="block text-sm">Category Text</label>
-          <Input
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-          />
+      <div className="space-y-4">
+        <div className="flex flex-col">
+          <label className="block text-sm mb-1 ml-0.5">Category Text</label>
+          <Input value={categoryText} className="!rounded-xl" onChange={(e) => setCategoryText(e.target.value)} disabled={isLoading} />
         </div>
-        <div>
-          <label className="block text-sm">Subcategory ID</label>
-          <Input
-            type="number"
-            value={subId !== null ? subId.toString() : ""}
-            onChange={(e) => setSubId(e.target.value ? parseInt(e.target.value) : null)}
+        <div className="flex flex-col">
+          <label className="block text-sm mb-1 ml-0.5">Subcategory</label>
+          <Select
+            value={subcategoryId !== null ? subcategoryId : ""}
+            options={subcategoryOptions}
+            onChange={(val) => setSubcategoryId(val === "" ? null : (val as number))}
+            disabled={isLoading}
+            className="!rounded-xl"
+            placeholder="Select subcategory"
           />
         </div>
       </div>
@@ -58,14 +59,15 @@ export const AddEditModal: React.FC<AddEditModalProps> = ({ isOpen, mode, initia
   );
 };
 
-interface DeleteModalProps {
+interface DeleteCategoryModalProps {
   isOpen: boolean;
-  categoryName?: string;
+  categoryText?: string;
   onClose: () => void;
   onConfirm: () => void;
+  isLoading?: boolean;
 }
 
-export const DeleteModal: React.FC<DeleteModalProps> = ({ isOpen, categoryName, onClose, onConfirm }) => (
+export const DeleteCategoryModal: React.FC<DeleteCategoryModalProps> = ({ isOpen, categoryText, onClose, onConfirm, isLoading = false }) => (
   <Modal
     className="z-50"
     isOpen={isOpen}
@@ -73,21 +75,15 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({ isOpen, categoryName, 
     title="Confirm Delete"
     actions={
       <>
-        <Button
-          className="!bg-black !text-white hover:!bg-gray-800"
-          onClick={onClose}
-        >
+        <Button className="!bg-black !text-white hover:!bg-gray-800" onClick={onClose} disabled={isLoading}>
           Cancel
         </Button>
-        <Button
-          className="!bg-red-600 !text-white hover:!bg-red-700"
-          onClick={onConfirm}
-        >
+        <LoadingButton onClick={onConfirm} isLoading={isLoading} loadingText="Deleting..." className="!bg-red-600 !text-white hover:!bg-red-700">
           Delete
-        </Button>
+        </LoadingButton>
       </>
     }
   >
-    <p>Are you sure you want to delete “{categoryName}”?</p>
+    <p>Are you sure you want to delete “{categoryText}”?</p>
   </Modal>
 );

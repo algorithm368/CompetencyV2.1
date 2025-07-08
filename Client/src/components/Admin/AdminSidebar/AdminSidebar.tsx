@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { NavLink, Link } from "react-router-dom";
 import { FiHome, FiUsers, FiLock, FiChevronDown, FiChevronRight, FiCopy, FiBarChart2, FiChevronLeft } from "react-icons/fi";
 
-
 interface AdminSidebarProps {
   collapsed: boolean;
   mobileOpen: boolean;
@@ -35,6 +34,7 @@ const frameworks = [
       { label: "Levels", path: "/admin/sfia/level" },
       { label: "Categories", path: "/admin/sfia/category" },
       { label: "SubCategories", path: "/admin/sfia/subcategory" },
+      { label: "Descriptions", path: "/admin/sfia/description" },
     ],
   },
 ];
@@ -49,10 +49,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, mobileOpen, onTo
   return (
     <>
       {/* Mobile overlay */}
-      <div
-        className={`fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden transition-opacity ${mobileOpen ? "opacity-50 visible" : "opacity-0 invisible"}`}
-        onClick={onMobileClose}
-      />
+      <div className={`fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden transition-opacity ${mobileOpen ? "opacity-50 visible" : "opacity-0 invisible"}`} onClick={onMobileClose} />
 
       <aside
         className={`fixed top-0 left-0 bottom-0 z-30 w-64 bg-gray-800 text-gray-100 transform transition-transform duration-200 ease-in-out
@@ -63,23 +60,12 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, mobileOpen, onTo
         <div className="h-full flex flex-col">
           <div className="px-5 py-3 flex items-center justify-between">
             <div className="flex-shrink-0 flex items-center space-x-3">
-              <Link
-                to="/"
-                className="flex items-center"
-              >
-                <img
-                  src="/src/assets/competency-logo.png"
-                  alt="Competency Logo"
-                  className="h-9 w-9 rounded-full object-cover"
-                />
+              <Link to="/" className="flex items-center">
+                <img src="/src/assets/competency-logo.png" alt="Competency Logo" className="h-9 w-9 rounded-full object-cover" />
                 <span className="text-xl ml-3 font-semibold transition-colors duration-300 text-white">Competency</span>
               </Link>
             </div>
-            <button
-              className="md:hidden"
-              onClick={onToggle}
-              aria-label="Collapse sidebar"
-            >
+            <button className="md:hidden" onClick={onToggle} aria-label="Collapse sidebar">
               <FiChevronLeft size={20} />
             </button>
           </div>
@@ -92,7 +78,9 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, mobileOpen, onTo
                   <li key={item.path}>
                     <NavLink
                       to={item.path}
-                      className={({ isActive }) => `flex items-center px-6 py-3 text-sm hover:bg-gray-700 transition-colors duration-150 ${isActive ? "bg-gray-700 font-medium text-white" : "text-gray-300"}`}
+                      className={({ isActive }) =>
+                        `flex items-center px-6 py-3 text-sm hover:bg-gray-700 transition-colors duration-150 ${isActive ? "bg-gray-700 font-medium text-white" : "text-gray-300"}`
+                      }
                       onClick={onMobileClose}
                     >
                       <span className="mr-3 text-lg">{item.icon}</span>
@@ -124,7 +112,9 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, mobileOpen, onTo
                           <li key={link.path}>
                             <NavLink
                               to={link.path}
-                              className={({ isActive }) => `block px-6 py-2 text-sm hover:bg-gray-600 transition-colors duration-150 ${isActive ? "bg-gray-600 font-medium text-white" : "text-gray-300"}`}
+                              className={({ isActive }) =>
+                                `block px-6 py-2 text-sm hover:bg-gray-600 transition-colors duration-150 ${isActive ? "bg-gray-600 font-medium text-white" : "text-gray-300"}`
+                              }
                               onClick={onMobileClose}
                             >
                               {link.label}

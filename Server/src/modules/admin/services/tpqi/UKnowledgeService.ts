@@ -1,6 +1,6 @@
 import type { u_knowledge } from "@prisma/client_tpqi";
 import { UKnowledgeRepo } from "@Admin/repositories/tpqi/TPQIRepositories";
-import { BaseService } from "../BaseService";
+import { BaseService } from "@Utils/BaseService";
 
 export class UKnowledgeService extends BaseService<u_knowledge, keyof u_knowledge> {
   constructor() {

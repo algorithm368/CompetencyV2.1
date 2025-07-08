@@ -12,15 +12,21 @@ interface DataTableProps<T> {
   initialPageSize?: number;
   initialPrefetchPages?: number;
   onPageChange?: (newPageIndex: number) => void;
+  resetTrigger?: unknown;
 }
 
-function DataTable<T extends object>({ fetchPage, columns, pageSizes = [5, 10, 20, 50], initialPageSize = 10, initialPrefetchPages = 3, onPageChange }: DataTableProps<T>) {
+function DataTable<T extends object>({ fetchPage, columns, pageSizes = [5, 10, 20, 50], initialPageSize = 10, initialPrefetchPages = 3, onPageChange, resetTrigger }: DataTableProps<T>) {
   const [pageSize, setPageSize] = useState(initialPageSize);
   const [pageIndex, setPageIndex] = useState(0);
   const [cache, setCache] = useState<Record<number, T[]>>({});
   const [loadingPages, setLoadingPages] = useState<Set<number>>(new Set());
   const [errorPages, setErrorPages] = useState<Record<number, string>>({});
-  const [totalRows, setTotalRows] = useState<number>(0);
+  const [totalRows, setTotalRows] = useState(0);
+
+  useEffect(() => {
+    setCache({});
+    setPageIndex(0);
+  }, [resetTrigger]);
 
   const totalPages = Math.max(Math.ceil(totalRows / pageSize), 1);
 
@@ -33,18 +39,12 @@ function DataTable<T extends object>({ fetchPage, columns, pageSizes = [5, 10, 2
     getCoreRowModel: getCoreRowModel(),
     onPaginationChange: (updater) => {
       const next = typeof updater === "function" ? updater({ pageIndex, pageSize }) : updater;
-
       if (next.pageIndex !== pageIndex) {
         setPageIndex(next.pageIndex);
         onPageChange?.(next.pageIndex);
-        if (!cache[next.pageIndex] && !loadingPages.has(next.pageIndex)) {
-          loadPage(next.pageIndex);
-        }
+        if (!cache[next.pageIndex] && !loadingPages.has(next.pageIndex)) loadPage(next.pageIndex);
       }
-
-      if (next.pageSize !== pageSize) {
-        setPageSize(next.pageSize);
-      }
+      if (next.pageSize !== pageSize) setPageSize(next.pageSize);
     },
   });
 
@@ -73,38 +73,62 @@ function DataTable<T extends object>({ fetchPage, columns, pageSizes = [5, 10, 2
     },
     [fetchPage, pageSize]
   );
-  useEffect(() => {
-    setCache({});
-    setPageIndex(0);
-  }, [pageSize]);
 
   useEffect(() => {
+    const pagesToLoad = [];
     for (let i = 0; i < initialPrefetchPages && i < totalPages; i++) {
       if (!cache[i] && !loadingPages.has(i)) {
-        loadPage(i);
+        pagesToLoad.push(i);
       }
     }
-  }, [initialPrefetchPages, totalPages, cache, loadingPages, loadPage]);
-
-  useEffect(() => {
-    for (let i = 0; i < initialPrefetchPages && i < totalPages; i++) {
-      if (!cache[i] && !loadingPages.has(i)) loadPage(i);
-    }
-  }, [initialPrefetchPages, totalPages, cache, loadingPages, loadPage]);
+    pagesToLoad.forEach(loadPage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialPrefetchPages, totalPages]);
 
   const currentData = cache[pageIndex] ?? [];
   const startRow = pageIndex * pageSize + 1;
   const endRow = Math.min((pageIndex + 1) * pageSize, totalRows);
 
+  const renderPageButtons = () => {
+    const maxButtons = 7;
+    const buttons: (number | "...")[] = [];
+    if (totalPages <= maxButtons) {
+      for (let i = 0; i < totalPages; i++) buttons.push(i);
+    } else {
+      const left = Math.max(1, pageIndex - 2);
+      const right = Math.min(totalPages - 2, pageIndex + 2);
+      buttons.push(0);
+      if (left > 1) buttons.push("...");
+      for (let i = left; i <= right; i++) buttons.push(i);
+      if (right < totalPages - 2) buttons.push("...");
+      buttons.push(totalPages - 1);
+    }
+    return buttons.map((b, idx) =>
+      typeof b === "number" ? (
+        <button
+          key={idx}
+          onClick={() => table.setPageIndex(b)}
+          className={`px-3 py-2 rounded-lg text-sm font-medium ${b === pageIndex ? "bg-blue-600 text-white" : "text-gray-700 hover:bg-gray-200"} transition-colors`}
+        >
+          {b + 1}
+        </button>
+      ) : (
+        <span key={idx} className="px-2 text-gray-500">
+          {b}
+        </span>
+      )
+    );
+  };
+
   return (
-    <div className="bg-white shadow-sm border border-gray-200 overflow-visible rounded-xl">
-      <div className="overflow-hidden overflow-x-auto shadow rounded-t-xl">
+    <div className="bg-white shadow-sm border border-gray-200 rounded-xl overflow-visible">
+      <div className="overflow-x-auto shadow rounded-t-xl">
         <table className="min-w-full divide-y divide-gray-200 rounded-t-xl">
-          <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
+          <thead className="bg-gray-50">
             {table.getHeaderGroups().map((hg) => (
               <tr key={hg.id}>
                 {hg.headers.map((header) => (
-                  <th key={header.id} className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th key={header.id} className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider ${header.id === "actions" ? "text-right" : "text-left"}`}>
                     {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                   </th>
                 ))}
@@ -128,7 +152,7 @@ function DataTable<T extends object>({ fetchPage, columns, pageSizes = [5, 10, 2
                   <div className="flex flex-col items-center space-y-4">
                     <FiAlertTriangle className="w-12 h-12 text-red-500" />
                     <p className="text-lg font-semibold text-red-600">{errorPages[pageIndex]}</p>
-                    <button onClick={() => loadPage(pageIndex)} className="mt-2 inline-flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-3xl hover:bg-red-700 transition">
+                    <button onClick={() => loadPage(pageIndex)} className="mt-2 inline-flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-3xl hover:bg-red-700">
                       <FiRefreshCw className="w-4 h-4" />
                       <span>Retry</span>
                     </button>
@@ -138,10 +162,10 @@ function DataTable<T extends object>({ fetchPage, columns, pageSizes = [5, 10, 2
             ) : currentData.length === 0 ? (
               <tr>
                 <td colSpan={columns.length} className="px-6 py-12 text-center">
-                  <div className="flex flex-col items-center justify-center space-y-3 bg-gray-50 p-6 rounded-xl border border-dashed border-gray-200">
+                  <div className="flex flex-col items-center space-y-3 bg-gray-50 p-6 rounded-xl border border-dashed border-gray-200">
                     <FiAlertTriangle className="w-10 h-10 text-gray-400" />
                     <p className="text-base font-semibold text-gray-700">No data available</p>
-                    <p className="text-sm text-gray-500">Try adjusting your filters or search keywords</p>
+                    <p className="text-sm text-gray-500">Try adjusting filters or search</p>
                   </div>
                 </td>
               </tr>
@@ -149,7 +173,7 @@ function DataTable<T extends object>({ fetchPage, columns, pageSizes = [5, 10, 2
               table.getRowModel().rows.map((row, idx) => (
                 <tr key={row.id} className={`transition-colors duration-150 hover:bg-gray-50 ${idx % 2 === 0 ? "bg-white" : "bg-gray-25"}`}>
                   {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td key={cell.id} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 overflow-hidden truncate max-w-xs">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
                   ))}
@@ -159,6 +183,7 @@ function DataTable<T extends object>({ fetchPage, columns, pageSizes = [5, 10, 2
           </tbody>
         </table>
       </div>
+
       <div className="bg-gray-50 border-t border-gray-200 px-6 py-4 rounded-b-xl">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -176,10 +201,11 @@ function DataTable<T extends object>({ fetchPage, columns, pageSizes = [5, 10, 2
               />
             </div>
             <div className="text-sm text-gray-600">
-              Showing <span className="font-medium text-gray-900">{totalRows === 0 ? 0 : startRow}</span> to <span className="font-medium text-gray-900">{endRow}</span> of{" "}
+              Showing <span className="font-medium text-gray-900">{totalRows ? startRow : 0}</span> to <span className="font-medium text-gray-900">{endRow}</span> of{" "}
               <span className="font-medium text-gray-900">{totalRows}</span> results
             </div>
           </div>
+
           <div className="flex items-center space-x-1">
             <button
               onClick={() => table.setPageIndex(0)}
@@ -195,15 +221,9 @@ function DataTable<T extends object>({ fetchPage, columns, pageSizes = [5, 10, 2
             >
               <FiChevronLeft className="w-4 h-4" />
             </button>
-            {Array.from({ length: totalPages }).map((_, i) => (
-              <button
-                key={i}
-                onClick={() => table.setPageIndex(i)}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${i === pageIndex ? "bg-blue-600 text-white shadow-sm" : "text-gray-700 hover:text-gray-900 hover:bg-gray-200"}`}
-              >
-                {i + 1}
-              </button>
-            ))}
+
+            {renderPageButtons()}
+
             <button
               onClick={() => table.nextPage()}
               disabled={pageIndex === totalPages - 1}

@@ -1,4 +1,4 @@
-import { BaseRepository } from "../BaseRepository";
+import { BaseRepository } from "@Utils/BaseRepository";
 import { TPQI } from "@Database/dbManagers";
 import type {
   all_details,

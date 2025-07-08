@@ -42,7 +42,11 @@ export class BaseRepository<T extends Record<string, any>, K extends keyof T> {
   }
 
   /** Paginate with cursor */
-  async paginateCursor(perPage: number, cursor?: T[K], args?: Omit<Parameters<DatabaseManagement<any>["findMany"]>[0], "cursor" | "skip" | "take" | "orderBy">): Promise<{ data: T[]; nextCursor: T[K] | null }> {
+  async paginateCursor(
+    perPage: number,
+    cursor?: T[K],
+    args?: Omit<Parameters<DatabaseManagement<any>["findMany"]>[0], "cursor" | "skip" | "take" | "orderBy">
+  ): Promise<{ data: T[]; nextCursor: T[K] | null }> {
     const query: any = {
       ...args,
       take: perPage,
@@ -55,5 +59,15 @@ export class BaseRepository<T extends Record<string, any>, K extends keyof T> {
     const data = await this.manager.findMany<T>(query);
     const nextCursor = data.length ? data[data.length - 1][this.pkField] : null;
     return { data, nextCursor };
+  }
+
+  public findFirst(args?: any): Promise<T | null> {
+    return this.manager.findFirst<T>(args ?? {});
+  }
+
+  findUnique(id: T[K]): Promise<T | null> {
+    return this.manager.findUnique<T>({
+      where: { [this.pkField]: id } as Record<K, T[K]>,
+    });
   }
 }

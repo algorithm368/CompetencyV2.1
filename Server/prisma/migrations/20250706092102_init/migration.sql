@@ -19,14 +19,17 @@ CREATE TABLE `Users` (
 
 -- CreateTable
 CREATE TABLE `Profiles` (
-    `email` VARCHAR(255) NOT NULL,
+    `id` CHAR(36) NOT NULL,
+    `user_id` CHAR(36) NOT NULL,
     `tpqi_summary_data_id` INTEGER NULL,
     `sfia_summary_data_id` INTEGER NULL,
     `is_public` BOOLEAN NULL DEFAULT false,
 
+    UNIQUE INDEX `Profiles_user_id_key`(`user_id`),
     INDEX `idx_sfia_summary_data`(`sfia_summary_data_id`),
     INDEX `idx_tpqi_summary_data`(`tpqi_summary_data_id`),
-    PRIMARY KEY (`email`)
+    INDEX `Profiles_user_id_idx`(`user_id`),
+    PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -113,10 +116,10 @@ CREATE TABLE `Logs` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
-ALTER TABLE `Profiles` ADD CONSTRAINT `Profiles_email_fkey` FOREIGN KEY (`email`) REFERENCES `Users`(`email`) ON DELETE CASCADE ON UPDATE RESTRICT;
+ALTER TABLE `Profiles` ADD CONSTRAINT `Profiles_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `Users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Tokens` ADD CONSTRAINT `Tokens_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `Users`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
+ALTER TABLE `Tokens` ADD CONSTRAINT `Tokens_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `Users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `RefreshTokens` ADD CONSTRAINT `RefreshTokens_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `Users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

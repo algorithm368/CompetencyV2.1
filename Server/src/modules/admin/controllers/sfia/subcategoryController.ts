@@ -12,7 +12,6 @@ export class SubcategoryController {
       const perPageRaw = req.query.perPage;
       const page = pageRaw && !isNaN(+pageRaw) ? parseInt(pageRaw as string, 10) : undefined;
       const perPage = perPageRaw && !isNaN(+perPageRaw) ? parseInt(perPageRaw as string, 10) : undefined;
-
       const items = await subcatService.getAll(search, page, perPage);
       res.json(items);
     } catch (err) {

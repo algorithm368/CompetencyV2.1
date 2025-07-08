@@ -54,7 +54,7 @@ const AboutSection = () => {
   return (
     <section
       id="about-section"
-      className="relative min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-white via-teal-50 to-white w-full py-20 overflow-hidden"
+      className="relative min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-white via-teal-50 to-white w-full pt-20 overflow-hidden mt-10"
     >
       {/* Decorative elements matching Home theme */}
       <div className="absolute inset-0">

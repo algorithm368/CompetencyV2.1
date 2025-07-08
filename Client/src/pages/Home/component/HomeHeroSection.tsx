@@ -189,7 +189,7 @@ export const HomeHeroSection = () => {
 
               <input
                 type="text"
-                placeholder="ค้นหาอาชีพ..."
+                placeholder="ค้นหาสมรรถนะ..."
                 className="w-full pl-12 pr-28 py-4 bg-white/90 backdrop-blur-sm text-gray-900 rounded-2xl border-2 border-teal-200 shadow-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400 transition-all duration-300 hover:border-teal-300"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -215,7 +215,7 @@ export const HomeHeroSection = () => {
             className="mt-12"
           >
             <p className="text-gray-600 text-sm md:text-base mb-6">
-              เริ่มต้นการค้นหาอาชีพที่เหมาะสมกับคุณ
+              เริ่มต้นการค้นหาสมรรถนะที่เหมาะสมกับคุณ
               หรือเรียนรู้เพิ่มเติมเกี่ยวกับเฟรมเวิร์ก
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

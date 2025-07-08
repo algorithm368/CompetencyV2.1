@@ -33,7 +33,11 @@ export class FileLogger implements Logger {
     this.buffer.push(event);
     if (!this.flushing) {
       this.flushing = true;
-      setTimeout(() => this.flushBuffer().catch(console.error), 1_000);
+      setTimeout(() => {
+        this.flushBuffer().catch((err) =>
+          console.error("[FileLogger] Failed to flush buffer:", err)
+        );
+      }, 1_000);
     }
   }
 

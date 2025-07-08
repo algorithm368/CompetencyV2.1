@@ -1,0 +1,120 @@
+import { prismaSfia, prismaTpqi } from "@Database/prismaClients";
+
+type DBType = "sfia" | "tpqi";
+
+interface DatabaseConfig {
+  client: typeof prismaSfia | typeof prismaTpqi;
+  table: string;
+  field: string;
+  idField: string; // Added ID field
+  errorPrefix: string;
+}
+
+// Configuration mapping for database types
+const DB_CONFIG: Record<DBType, DatabaseConfig> = {
+  sfia: {
+    client: prismaSfia,
+    table: "jobs",
+    field: "job_name",
+    idField: "code_job", // ID field for SFIA
+    errorPrefix: "SFIA job names",
+  },
+  tpqi: {
+    client: prismaTpqi,
+    table: "occupational",
+    field: "name_occupational",
+    idField: "id_occupational", // ID field for TPQI
+    errorPrefix: "TPQI career names",
+  },
+};
+
+/**
+ * Generic function to execute database queries with error handling
+ */
+async function executeQuery<T>(
+  operation: string,
+  dbType: DBType,
+  queryFn: (config: DatabaseConfig) => Promise<T>
+): Promise<T> {
+  const config = DB_CONFIG[dbType];
+  try {
+    return await queryFn(config);
+  } catch (error) {
+    console.error(`Error ${operation} ${config.errorPrefix}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Get all job/career names from the specified database and their IDs
+ */
+export async function getJobs(
+  dbType: DBType
+): Promise<Array<{ name: string; id: string }>> {
+  return executeQuery("fetching", dbType, async (config) => {
+    const results = await (config.client as any)[config.table].findMany({
+      select: {
+        [config.field]: true,
+        [config.idField]: true,
+      },
+      orderBy: { [config.field]: "asc" },
+      take: 100,
+    });
+    return results.map((item: any) => ({
+      name: item[config.field],
+      id: String(item[config.idField]), // Convert Int ID to string
+    }));
+  });
+}
+
+/**
+ * Search for job/career names containing the search term and return both name and ID
+ */
+export async function searchCareer(
+  dbType: DBType,
+  searchTerm: string
+): Promise<Array<{ name: string; id: string }>> {
+  const normalizedSearchTerm = searchTerm.toLowerCase().trim();
+  if (!normalizedSearchTerm) {
+    return [];
+  }
+  return executeQuery("searching", dbType, async (config) => {
+    const results = await (config.client as any)[config.table].findMany({
+      where: {
+        [config.field]: {
+          contains: normalizedSearchTerm,
+        },
+      },
+      select: {
+        [config.field]: true,
+        [config.idField]: true,
+      },
+      orderBy: { [config.field]: "asc" },
+      take: 100, // Limit results for performance
+    });
+    return Object.freeze(
+      results
+        .map((item: any) => ({
+          name: item[config.field],
+          id: String(item[config.idField]), // Convert Int ID to string here as well
+        }))
+        .filter(
+          (item: {
+            name: string;
+            id: string;
+          }): item is { name: string; id: string } =>
+            typeof item.name === "string" &&
+            item.name.length > 0 &&
+            // For the ID, we check if it's a string (after conversion) and not empty.
+            // For numbers, we just need to ensure it's not null/undefined or 0 if 0 is not a valid ID.
+            // Since we're converting to string, `item.id.length > 0` is now valid.
+            item.id.length > 0
+        )
+    );
+  });
+}
+
+// Example usage (keep for local testing if needed)
+// getJobs("tpqi").then(result => console.log(result));
+// searchCareer("tpqi", "ช่างติดตั้งระบบ").then((result) => console.log(result));
+// searchCareer("sfia", "secur").then(result => console.log(result));

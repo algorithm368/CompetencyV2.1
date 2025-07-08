@@ -17,8 +17,23 @@ app.use(
     credentials: true,
   })
 );
-app.use(express.json());
+
 app.use(cookieParser());
+
+// JSON parsing with built-in error handling
+app.use(
+  express.json({
+    verify: (req, res, buf, encoding) => {
+      try {
+        JSON.parse(buf.toString());
+      } catch (err) {
+        console.error("Invalid JSON received:", buf.toString(), err);
+        throw new Error("Invalid JSON format");
+      }
+    },
+  })
+);
+
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -30,13 +45,20 @@ app.use("/", (req, res) => {
   res.send("Hello, world!");
 });
 
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err);
-  const status = err.status || 500;
-  const message = err.message || "Internal server error";
-
-  res.status(status).json({ error: message });
-});
+// General error handler
+app.use(
+  (
+    err: any,
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    console.error(err);
+    const status = err.status ?? 500;
+    const message = err.message ?? "Internal server error";
+    res.status(status).json({ error: message });
+  }
+);
 
 // Start server
 const PORT: number = Number(process.env.PORT) || 3000;

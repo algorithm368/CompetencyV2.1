@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import type { CareerResponse } from "../types/careerTypes";
-import { fetchCareersBySearchTerm } from "../services/searchCareerAPI";
+import type { JobResponse } from "../types/jobTypes";
+import { fetchJobsBySearchTerm } from "../services/searchJobAPI";
 
 /**
  * @constant DEBOUNCE_DELAY
@@ -13,12 +13,12 @@ const DEBOUNCE_DELAY = 500;
 
 /**
  * @type {ItemType}
- * @description Represents the structured format for a single career item that will be displayed in the UI.
+ * @description Represents the structured format for a single Job item that will be displayed in the UI.
  * This type definition ensures that components consuming this hook receive a consistent data structure,
  * making the rendering logic predictable and type-safe.
- * @property {string} id - A unique identifier for the career item, crucial for key-based rendering in React and for handling item-specific actions like navigation or selection.
- * @property {string} name - The display name of the career, which is the primary piece of information shown to the user.
- * @property {string} framework - The source or category from which the career data was fetched (e.g., 'O*NET', 'University Database'). This provides context to the user about the origin of the information.
+ * @property {string} id - A unique identifier for the Job item, crucial for key-based rendering in React and for handling item-specific actions like navigation or selection.
+ * @property {string} name - The display name of the Job, which is the primary piece of information shown to the user.
+ * @property {string} framework - The source or category from which the Job data was fetched (e.g., 'O*NET', 'University Database'). This provides context to the user about the origin of the information.
  */
 export type ItemType = {
   id: string;
@@ -27,25 +27,25 @@ export type ItemType = {
 };
 
 /**
- * @function useCareerResults
- * @description A comprehensive custom React hook designed to manage the entire lifecycle of searching for career data.
+ * @function useJobResults
+ * @description A comprehensive custom React hook designed to manage the entire lifecycle of searching for Job data.
  * It encapsulates state management, debounced data fetching, URL synchronization, error handling, and pagination logic.
- * By abstracting these concerns, it provides a clean and reusable interface for any component that needs to display career search results.
+ * By abstracting these concerns, it provides a clean and reusable interface for any component that needs to display Job search results.
  *
  * @returns {object} An object containing the state and handlers necessary to power a search interface.
  * This includes the current search query, search term for the input, loading and error states, paginated results,
  * total page count, and functions to handle user actions like searching and clearing.
  */
-export function useCareerResults() {
+export function useJobResults() {
   // --- STATE MANAGEMENT ---
   // The bedrock of our hook, these state variables track every aspect of the search UI's status.
 
   /**
-   * @state {CareerResponse[]} results - Stores the raw, successful response from the career API.
-   * It's structured as an array of groups, where each group contains a list of careers.
+   * @state {JobResponse[]} results - Stores the raw, successful response from the Job API.
+   * It's structured as an array of groups, where each group contains a list of Jobs.
    * Initialized as an empty array to prevent rendering errors on the initial load.
    */
-  const [results, setResults] = useState<CareerResponse[]>([]);
+  const [results, setResults] = useState<JobResponse[]>([]);
 
   /**
    * @state {boolean} loading - A boolean flag that indicates whether an API request is currently in flight.
@@ -190,7 +190,7 @@ export function useCareerResults() {
     const handler = setTimeout(async () => {
       try {
         // Execute the search. We trim the term again as a final safeguard.
-        const data = await fetchCareersBySearchTerm(safeSearchTerm.trim());
+        const data = await fetchJobsBySearchTerm(safeSearchTerm.trim());
         // Ensure the API response is an array before setting it to state to prevent crashes.
         setResults(Array.isArray(data) ? data : []);
         // The search was successful; update the 'query' to reflect this executed term.
@@ -199,7 +199,7 @@ export function useCareerResults() {
         setCurrentPage(1);
       } catch (err) {
         // If an error occurs during the fetch, log it for debugging purposes.
-        console.error("Error fetching career data:", err);
+        console.error("Error fetching Job data:", err);
         // Translate the technical error into a user-friendly message and set the error state.
         const errorMessage = getErrorMessage(err);
         setError(errorMessage);
@@ -276,13 +276,13 @@ export function useCareerResults() {
 
   /**
    * @function handleViewDetails
-   * @description A placeholder handler for when a user clicks to view the details of a specific career.
+   * @description A placeholder handler for when a user clicks to view the details of a specific Job.
    * In a real application, this would likely navigate the user to a new page or open a modal.
    * @param {string} itemId - The unique ID of the item to view.
    */
   const handleViewDetails = (itemId: string) => {
     // In a full implementation, this might look like:
-    // navigate(`/careers/${itemId}`);
+    // navigate(`/Jobs/${itemId}`);
     console.log("View details for", itemId);
   };
 
@@ -291,19 +291,19 @@ export function useCareerResults() {
 
   /**
    * @constant {ItemType[]} allItems
-   * @description A flattened and transformed list of all career items from the raw `results`.
+   * @description A flattened and transformed list of all Job items from the raw `results`.
    * The API returns data grouped by `source`, but the UI needs a single, flat list to paginate.
-   * `flatMap` is used to iterate over each group and then map over the careers within that group,
+   * `flatMap` is used to iterate over each group and then map over the Jobs within that group,
    * creating a unified array of `ItemType` objects. The optional chaining (`?.`) and nullish coalescing (`?? []`)
    * operators provide resilience against malformed or missing data in the API response.
    */
   const allItems: ItemType[] = (results ?? []).flatMap(
     (group) =>
-      group?.careers?.map((careerItem) => ({
-        id: careerItem.id,
-        name: careerItem.name,
-        framework: group.source, // The 'source' from the parent group is applied to each career.
-      })) ?? [] // If group.careers is null/undefined, return an empty array to prevent flatMap from crashing.
+      group?.jobs?.map((JobItem) => ({
+        id: JobItem.id,
+        name: JobItem.name,
+        framework: group.source, // The 'source' from the parent group is applied to each Job.
+      })) ?? [] // If group.Jobs is null/undefined, return an empty array to prevent flatMap from crashing.
   );
 
   /**

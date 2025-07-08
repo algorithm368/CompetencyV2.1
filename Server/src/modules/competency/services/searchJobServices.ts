@@ -70,7 +70,7 @@ export async function getJobs(
 /**
  * Search for job/career names containing the search term and return both name and ID
  */
-export async function searchCareer(
+export async function searchJob(
   dbType: DBType,
   searchTerm: string
 ): Promise<Array<{ name: string; id: string }>> {
@@ -90,31 +90,26 @@ export async function searchCareer(
         [config.idField]: true,
       },
       orderBy: { [config.field]: "asc" },
-      take: 100, // Limit results for performance
+      take: 100,
     });
     return Object.freeze(
       results
+        .filter(
+          (item: any) =>
+            item && // Ensure item exists
+            typeof item[config.field] === "string" &&
+            item[config.field].length > 0 &&
+            item[config.idField] != null // Check for both null and undefined
+        )
         .map((item: any) => ({
           name: item[config.field],
-          id: String(item[config.idField]), // Convert Int ID to string here as well
+          id: String(item[config.idField]),
         }))
-        .filter(
-          (item: {
-            name: string;
-            id: string;
-          }): item is { name: string; id: string } =>
-            typeof item.name === "string" &&
-            item.name.length > 0 &&
-            // For the ID, we check if it's a string (after conversion) and not empty.
-            // For numbers, we just need to ensure it's not null/undefined or 0 if 0 is not a valid ID.
-            // Since we're converting to string, `item.id.length > 0` is now valid.
-            item.id.length > 0
-        )
     );
   });
 }
 
 // Example usage (keep for local testing if needed)
 // getJobs("tpqi").then(result => console.log(result));
-// searchCareer("tpqi", "ช่างติดตั้งระบบ").then((result) => console.log(result));
-// searchCareer("sfia", "secur").then(result => console.log(result));
+// searchJob("tpqi", "ช่างติดตั้งระบบ").then((result) => console.log(result));
+// searchJob("sfia", "secur").then(result => console.log(result));

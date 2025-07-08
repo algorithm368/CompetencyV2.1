@@ -23,9 +23,19 @@ export default defineConfig({
     port: 5173,
   },
   preview: {
-    allowedHosts: ["client_app", "localhost", "127.0.0.1", "nginx", "172.19.0.4"],
+    allowedHosts: [
+      "client_app",
+      "localhost",
+      "127.0.0.1",
+      "nginx",
+      "172.19.0.4",
+    ],
   },
   define: {
     "process.env": {},
+  },
+  test: {
+    globals: true,
+    environment: "jsdom",
   },
 });

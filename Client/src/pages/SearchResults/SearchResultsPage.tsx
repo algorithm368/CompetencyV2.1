@@ -16,7 +16,7 @@ import EmptyState from "./components/EmptyState";
 import SuccessState from "./components/SuccessState";
 
 // Hooks
-import { useCareerResults } from "./hooks/useCareerResults";
+import { useJobResults } from "./hooks/useJobResults";
 
 // Types
 interface NavigationConfig {
@@ -82,7 +82,7 @@ const ResultsPage: React.FC = () => {
     loading, // Loading state for API calls
     error, // Error state with user-friendly messages
     handleSearch, // Function to execute search with debouncing
-  } = useCareerResults();
+  } = useJobResults();
 
   // React Router navigation hook
   const navigate = useNavigate();

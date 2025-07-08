@@ -1,4 +1,4 @@
-import type { CareerResponse } from "../types/careerTypes";
+import type { JobResponse } from "../types/jobTypes";
 
 const BASE_API = import.meta.env.VITE_SEARCH_API;
 
@@ -19,7 +19,7 @@ class APIError extends Error {
 async function fetchFromSource(
   dbType: "sfia" | "tpqi",
   searchTerm: string
-): Promise<CareerResponse> {
+): Promise<JobResponse> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
@@ -48,8 +48,8 @@ async function fetchFromSource(
 
     // *** CHANGE STARTS HERE ***
     // Assuming data.results is an array of { name: string, id: string }
-    // Ensure that `careers` directly holds the structured objects.
-    const careers: Array<{ name: string; id: string }> = Array.isArray(
+    // Ensure that `jobs` directly holds the structured objects.
+    const jobs: Array<{ name: string; id: string }> = Array.isArray(
       data.results
     )
       ? data.results.map((item: any) => ({
@@ -59,7 +59,7 @@ async function fetchFromSource(
       : [];
     // *** CHANGE ENDS HERE ***
 
-    return { source: dbType, careers };
+    return { source: dbType, jobs };
   } catch (error) {
     clearTimeout(timeoutId);
 
@@ -90,27 +90,27 @@ async function fetchFromSource(
   }
 }
 
-export async function fetchCareersBySearchTerm(
+export async function fetchJobsBySearchTerm(
   searchTerm: string
-): Promise<CareerResponse[]> {
+): Promise<JobResponse[]> {
   if (!searchTerm.trim()) {
     throw new APIError("Search term cannot be empty");
   }
 
   const dbTypes: ("sfia" | "tpqi")[] = ["sfia", "tpqi"];
-  const results: CareerResponse[] = [];
+  const results: JobResponse[] = [];
   const errors: APIError[] = [];
 
-  // Try fetching from both sources
   const promises = dbTypes.map(async (dbType) => {
     try {
       const result = await fetchFromSource(dbType, searchTerm);
       return { success: true, data: result, error: null };
     } catch (error) {
+      // FIX: Ensure console.error is called with the correct parameters
       console.error(`[${dbType}]`, error);
       return {
         success: false,
-        data: { source: dbType, careers: [] }, // Ensure careers is an empty array of the correct type
+        data: { source: dbType, jobs: [] },
         error:
           error instanceof APIError
             ? error
@@ -126,7 +126,6 @@ export async function fetchCareersBySearchTerm(
     if (response.success) {
       results.push(response.data);
     } else {
-      // Still add empty result for UI consistency
       results.push(response.data);
       if (response.error) {
         errors.push(response.error);
@@ -151,9 +150,9 @@ export async function fetchCareersBySearchTerm(
 }
 
 // Alternative version that throws on any error (stricter)
-export async function fetchCareersBySearchTermStrict(
+export async function fetchJobsBySearchTermStrict(
   searchTerm: string
-): Promise<CareerResponse[]> {
+): Promise<JobResponse[]> {
   if (!searchTerm.trim()) {
     throw new APIError("Search term cannot be empty");
   }
@@ -173,20 +172,28 @@ export async function fetchCareersBySearchTermStrict(
 
 // Utility function to check if error is network-related
 export function isNetworkError(error: any): boolean {
+  // Add a guard clause to handle null/undefined inputs
+  if (!error) {
+    return false;
+  }
   return (
     (error instanceof TypeError && error.message.includes("fetch")) ||
     error.name === "NetworkError" ||
     error.code === "NETWORK_ERROR" ||
-    error.message?.toLowerCase().includes("network") ||
-    error.message?.toLowerCase().includes("connection")
+    !!error.message?.toLowerCase().includes("network") ||
+    !!error.message?.toLowerCase().includes("connection")
   );
 }
 
 // Utility function to check if error is timeout-related
 export function isTimeoutError(error: any): boolean {
+  if (!error) {
+    return false;
+  }
   return (
     error.name === "AbortError" ||
     error.name === "TimeoutError" ||
-    error.message?.includes("timeout")
+    // FIX: Ensure this line includes .toLowerCase() for a case-insensitive check.
+    !!error.message?.toLowerCase().includes("timeout")
   );
 }

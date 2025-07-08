@@ -24,7 +24,7 @@ const AppRoutes: React.FC = () => (
     <Route path="/" element={<Navigate to="/home" replace />} />
     <Route path="/results" element={<ResultsPage />} />
     <Route path="/home" element={<HomePage />} />
-    <Route path="/occupation/:id" element={<OccupationDetailPage />} />
+    <Route path="/occupation/:source/:id" element={<OccupationDetailPage />} />
     <Route path="/profile" element={<ProfilePage />} />
     <Route path="/about" element={<AboutPage />} />
 

@@ -16,7 +16,7 @@ import EmptyState from "./components/EmptyState";
 import SuccessState from "./components/SuccessState";
 
 // Hooks
-import { useSkillResults } from "./hooks/useSkillResults";
+import { useCompetencyResults } from "./hooks/useCompetencyResults";
 
 // Types
 interface NavigationConfig {
@@ -41,7 +41,7 @@ const UI_CONSTANTS = {
 /**
  * ResultsPage Component
  *
- * A comprehensive search results page that handles career/Skill search functionality
+ * A comprehensive search results page that handles career/Competency search functionality
  * across multiple frameworks (SFIA and TPQI). This component provides:
  *
  * Features:
@@ -82,7 +82,7 @@ const ResultsPage: React.FC = () => {
     loading, // Loading state for API calls
     error, // Error state with user-friendly messages
     handleSearch, // Function to execute search with debouncing
-  } = useSkillResults();
+  } = useCompetencyResults();
 
   // React Router navigation hook
   const navigate = useNavigate();
@@ -111,7 +111,7 @@ const ResultsPage: React.FC = () => {
   // ============================================================================
 
   /**
-   * Handles navigation to specific career/Skill details page
+   * Handles navigation to specific career/Competency details page
    *
    * Navigation Logic:
    * 1. Finds the item in current page items by ID
@@ -119,7 +119,7 @@ const ResultsPage: React.FC = () => {
    * 3. Routes to appropriate framework-specific page
    * 4. Falls back to home page if framework is unknown
    *
-   * @param itemId - Unique identifier for the career/Skill item
+   * @param itemId - Unique identifier for the career/Competency item
    */
   const handleViewDetails = useCallback(
     (itemId: string) => {

@@ -594,7 +594,7 @@ class JobOccupationService {
   }
 
   /**
-   * Get TPQI skill name by skill ID
+   * Get TPQI competency name by skill ID
    */
   async getTPQISkillInfoById(skillId: number): Promise<{ id_skill: number; name_skill: string } | null> {
     try {
@@ -607,7 +607,7 @@ class JobOccupationService {
       });
       return skill;
     } catch (error) {
-      throw new Error(`Failed to fetch TPQI skill info by ID ${skillId}: ${error}`);
+      throw new Error(`Failed to fetch TPQI competency info by ID ${skillId}: ${error}`);
     }
   }
 

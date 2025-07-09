@@ -1,47 +1,47 @@
 import { Router } from "express";
 import {
-  getSkills,
-  searchSkill,
-} from "@Competency/controllers/searchSkillController";
+  getCompetencies,
+  searchCompetency,
+} from "@Competency/controllers/searchCompetencyController";
 
 const router = Router();
 
 /**
- * @route   GET /api/competency/skill/:dbType
+ * @route   GET /api/competency/competency/:dbType
  * @desc    Get all careers from specified database (e.g., sfia or tpqi)
  * @params  dbType: string - "sfia" | "tpqi"
  * @access  Public
  * @example
- *   GET /api/competency/Skills/sfia
+ *   GET /api/competency/Competencies/sfia
  *   Response: ["Software Engineer", "Data Scientist"]
  */
-router.get("/:dbType", getSkills);
+router.get("/:dbType", getCompetencies);
 
 
 /**
- * @route   POST /api/competency/Skills/:dbType/search
+ * @route   POST /api/competency/Competencies/:dbType/search
  * @desc    Search careers by name from the specified database
  * @params  dbType: string - "sfia" | "tpqi"
  * @body    { searchTerm: string }
  * @access  Public
  * @example
- *   POST /api/competency/Skills/tpqi/search
+ *   POST /api/competency/Competencies/tpqi/search
  *   Body: { "searchTerm": "sec" }
  *   Response: ["Security Analyst", "Cybersecurity Engineer"]
  */
-router.post("/:dbType/search", searchSkill);
+router.post("/:dbType", searchCompetency);
 
 
 /**
- * @route   GET /api/competency/Skills/
- * @desc    Health check for the search Skill route
+ * @route   GET /api/competency/Competencies/
+ * @desc    Health check for the search Competency route
  * @access  Public
  * @example
- *   GET /api/competency/Skills/
+ *   GET /api/competency/Competencies/
  *   Response: "Hello from search career"
  */
 router.get("/", (req, res) => {
-  res.send("Hello from search Skill");
+  res.send("Hello from search Competency");
 });
 
 export default router;

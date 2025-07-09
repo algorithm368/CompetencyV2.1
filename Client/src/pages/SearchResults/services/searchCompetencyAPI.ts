@@ -1,4 +1,4 @@
-import type { SkillResponse } from "../types/SkillTypes";
+import type { CompetencyResponse } from "../types/CompetencyTypes";
 
 const BASE_API = import.meta.env.VITE_SEARCH_API;
 
@@ -19,12 +19,12 @@ class APIError extends Error {
 async function fetchFromSource(
   dbType: "sfia" | "tpqi",
   searchTerm: string
-): Promise<SkillResponse> {
+): Promise<CompetencyResponse> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
   try {
-    const res = await fetch(`${BASE_API}/${dbType}/search`, {
+    const res = await fetch(`${BASE_API}/${dbType}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json; charset=utf-8",
@@ -48,8 +48,8 @@ async function fetchFromSource(
 
     // *** CHANGE STARTS HERE ***
     // Assuming data.results is an array of { name: string, id: string }
-    // Ensure that `Skills` directly holds the structured objects.
-    const Skills: Array<{ name: string; id: string }> = Array.isArray(
+    // Ensure that `Competencies` directly holds the structured objects.
+    const Competencies: Array<{ name: string; id: string }> = Array.isArray(
       data.results
     )
       ? data.results.map((item: any) => ({
@@ -59,7 +59,7 @@ async function fetchFromSource(
       : [];
     // *** CHANGE ENDS HERE ***
 
-    return { source: dbType, Skills };
+    return { source: dbType, Competencies };
   } catch (error) {
     clearTimeout(timeoutId);
 
@@ -90,15 +90,15 @@ async function fetchFromSource(
   }
 }
 
-export async function fetchSkillsBySearchTerm(
+export async function fetchCompetenciesBySearchTerm(
   searchTerm: string
-): Promise<SkillResponse[]> {
+): Promise<CompetencyResponse[]> {
   if (!searchTerm.trim()) {
     throw new APIError("Search term cannot be empty");
   }
 
   const dbTypes: ("sfia" | "tpqi")[] = ["sfia", "tpqi"];
-  const results: SkillResponse[] = [];
+  const results: CompetencyResponse[] = [];
   const errors: APIError[] = [];
 
   const promises = dbTypes.map(async (dbType) => {
@@ -110,7 +110,7 @@ export async function fetchSkillsBySearchTerm(
       console.error(`[${dbType}]`, error);
       return {
         success: false,
-        data: { source: dbType, Skills: [] },
+        data: { source: dbType, Competencies: [] },
         error:
           error instanceof APIError
             ? error
@@ -150,9 +150,9 @@ export async function fetchSkillsBySearchTerm(
 }
 
 // Alternative version that throws on any error (stricter)
-export async function fetchSkillsBySearchTermStrict(
+export async function fetchCompetenciesBySearchTermStrict(
   searchTerm: string
-): Promise<SkillResponse[]> {
+): Promise<CompetencyResponse[]> {
   if (!searchTerm.trim()) {
     throw new APIError("Search term cannot be empty");
   }

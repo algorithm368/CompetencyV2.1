@@ -36,7 +36,7 @@ router.get("/jobs/:jobCode", JobOccupationController.getJob);
 
 /**
  * @route   GET /api/jobs/:jobCode/description
- * @desc    Get job description with levels and skills
+ * @desc    Get job description with levels and competencies
  * @params  jobCode: string - The SFIA job code
  * @access  Public
  * @example

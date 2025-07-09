@@ -164,7 +164,7 @@ export class JobOccupationController {
   }
 
   /**
-   * Get job description with levels and skills
+   * Get job description with levels and competencies
    * GET /api/jobs/:jobCode/description
    */
   static async getJobDescription(req: Request, res: Response, next: NextFunction) {

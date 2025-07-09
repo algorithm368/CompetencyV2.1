@@ -48,7 +48,7 @@ async function executeQuery<T>(
 /**
  * Get all job/career names from the specified database and their IDs
  */
-export async function getSkills(
+export async function getCompetencies(
   dbType: DBType
 ): Promise<Array<{ name: string; id: string }>> {
   return executeQuery("fetching", dbType, async (config) => {
@@ -70,7 +70,7 @@ export async function getSkills(
 /**
  * Search for job/career names containing the search term and return both name and ID
  */
-export async function searchSkill(
+export async function searchCompetency(
   dbType: DBType,
   searchTerm: string
 ): Promise<Array<{ name: string; id: string }>> {

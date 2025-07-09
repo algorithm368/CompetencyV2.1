@@ -1,6 +1,6 @@
 import { Router } from "express";
 import adminRoutes from "./modules/admin/routes/adminRoutes";
-import sfiaRoutes from "./modules/sfia/routes/sfiaRotes";
+import sfiaRoutes from "./modules/sfia/routes/sfiaRoutes";
 import tpqiRoutes from "./modules/tpqi/routes/tpqiRoutes";
 import competencyRoutes from "./modules/competency/routes/competencyRoutes";
 

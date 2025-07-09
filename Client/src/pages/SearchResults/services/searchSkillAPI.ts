@@ -1,4 +1,4 @@
-import type { JobResponse } from "../types/jobTypes";
+import type { SkillResponse } from "../types/SkillTypes";
 
 const BASE_API = import.meta.env.VITE_SEARCH_API;
 
@@ -19,7 +19,7 @@ class APIError extends Error {
 async function fetchFromSource(
   dbType: "sfia" | "tpqi",
   searchTerm: string
-): Promise<JobResponse> {
+): Promise<SkillResponse> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
@@ -48,8 +48,8 @@ async function fetchFromSource(
 
     // *** CHANGE STARTS HERE ***
     // Assuming data.results is an array of { name: string, id: string }
-    // Ensure that `jobs` directly holds the structured objects.
-    const jobs: Array<{ name: string; id: string }> = Array.isArray(
+    // Ensure that `Skills` directly holds the structured objects.
+    const Skills: Array<{ name: string; id: string }> = Array.isArray(
       data.results
     )
       ? data.results.map((item: any) => ({
@@ -59,7 +59,7 @@ async function fetchFromSource(
       : [];
     // *** CHANGE ENDS HERE ***
 
-    return { source: dbType, jobs };
+    return { source: dbType, Skills };
   } catch (error) {
     clearTimeout(timeoutId);
 
@@ -90,15 +90,15 @@ async function fetchFromSource(
   }
 }
 
-export async function fetchJobsBySearchTerm(
+export async function fetchSkillsBySearchTerm(
   searchTerm: string
-): Promise<JobResponse[]> {
+): Promise<SkillResponse[]> {
   if (!searchTerm.trim()) {
     throw new APIError("Search term cannot be empty");
   }
 
   const dbTypes: ("sfia" | "tpqi")[] = ["sfia", "tpqi"];
-  const results: JobResponse[] = [];
+  const results: SkillResponse[] = [];
   const errors: APIError[] = [];
 
   const promises = dbTypes.map(async (dbType) => {
@@ -110,7 +110,7 @@ export async function fetchJobsBySearchTerm(
       console.error(`[${dbType}]`, error);
       return {
         success: false,
-        data: { source: dbType, jobs: [] },
+        data: { source: dbType, Skills: [] },
         error:
           error instanceof APIError
             ? error
@@ -150,9 +150,9 @@ export async function fetchJobsBySearchTerm(
 }
 
 // Alternative version that throws on any error (stricter)
-export async function fetchJobsBySearchTermStrict(
+export async function fetchSkillsBySearchTermStrict(
   searchTerm: string
-): Promise<JobResponse[]> {
+): Promise<SkillResponse[]> {
   if (!searchTerm.trim()) {
     throw new APIError("Search term cannot be empty");
   }

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { getJobLevels } from "../services/getJobLevelsServices";
+import { getJobLevels } from "../services/getJobLevelServices";
 
 /**
  * Controller to handle GET /job-levels/:jobCode

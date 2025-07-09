@@ -23,7 +23,7 @@ const DB_CONFIG: Record<DBType, DatabaseConfig> = {
     client: prismaTpqi,
     table: "unit_code",
     field: "name",
-    idField: "id_unit_code", // ID field for TPQI
+    idField: "unit_code", // ID field for TPQI
     errorPrefix: "TPQI career names",
   },
 };

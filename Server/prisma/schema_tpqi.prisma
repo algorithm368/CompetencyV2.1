@@ -47,9 +47,9 @@ model cl_knowledge {
   id_career_level Int
   id_knowledge    Int
   career_level    career_level @relation(fields: [id_career_level], references: [id_career_level], onUpdate: Restrict, map: "fk_cl_knowledge_career_level")
+  knowledge       knowledge    @relation(fields: [id_knowledge], references: [id_knowledge], map: "fk_cl_knowledge_knowledge")
 
   @@index([id_career_level], map: "fk_cl_knowledge_career_level")
-  @@index([id_knowledge], map: "fk_cl_knowledge_knowledge")
 }
 
 model cl_skills {
@@ -84,6 +84,8 @@ model knowledge {
   id_knowledge    Int               @id @default(autoincrement()) @db.UnsignedInt
   name_knowledge  String            @db.VarChar(255)
   users_knowledge users_knowledge[]
+  u_knowledge     u_knowledge[]
+  cl_knowledge    cl_knowledge[]
 }
 
 model level {
@@ -136,8 +138,7 @@ model u_knowledge {
   id_unit_code   Int
   id_knowledge   Int       @db.UnsignedInt
   unit_code      unit_code @relation(fields: [id_unit_code], references: [id_unit_code], onUpdate: Restrict, map: "fk_u_knowledge_unit_code")
-
-  @@index([id_knowledge], map: "fk_u_knowledge_knowledge")
+  knowledge      knowledge @relation(fields: [id_knowledge], references: [id_knowledge], map: "fk_u_knowledge_knowledge")
   @@index([id_unit_code], map: "fk_u_knowledge_unit_code")
 }
 
@@ -192,9 +193,9 @@ model users_knowledge {
   link_knowledge     String                          @db.VarChar(500)
   email              String                          @db.VarChar(255)
   approval_status    users_knowledge_approval_status @default(not_approved)
-  knowledge          knowledge                       @relation(fields: [id_knowledge], references: [id_knowledge], onDelete: Cascade, map: "fk_u_knowledge_knowledge")
+  knowledge          knowledge                       @relation(fields: [id_knowledge], references: [id_knowledge], onDelete: Cascade, map: "fk_users_knowledge_knowledge") // <-- CORRECTED LINE
 
-  @@index([id_knowledge], map: "fk_u_knowledge_knowledge")
+  @@index([id_knowledge], map: "fk_u_knowledge_knowledge") // You might want to rename this index too for consistency, but it's not required for the fix.
 }
 
 model users_skills {

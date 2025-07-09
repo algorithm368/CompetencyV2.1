@@ -132,11 +132,3 @@ export async function getUnitCodeDetailsByCode(
     throw new Error(`Failed to fetch unit code details for code: ${unit_code}`);
   }
 }
-
-getUnitCodeDetailsByCode("ICT-LIGW-404B")
-  .then((result) => {
-    console.log("Unit Code Details:", result);
-  })
-  .catch((error) => {
-    console.error("Error:", error);
-  });

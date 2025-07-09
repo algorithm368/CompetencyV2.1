@@ -1,6 +1,6 @@
 import { Router } from "express";
 import authRoutes from "@Competency/routes/authRoutes";
-import searchJobRoutes from "@Competency/routes/searchJobRoutes"
+import searchSkillRoutes from "@Competency/routes/searchSkillRoutes"
 
 
 const router = Router();
@@ -10,6 +10,6 @@ router.get("/", (req, res) => {
 });
 
 router.use("/auth", authRoutes);
-router.use("/jobs", searchJobRoutes);
+router.use("/skill", searchSkillRoutes);
 
 export default router;

@@ -21,9 +21,9 @@ const DB_CONFIG: Record<DBType, DatabaseConfig> = {
   },
   tpqi: {
     client: prismaTpqi,
-    table: "occupational",
-    field: "name_occupational",
-    idField: "id_occupational", // ID field for TPQI
+    table: "unit_code",
+    field: "name",
+    idField: "id_unit_code", // ID field for TPQI
     errorPrefix: "TPQI career names",
   },
 };
@@ -48,7 +48,7 @@ async function executeQuery<T>(
 /**
  * Get all job/career names from the specified database and their IDs
  */
-export async function getJobs(
+export async function getSkills(
   dbType: DBType
 ): Promise<Array<{ name: string; id: string }>> {
   return executeQuery("fetching", dbType, async (config) => {
@@ -70,7 +70,7 @@ export async function getJobs(
 /**
  * Search for job/career names containing the search term and return both name and ID
  */
-export async function searchJob(
+export async function searchSkill(
   dbType: DBType,
   searchTerm: string
 ): Promise<Array<{ name: string; id: string }>> {

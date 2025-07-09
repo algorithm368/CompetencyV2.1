@@ -1,5 +1,6 @@
 import { Router, RequestHandler } from "express";
-import { getJobLevelsController } from "../controllers/getJobLevelsControllers";
+import { getJobLevelsController } from "../controllers/getJobLevelsController";
+import { getJobDetailController } from "../controllers/getJobDetailController";
 
 const router = Router();
 
@@ -16,5 +17,6 @@ const router = Router();
  *   ]
  */
 router.get("/:jobCode", getJobLevelsController as RequestHandler);
+router.get("/:jobCode", getJobDetailController as RequestHandler);
 
 export default router;

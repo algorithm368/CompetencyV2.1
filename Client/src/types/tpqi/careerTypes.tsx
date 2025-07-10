@@ -1,0 +1,12 @@
+export interface Career {
+  id: number;
+  name: string;
+}
+
+export interface CareerPageResult {
+    data: Career[];
+    total?: number;
+}
+
+export type CreateCareerDto = Omit<Career, "id">;
+export type UpdateCareerDto = Partial<Omit<CreateCareerDto, "id">>;

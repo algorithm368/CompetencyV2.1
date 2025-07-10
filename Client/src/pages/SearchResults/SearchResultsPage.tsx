@@ -27,8 +27,8 @@ interface NavigationConfig {
 
 // Constants
 const NAVIGATION_ROUTES: NavigationConfig = {
-  sfia: "/occupation/sfia",
-  tpqi: "/occupation/tpqi",
+  sfia: "/competency/sfia",
+  tpqi: "/competency/tpqi",
   fallback: "/home",
 } as const;
 

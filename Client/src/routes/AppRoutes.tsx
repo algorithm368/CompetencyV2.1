@@ -7,12 +7,12 @@ import RouteWrapper from "./guards/RouteWrapper";
 import { adminRoutes } from "./admin/adminRoutes";
 import { sfiaRoutes } from "./sfiaRoutes";
 import { tpqiRoutes } from "./tpqiRoutes";
-import CompetencyRoutes from "./competencyRoutes";
+import { competencyRoutes } from "./competencyRoutes";
 
 import {
   HomePage,
   ResultsPage,
-  OccupationDetailPage,
+  CompetencyDetailPage,
   ProfilePage,
   AboutPage,
 } from "@Pages/ExportPages";
@@ -24,7 +24,7 @@ const AppRoutes: React.FC = () => (
     <Route path="/" element={<Navigate to="/home" replace />} />
     <Route path="/results" element={<ResultsPage />} />
     <Route path="/home" element={<HomePage />} />
-    <Route path="/occupation/:source/:id" element={<OccupationDetailPage />} />
+    <Route path="/competency/:source/:id" element={<CompetencyDetailPage />} />
     <Route path="/profile" element={<ProfilePage />} />
     <Route path="/about" element={<AboutPage />} />
 
@@ -41,10 +41,10 @@ const AppRoutes: React.FC = () => (
       <Route path="tpqi/*" element={<RouteWrapper routes={tpqiRoutes} />} />
 
       {/* Competency Module */}
-      <Route
+      {/* <Route
         path="competency/*"
-        element={<RouteWrapper routes={<CompetencyRoutes />} />}
-      />
+        element={<RouteWrapper routes={competencyRoutes} />}
+      /> */}
 
       {/* Fallback (Error 403 / NotFound) */}
       {/* <Route path="error403" element={<ErrorSection7 />} />

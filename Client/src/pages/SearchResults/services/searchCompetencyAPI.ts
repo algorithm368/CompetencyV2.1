@@ -171,29 +171,35 @@ export async function fetchCompetenciesBySearchTermStrict(
 }
 
 // Utility function to check if error is network-related
-export function isNetworkError(error: any): boolean {
+export function isNetworkError(error: unknown): boolean {
   // Add a guard clause to handle null/undefined inputs
-  if (!error) {
+  if (!error || typeof error !== "object") {
     return false;
   }
+  
+  const err = error as Record<string, unknown>;
   return (
     (error instanceof TypeError && error.message.includes("fetch")) ||
-    error.name === "NetworkError" ||
-    error.code === "NETWORK_ERROR" ||
-    !!error.message?.toLowerCase().includes("network") ||
-    !!error.message?.toLowerCase().includes("connection")
+    err.name === "NetworkError" ||
+    err.code === "NETWORK_ERROR" ||
+    !!(err.message as string)?.toLowerCase().includes("network") ||
+    !!(err.message as string)?.toLowerCase().includes("connection")
   );
 }
 
 // Utility function to check if error is timeout-related
-export function isTimeoutError(error: any): boolean {
-  if (!error) {
+export function isTimeoutError(error: unknown): boolean {
+  if (!error || typeof error !== "object") {
     return false;
   }
+  
+  const err = error as Record<string, unknown>;
+  const message = (err.message as string)?.toLowerCase() || "";
+  
   return (
-    error.name === "AbortError" ||
-    error.name === "TimeoutError" ||
-    // FIX: Ensure this line includes .toLowerCase() for a case-insensitive check.
-    !!error.message?.toLowerCase().includes("timeout")
+    err.name === "AbortError" ||
+    err.name === "TimeoutError" ||
+    message.includes("timed out") ||
+    (message.includes("timeout") && !message.includes("not a timeout"))
   );
 }

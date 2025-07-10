@@ -59,6 +59,7 @@ export async function getCompetencies(
       },
       orderBy: { [config.field]: "asc" },
       take: 100,
+      distinct: [config.field], // Remove duplicates based on name field
     });
     return results.map((item: any) => ({
       name: item[config.field],
@@ -91,21 +92,31 @@ export async function searchCompetency(
       },
       orderBy: { [config.field]: "asc" },
       take: 100,
+      distinct: [config.field], // Remove duplicates based on name field
     });
-    return Object.freeze(
-      results
-        .filter(
-          (item: any) =>
-            item && // Ensure item exists
-            typeof item[config.field] === "string" &&
-            item[config.field].length > 0 &&
-            item[config.idField] != null // Check for both null and undefined
-        )
-        .map((item: any) => ({
-          name: item[config.field],
-          id: String(item[config.idField]),
-        }))
-    );
+    
+    // Additional client-side deduplication for extra safety
+    const uniqueResults = new Map<string, { name: string; id: string }>();
+    
+    results
+      .filter(
+        (item: any) =>
+          item && // Ensure item exists
+          typeof item[config.field] === "string" &&
+          item[config.field].length > 0 &&
+          item[config.idField] != null // Check for both null and undefined
+      )
+      .forEach((item: any) => {
+        const name = item[config.field];
+        if (!uniqueResults.has(name)) {
+          uniqueResults.set(name, {
+            name: name,
+            id: String(item[config.idField]),
+          });
+        }
+      });
+    
+    return Array.from(uniqueResults.values());
   });
 }
 

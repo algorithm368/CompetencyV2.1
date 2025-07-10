@@ -2,24 +2,31 @@ import React from "react";
 import SfiaSkillLevels from "./SfiaSkillLevels";
 import { OverviewSection, NotesSection } from "./OverviewAndNotes";
 
+// Match the actual API structure
 interface SfiaLevel {
-  id: string;
-  level_name: string;
-  descriptions?: Array<{
-    id: string;
-    description_text?: string;
-    skills?: Array<{
-      id: string;
-      skill_text: string;
+  id: number;
+  level_name: string | null;
+  descriptions: Array<{
+    id: number;
+    description_text: string | null;
+    skills: Array<{
+      id: number;
+      skill_text: string | null;
     }>;
   }>;
 }
 
 interface SfiaSectionProps {
   competency: {
-    overall?: string;
-    note?: string;
-    levels?: SfiaLevel[];
+    competency_id: string;
+    competency_name: string | null;
+    overall: string | null;
+    note: string | null;
+    category: {
+      id: number;
+      category_text: string | null;
+    } | null;
+    levels: SfiaLevel[];
   };
 }
 
@@ -28,7 +35,7 @@ const SfiaSection: React.FC<SfiaSectionProps> = ({ competency }) => {
     <>
       <OverviewSection overall={competency?.overall} />
       <NotesSection note={competency?.note} />
-      {competency?.levels && <SfiaSkillLevels levels={competency.levels} />}
+      {competency?.levels && competency.levels.length > 0 && <SfiaSkillLevels levels={competency.levels} />}
     </>
   );
 };

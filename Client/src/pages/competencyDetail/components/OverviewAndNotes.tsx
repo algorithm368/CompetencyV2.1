@@ -2,7 +2,7 @@ import React from "react";
 import { FaRocket, FaExclamationTriangle } from "react-icons/fa";
 
 interface OverviewSectionProps {
-  overall?: string;
+  overall?: string | null;
 }
 
 export const OverviewSection: React.FC<OverviewSectionProps> = ({ overall }) => (
@@ -20,7 +20,7 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({ overall }) => 
 );
 
 interface NotesSectionProps {
-  note?: string;
+  note?: string | null;
 }
 
 export const NotesSection: React.FC<NotesSectionProps> = ({ note }) => (

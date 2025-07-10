@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { FaTools, FaCheckCircle } from "react-icons/fa";
 import { motion } from "framer-motion";
 import UrlInputBox from "./UrlInputBox";
@@ -13,6 +13,11 @@ export const TpqiSkills: React.FC<TpqiSkillsProps> = ({ skills, overall }) => {
   const [submitted, setSubmitted] = useState<{ [id: string]: boolean }>({});
   const [activeSkill, setActiveSkill] = useState<string | null>(null);
   
+  // Filter out skills with empty or null names
+  const filteredSkills = useMemo(() => {
+    return skills?.filter(skill => skill.name_skill?.trim()) || [];
+  }, [skills]);
+
   // Function to handle when a skill is clicked/focused
   const handleSkillFocus = (id: string) => {
     setActiveSkill(id);
@@ -37,7 +42,7 @@ export const TpqiSkills: React.FC<TpqiSkillsProps> = ({ skills, overall }) => {
     // You can add API call here
   };
 
-  return skills && skills.length > 0 ? (
+  return filteredSkills.length > 0 ? (
     <motion.section 
       className="relative bg-gradient-to-b from-green-50 via-white to-green-25 backdrop-blur-xl rounded-3xl p-8 border border-green-100 shadow-1xl overflow-hidden"
       initial={{ opacity: 0, y: 20 }}
@@ -58,7 +63,7 @@ export const TpqiSkills: React.FC<TpqiSkillsProps> = ({ skills, overall }) => {
         </div>
       )}
       <div className="flex flex-col gap-4">
-        {skills.map((skill) => (
+        {filteredSkills.map((skill) => (
           <motion.div 
             key={skill.id} 
             className="flex flex-col p-4 bg-white/80 backdrop-blur-md rounded-2xl border border-green-200 gap-2 shadow-md hover:shadow-xl transition-all duration-300 relative overflow-hidden"
@@ -117,6 +122,11 @@ export const TpqiKnowledge: React.FC<TpqiKnowledgeProps> = ({ knowledge, overall
   const [submitted, setSubmitted] = useState<{ [id: string]: boolean }>({});
   const [activeKnowledge, setActiveKnowledge] = useState<string | null>(null);
 
+  // Filter out knowledge with empty or null names
+  const filteredKnowledge = useMemo(() => {
+    return knowledge?.filter(k => k.name_knowledge?.trim()) || [];
+  }, [knowledge]);
+
   const handleUrlChange = (id: string, value: string) => {
     setUrls((prev) => ({ ...prev, [id]: value }));
   };
@@ -139,7 +149,7 @@ export const TpqiKnowledge: React.FC<TpqiKnowledgeProps> = ({ knowledge, overall
     setActiveKnowledge(null);
   };
 
-  return knowledge && knowledge.length > 0 ? (
+  return filteredKnowledge.length > 0 ? (
     <motion.section 
       className="relative bg-gradient-to-b from-purple-50 via-white to-purple-25 backdrop-blur-xl rounded-3xl p-8 border border-purple-100 shadow-1xl overflow-hidden"
       initial={{ opacity: 0, y: 20 }}
@@ -160,7 +170,7 @@ export const TpqiKnowledge: React.FC<TpqiKnowledgeProps> = ({ knowledge, overall
         </div>
       )}
       <div className="flex flex-col gap-4">
-        {knowledge.map((k) => (
+        {filteredKnowledge.map((k) => (
           <motion.div 
             key={k.id} 
             className="flex flex-col p-4 bg-white/80 backdrop-blur-md rounded-2xl border border-purple-200 gap-2 shadow-md hover:shadow-xl transition-all duration-300 relative overflow-hidden"
@@ -217,7 +227,12 @@ interface TpqiOccupationalProps {
 export const TpqiOccupational: React.FC<TpqiOccupationalProps> = ({ occupational, overall }) => {
   const [activeOcc, setActiveOcc] = useState<string | null>(null);
   
-  return occupational && occupational.length > 0 ? (
+  // Filter out occupational items with empty or null names
+  const filteredOccupational = useMemo(() => {
+    return occupational?.filter(occ => occ.name_occupational?.trim()) || [];
+  }, [occupational]);
+  
+  return filteredOccupational.length > 0 ? (
     <motion.section 
       className="relative bg-gradient-to-b from-indigo-50 via-white to-indigo-25 backdrop-blur-xl rounded-3xl p-8 border border-indigo-100 shadow-2xl overflow-hidden"
       initial={{ opacity: 0, y: 20 }}
@@ -238,7 +253,7 @@ export const TpqiOccupational: React.FC<TpqiOccupationalProps> = ({ occupational
         </div>
       )}
       <div className="grid gap-4 md:grid-cols-2">
-        {occupational.map((occ) => (
+        {filteredOccupational.map((occ) => (
           <motion.div 
             key={occ.id} 
             className="flex items-center p-4 bg-white/80 backdrop-blur-md rounded-2xl border border-indigo-200 shadow-md hover:shadow-xl transition-all duration-300 relative overflow-hidden"

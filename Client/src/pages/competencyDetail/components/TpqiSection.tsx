@@ -4,22 +4,53 @@ import { OverviewSection, NotesSection } from "./OverviewAndNotes";
 
 interface TpqiSectionProps {
   competency: {
-    overall?: string;
-    note?: string;
-    skills?: Array<{ id: string; name_skill: string }>;
-    knowledge?: Array<{ id: string; name_knowledge: string }>;
-    occupational?: Array<{ id: string; name_occupational: string }>;
+    competency_id: string;
+    competency_name: string | null;
+    overall: string | null;
+    note: string | null;
+    occupational: Array<{
+      id: number;
+      name_occupational: string;
+    }>;
+    sector: Array<{
+      id: number;
+      name_sector: string;
+    }>;
+    skills: Array<{
+      id: number;
+      name_skill: string;
+    }>;
+    knowledge: Array<{
+      id: number;
+      name_knowledge: string;
+    }>;
   };
 }
 
 const TpqiSection: React.FC<TpqiSectionProps> = ({ competency }) => {
+  // Convert the API structure to what the components expect
+  const convertedSkills = competency?.skills?.map(skill => ({
+    id: skill.id.toString(),
+    name_skill: skill.name_skill
+  })) || [];
+
+  const convertedKnowledge = competency?.knowledge?.map(knowledge => ({
+    id: knowledge.id.toString(),
+    name_knowledge: knowledge.name_knowledge
+  })) || [];
+
+  const convertedOccupational = competency?.occupational?.map(occ => ({
+    id: occ.id.toString(),
+    name_occupational: occ.name_occupational
+  })) || [];
+
   return (
     <>
       <OverviewSection overall={competency?.overall} />
       <NotesSection note={competency?.note} />
-      {competency?.skills && <TpqiSkills skills={competency.skills} />}
-      {competency?.knowledge && <TpqiKnowledge knowledge={competency.knowledge} />}
-      {competency?.occupational && <TpqiOccupational occupational={competency.occupational} />}
+      {convertedSkills.length > 0 && <TpqiSkills skills={convertedSkills} />}
+      {convertedKnowledge.length > 0 && <TpqiKnowledge knowledge={convertedKnowledge} />}
+      {convertedOccupational.length > 0 && <TpqiOccupational occupational={convertedOccupational} />}
     </>
   );
 };

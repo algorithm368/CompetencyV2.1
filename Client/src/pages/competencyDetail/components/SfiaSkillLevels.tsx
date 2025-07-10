@@ -151,7 +151,7 @@ const SfiaSection: React.FC<SfiaSectionProps> = ({ levels }) => {
                 {/* Decorative dot */}
                 <div className="absolute top-2 right-4 w-2 h-2 bg-blue-400 rounded-full opacity-20"></div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-3 flex items-center">
-                  {level.level_name || `Level ${index + 1}`}
+                  {level.level_name ? `Level ${level.level_name}` : `Level ${index + 1}`}
                 </h3>
                 {filteredDescriptions.map((desc) => (
                   <div key={desc.id} className="mb-4">

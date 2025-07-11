@@ -192,6 +192,7 @@ const ResultsPage: React.FC = () => {
   /**
    * Renders the appropriate component based on current application state
    * Uses AnimatePresence for smooth transitions between states
+   * Optimized for performance with reduced animation complexity
    *
    * State Priority (highest to lowest):
    * 1. Loading - Shows loading spinner
@@ -202,15 +203,25 @@ const ResultsPage: React.FC = () => {
    */
   const renderContent = () => (
     <AnimatePresence mode={UI_CONSTANTS.ANIMATION_MODE}>
-      {renderConditions.isLoading && <LoadingState key="loading" />}
-
-      {renderConditions.hasError && (
-        <ErrorState key="error" error={error} onRetry={handleRetry} />
+      {renderConditions.isLoading && (
+        <LoadingState key="loading" />
       )}
 
-      {renderConditions.hasNoQuery && <NoQueryState key="no-query" />}
+      {renderConditions.hasError && (
+        <ErrorState 
+          key="error" 
+          error={error} 
+          onRetry={handleRetry} 
+        />
+      )}
 
-      {renderConditions.isEmpty && <EmptyState key="empty" query={query} />}
+      {renderConditions.hasNoQuery && (
+        <NoQueryState key="no-query" />
+      )}
+
+      {renderConditions.isEmpty && (
+        <EmptyState key="empty" query={query} />
+      )}
 
       {renderConditions.hasResults && (
         <SuccessState
@@ -238,8 +249,8 @@ const ResultsPage: React.FC = () => {
       {/* Page header with title */}
       <SearchBanner title={UI_CONSTANTS.PAGE_TITLE} />
 
-      {/* Main content area with responsive padding and gradient background */}
-      <div className="relative pt-8 pb-16 px-4 md:px-8 lg:px-16 bg-gradient-to-b from-teal-25 via-white to-teal-25/50 min-h-screen">
+      {/* Main content area with responsive padding and optimized background */}
+      <div className="relative pt-8 pb-16 px-4 md:px-8 lg:px-16 bg-gradient-to-b from-teal-25 via-white to-teal-25/50 min-h-screen will-change-transform">
         {/* Search input component */}
         <SearchBox
           searchTerm={searchTerm}

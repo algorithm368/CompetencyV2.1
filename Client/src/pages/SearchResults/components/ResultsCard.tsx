@@ -13,22 +13,76 @@ interface ResultCardProps {
   onViewDetails: (id: number) => void;
 }
 
+// Optimized animation variants (defined outside component)
+const cardVariants = {
+  initial: { opacity: 0, y: 20 },
+  animate: { 
+    opacity: 1, 
+    y: 0,
+    transition: {
+      duration: 0.3,
+      ease: "easeOut"
+    }
+  },
+  hover: { 
+    scale: 1.02, 
+    y: -4,
+    transition: {
+      duration: 0.2,
+      ease: "easeOut"
+    }
+  },
+  tap: { 
+    scale: 0.98,
+    transition: {
+      duration: 0.1
+    }
+  }
+};
+
+const buttonVariants = {
+  hover: { 
+    scale: 1.02,
+    transition: {
+      duration: 0.2,
+      ease: "easeOut"
+    }
+  },
+  tap: { 
+    scale: 0.98,
+    transition: {
+      duration: 0.1
+    }
+  }
+};
+
+const arrowVariants = {
+  initial: { rotate: 0 },
+  hover: { 
+    rotate: 45,
+    transition: {
+      duration: 0.2,
+      ease: "easeOut"
+    }
+  }
+};
+
 const ResultCard: React.FC<ResultCardProps> = ({ item, onViewDetails }) => {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      whileHover={{ scale: 1.02, y: -4 }}
-      className="relative group overflow-hidden"
+      variants={cardVariants}
+      initial="initial"
+      animate="animate"
+      whileHover="hover"
+      whileTap="tap"
+      className="relative group overflow-hidden will-change-transform"
     >
-      {/* Decorative background elements */}
+      {/* Simplified decorative background elements */}
       <div className="absolute inset-0">
         <div className="absolute -top-20 -right-20 w-40 h-40 bg-teal-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
-        <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-teal-300 rounded-full mix-blend-multiply filter blur-xl opacity-15 group-hover:opacity-25 transition-opacity duration-300"></div>
       </div>
 
-      <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-teal-100/50 group-hover:border-teal-200 h-full flex flex-col justify-between group-hover:bg-white">
+      <div className="relative bg-white/90 rounded-2xl duration-300 p-6 border border-teal-100/50 group-hover:border-teal-200 h-full flex flex-col justify-between group-hover:bg-white">
         {/* Header with framework badge */}
         <div>
           <div className="flex items-center justify-between mb-4">
@@ -38,8 +92,9 @@ const ResultCard: React.FC<ResultCardProps> = ({ item, onViewDetails }) => {
             </div>
             <motion.div
               className="opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-              initial={{ rotate: 0 }}
-              whileHover={{ rotate: 45 }}
+              variants={arrowVariants}
+              initial="initial"
+              whileHover="hover"
             >
               <ArrowRight className="w-4 h-4 text-teal-600" />
             </motion.div>
@@ -59,9 +114,10 @@ const ResultCard: React.FC<ResultCardProps> = ({ item, onViewDetails }) => {
         <div className="mt-auto">
           <motion.button
             onClick={() => onViewDetails(item.id)}
-            className="w-full bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white py-3 rounded-xl font-medium transition-all duration-300 shadow-md hover:shadow-lg group-hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-2"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            className="w-full bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white py-3 rounded-xl font-medium transition-all duration-300 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-2"
+            variants={buttonVariants}
+            whileHover="hover"
+            whileTap="tap"
           >
             <span className="flex items-center justify-center gap-2">
               ดูรายละเอียด

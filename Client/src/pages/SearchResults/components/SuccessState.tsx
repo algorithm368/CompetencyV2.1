@@ -19,6 +19,40 @@ interface SuccessStateProps {
   onViewDetails: (id: number) => void;
 }
 
+// Optimized animation variants (defined outside component)
+const containerVariants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.4,
+      ease: "easeOut",
+      staggerChildren: 0.08,
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: -15,
+    transition: {
+      duration: 0.3,
+      ease: "easeIn",
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { 
+      duration: 0.3,
+      ease: "easeOut"
+    },
+  },
+};
+
 const SuccessState: React.FC<SuccessStateProps> = ({
   query,
   items,
@@ -27,34 +61,13 @@ const SuccessState: React.FC<SuccessStateProps> = ({
   onPageChange,
   onViewDetails,
 }) => {
-  const containerVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.6,
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.4 },
-    },
-  };
-
   return (
     <motion.div
       key="results"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      exit="hidden"
+      exit="exit"
     >
       <motion.div variants={itemVariants}>
         <SearchResultsHeader query={query} />
@@ -62,7 +75,6 @@ const SuccessState: React.FC<SuccessStateProps> = ({
       <motion.div variants={itemVariants}>
         <ResultsGrid
           items={items}
-          query={query}
           onViewDetails={onViewDetails}
         />
       </motion.div>

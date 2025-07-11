@@ -135,7 +135,6 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-<<<<<<< HEAD
 # Ignore all test files (TypeScript)
 *.test.ts
 *.test.tsx
@@ -145,11 +144,9 @@ dist
 # Ignore test folders
 __tests__/
 tests/
-=======
 # Ignore all files ending with .test.* or .spec.*
 *.test.*
 *.spec.*
 
 # Ignore tests inside __tests__ folders
 __tests__/
->>>>>>> feature/integrate-api-with-frontend

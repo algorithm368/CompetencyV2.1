@@ -2,15 +2,15 @@ import React, { useState, useMemo } from "react";
 import { FaGraduationCap, FaCheckCircle } from "react-icons/fa";
 import UrlInputBox from "./UrlInputBox";
 
-interface SfiaSkill {
+interface SfiaSubSkill {
   id: number;
-  skill_text: string | null;
+  subskill_text: string | null;
 }
 
 interface SfiaDescription {
   id: number;
   description_text: string | null;
-  skills: SfiaSkill[];
+  subskills: SfiaSubSkill[];
 }
 
 interface SfiaLevel {
@@ -23,8 +23,8 @@ interface SfiaSectionProps {
   levels: SfiaLevel[];
 }
 
-interface SkillItemProps {
-  skill: SfiaSkill;
+interface SubSkillItemProps {
+  subskill: SfiaSubSkill;
   url: string;
   submitted: boolean;
   onUrlChange: (value: string) => void;
@@ -32,8 +32,8 @@ interface SkillItemProps {
   onSubmit: () => void;
 }
 
-const SkillItem: React.FC<SkillItemProps> = ({ 
-  skill, 
+const SubSkillItem: React.FC<SubSkillItemProps> = ({ 
+  subskill, 
   url, 
   submitted, 
   onUrlChange, 
@@ -43,7 +43,7 @@ const SkillItem: React.FC<SkillItemProps> = ({
   <li className="flex flex-col gap-1">
     <div className="flex items-start">
       <FaCheckCircle className="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-      <span className="text-gray-700">{skill.skill_text}</span>
+      <span className="text-gray-700">{subskill.subskill_text}</span>
     </div>
     <div className="flex-1 min-w-0">
       <UrlInputBox
@@ -68,8 +68,8 @@ const SfiaSection: React.FC<SfiaSectionProps> = ({ levels }) => {
   // Helper function to check if a description has meaningful content
   const hasValidContent = (desc: SfiaDescription): boolean => {
     const hasDescriptionText = desc.description_text?.trim();
-    const hasSkills = desc.skills?.some(skill => skill.skill_text?.trim());
-    return !!(hasDescriptionText || hasSkills);
+    const hasSubSkills = desc.subskills?.some(subskill => subskill.subskill_text?.trim());
+    return !!(hasDescriptionText || hasSubSkills);
   };
 
   // Filter out levels that have no meaningful content
@@ -89,11 +89,11 @@ const SfiaSection: React.FC<SfiaSectionProps> = ({ levels }) => {
   }, [levels]);
 
   // Create callback functions to avoid deep nesting
-  const createSkillCallbacks = useMemo(() => {
-    return (skillId: number) => ({
-      onUrlChange: (value: string) => handleUrlChange(skillId, value),
-      onRemove: () => handleRemove(skillId),
-      onSubmit: () => handleSubmit(skillId)
+  const createSubSkillCallbacks = useMemo(() => {
+    return (subSkillId: number) => ({
+      onUrlChange: (value: string) => handleUrlChange(subSkillId, value),
+      onRemove: () => handleRemove(subSkillId),
+      onSubmit: () => handleSubmit(subSkillId)
     });
   }, []);
 
@@ -158,20 +158,20 @@ const SfiaSection: React.FC<SfiaSectionProps> = ({ levels }) => {
                     {desc.description_text?.trim() && (
                       <p className="text-gray-700 mb-3">{desc.description_text}</p>
                     )}
-                    {desc.skills && desc.skills.length > 0 && (
+                    {desc.subskills && desc.subskills.length > 0 && (
                       <div>
-                        <h4 className="font-medium text-gray-800 mb-2">Skills:</h4>
+                        <h4 className="font-medium text-gray-800 mb-2">SubSkills:</h4>
                         <ul className="space-y-4">
-                          {desc.skills
-                            .filter(skill => skill.skill_text?.trim())
-                            .map((skill) => {
-                              const callbacks = createSkillCallbacks(skill.id);
+                          {desc.subskills
+                            .filter(subskill => subskill.subskill_text?.trim())
+                            .map((subskill) => {
+                              const callbacks = createSubSkillCallbacks(subskill.id);
                               return (
-                                <SkillItem 
-                                  key={skill.id}
-                                  skill={skill}
-                                  url={urls[skill.id.toString()] || ''}
-                                  submitted={submitted[skill.id.toString()] || false}
+                                <SubSkillItem 
+                                  key={subskill.id}
+                                  subskill={subskill}
+                                  url={urls[subskill.id.toString()] || ''}
+                                  submitted={submitted[subskill.id.toString()] || false}
                                   onUrlChange={callbacks.onUrlChange}
                                   onRemove={callbacks.onRemove}
                                   onSubmit={callbacks.onSubmit}

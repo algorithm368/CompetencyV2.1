@@ -250,7 +250,7 @@ const ResultsPage: React.FC = () => {
       <SearchBanner title={UI_CONSTANTS.PAGE_TITLE} />
 
       {/* Main content area with responsive padding and optimized background */}
-      <div className="relative pt-8 pb-16 px-4 md:px-8 lg:px-16 bg-gradient-to-b from-teal-25 via-white to-teal-25/50 min-h-screen will-change-transform">
+      <div className="relative pt-8 pb-16 px-4 md:px-8 lg:px-16 bg-gradient-to-b from-teal-25 via-white to-teal-25/50 min-h-screen">
         {/* Search input component */}
         <SearchBox
           searchTerm={searchTerm}

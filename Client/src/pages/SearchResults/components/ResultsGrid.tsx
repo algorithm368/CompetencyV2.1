@@ -31,7 +31,7 @@ const ResultsGrid: React.FC<ResultsGridProps> = ({
 }) => {
   return (
     <motion.div 
-      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 will-change-transform"
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
       variants={gridVariants}
       initial="hidden"
       animate="visible"

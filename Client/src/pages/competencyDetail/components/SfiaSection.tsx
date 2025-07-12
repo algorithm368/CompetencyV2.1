@@ -9,9 +9,9 @@ interface SfiaLevel {
   descriptions: Array<{
     id: number;
     description_text: string | null;
-    skills: Array<{
+    subskills: Array<{
       id: number;
-      skill_text: string | null;
+      subskill_text: string | null;
     }>;
   }>;
 }

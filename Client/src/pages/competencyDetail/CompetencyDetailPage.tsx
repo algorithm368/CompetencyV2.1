@@ -127,26 +127,23 @@ ActionButton.displayName = 'ActionButton';
 // Optimized background decoration using CSS animations for better performance
 const OptimizedBackgroundDecor = React.memo(() => (
   <div className="absolute inset-0 pointer-events-none select-none overflow-hidden">
-    {/* Simplified gradient orbs using CSS animations with will-change for better performance */}
+    {/* Simplified gradient orbs using CSS animations for better performance */}
     <div 
       className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-teal-200 via-blue-200 to-purple-200 rounded-full blur-3xl opacity-30 animate-pulse" 
       style={{ 
-        animationDuration: '8s',
-        willChange: 'transform, opacity'
+        animationDuration: '8s'
       }} 
     />
     <div 
       className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-tr from-green-200 via-teal-200 to-cyan-200 rounded-full blur-3xl opacity-30 animate-bounce" 
       style={{ 
-        animationDuration: '10s',
-        willChange: 'transform'
+        animationDuration: '10s'
       }} 
     />
     <div 
       className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-gradient-to-r from-yellow-200 via-orange-200 to-red-200 rounded-full blur-3xl opacity-20 animate-spin" 
       style={{ 
-        animationDuration: '15s',
-        willChange: 'transform'
+        animationDuration: '15s'
       }} 
     />
     
@@ -157,8 +154,7 @@ const OptimizedBackgroundDecor = React.memo(() => (
         className="absolute w-2 h-2 bg-white rounded-full opacity-20"
         style={{ 
           left: `${left}%`, 
-          top: `${top}%`,
-          willChange: 'transform, opacity'
+          top: `${top}%`
         }}
         animate={{
           y: [0, -20, 0],

@@ -75,7 +75,7 @@ const ResultCard: React.FC<ResultCardProps> = ({ item, onViewDetails }) => {
       animate="animate"
       whileHover="hover"
       whileTap="tap"
-      className="relative group overflow-hidden will-change-transform"
+      className="relative group overflow-hidden"
     >
       {/* Simplified decorative background elements */}
       <div className="absolute inset-0">

@@ -21,7 +21,7 @@ export const getSkillDetailController = async (
       });
     }
 
-    const skillDetails = await getSkillDetailsByCode(skillCode);
+    const skillDetails = await getSkillDetailsByCode(skillCode)
     
     if (!skillDetails) {
       return res.status(404).json({ 

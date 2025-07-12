@@ -1,68 +1,121 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueries, useMutation, useQueryClient } from "@tanstack/react-query";
 import { CategoryService } from "@Services/admin/sfia/categoryServices";
 import { Category, CreateCategoryDto, UpdateCategoryDto, CategoryPageResult } from "@Types/sfia/categoryTypes";
 
+type ToastCallback = (message: string, type?: "success" | "error" | "info") => void;
+
 export function useCategoryManager(
-  actorId: string,
   options?: {
     id?: number | null;
     search?: string;
     page?: number;
     perPage?: number;
-  }
+    initialPrefetchPages?: number;
+  },
+  onToast?: ToastCallback
 ) {
-  const { id = null, search, page, perPage } = options || {};
+  const { id = null, search = "", page = 1, perPage = 10, initialPrefetchPages = 3 } = options || {};
   const queryClient = useQueryClient();
 
-  const categoriesQuery = useQuery<CategoryPageResult, Error>({
-    queryKey: ["categories", { search, page, perPage }],
-    queryFn: async () => {
-      const result = await CategoryService.getAll(search, page, perPage);
-      if (Array.isArray(result)) {
-        return result[0];
-      }
-      return result;
-    },
+  // ฟังก์ชัน fetchPage ที่ใช้เรียก API
+  const fetchPage = async (pageIndex: number, pageSize: number): Promise<{ data: Category[]; total: number }> => {
+    const pageNumber = pageIndex + 1;
+    const result = await CategoryService.getAll(search, pageNumber, pageSize);
+    console.log(result.data);
+
+    return {
+      data: result.data ?? [],
+      total: result.total ?? 0,
+    };
+  };
+
+  // prefetch หลายหน้าแรก
+  const prefetchQueries = useQueries({
+    queries: Array.from({ length: initialPrefetchPages }, (_, i) => ({
+      queryKey: ["categories", search, i + 1, perPage] as const,
+      queryFn: () => fetchPage(i, perPage),
+      staleTime: 5 * 60 * 1000,
+      enabled: true,
+    })),
   });
 
+  // โหลดหน้าปัจจุบัน
+  const currentPageQuery = useQuery<CategoryPageResult, Error>({
+    queryKey: ["categories", search, page, perPage] as const,
+    queryFn: () => CategoryService.getAll(search, page, perPage),
+    enabled: page > initialPrefetchPages,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
+
+  // รวมข้อมูล prefetch กับหน้าปัจจุบัน
+  const mergedData: CategoryPageResult | undefined = page <= initialPrefetchPages ? prefetchQueries[page - 1]?.data : currentPageQuery.data;
+
+  const isLoading = prefetchQueries.some((q) => q.isLoading) || (page > initialPrefetchPages && currentPageQuery.isLoading);
+
+  const isError = prefetchQueries.some((q) => q.isError) || (page > initialPrefetchPages && currentPageQuery.isError);
+
+  const error = prefetchQueries.find((q) => q.error)?.error || (page > initialPrefetchPages && currentPageQuery.error);
+
+  // ดึงข้อมูลเดี่ยว
   const categoryQuery = useQuery<Category, Error>({
-    queryKey: ["category", id],
-    queryFn: () => {
+    queryKey: ["category", id] as const,
+    queryFn: async () => {
       if (id === null) throw new Error("Category id is null");
       return CategoryService.getById(id);
     },
     enabled: id !== null,
   });
 
+  // Mutation: create
   const createCategory = useMutation<Category, Error, CreateCategoryDto>({
-    mutationFn: (dto) => {
-      const fixedDto = {
-        ...dto,
-        subcategory_id: dto.subcategory_id != null ? Number(dto.subcategory_id) : null,
-      };
-      return CategoryService.create(fixedDto, actorId);
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["categories"] }),
-  });
-
-  const updateCategory = useMutation<Category, Error, { id: number; data: UpdateCategoryDto }>({
-    mutationFn: ({ id, data }) => {
-      const fixedData = {
-        ...data,
-        subcategory_id: data.subcategory_id != null ? Number(data.subcategory_id) : null,
-      };
-      return CategoryService.update(id, fixedData, actorId);
-    },
-    onSuccess: (upd) => {
+    mutationFn: (dto) => CategoryService.create(dto),
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
-      queryClient.invalidateQueries({ queryKey: ["category", upd.id] });
+      onToast?.("Category created successfully", "success");
+    },
+    onError: () => {
+      onToast?.("Failed to create category", "error");
     },
   });
 
-  const deleteCategory = useMutation<void, Error, number>({
-    mutationFn: (delId) => CategoryService.delete(delId, actorId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["categories"] }),
+  // Mutation: update
+  const updateCategory = useMutation<Category, Error, { id: number; data: UpdateCategoryDto }>({
+    mutationFn: ({ id, data }) => CategoryService.update(id, data),
+    onSuccess: (updated) => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      queryClient.invalidateQueries({ queryKey: ["category", updated.id] });
+      onToast?.("Category updated successfully", "success");
+    },
+    onError: () => {
+      onToast?.("Failed to update category", "error");
+    },
   });
 
-  return { categoriesQuery, categoryQuery, createCategory, updateCategory, deleteCategory };
+  // Mutation: delete
+  const deleteCategory = useMutation<void, Error, number>({
+    mutationFn: (delId) => CategoryService.delete(delId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      onToast?.("Category deleted successfully", "success");
+    },
+    onError: () => {
+      onToast?.("Failed to delete category", "error");
+    },
+  });
+
+  return {
+    categoriesQuery: {
+      data: mergedData,
+      isLoading,
+      isError,
+      error,
+      refetch: currentPageQuery.refetch,
+    },
+    fetchPage,
+    categoryQuery,
+    createCategory,
+    updateCategory,
+    deleteCategory,
+  };
 }

@@ -1,9 +1,9 @@
-import type { level } from "@prisma/client_tpqi";
+import type { Level } from "@prisma/client_tpqi";
 import { LevelRepo } from "@Admin/repositories/tpqi/TPQIRepositories";
-import { BaseService } from "../BaseService";
+import { BaseService } from "@Utils/BaseService";
 
-export class LevelService extends BaseService<level, keyof level> {
+export class LevelService extends BaseService<Level, keyof Level> {
   constructor() {
-    super(new LevelRepo(), ["name_level"], "id_level");
+    super(new LevelRepo(), ["name"], "id");
   }
 }

@@ -148,6 +148,10 @@ export class DatabaseManagement<M extends Record<string, any>> {
    */
   public async findMany<T>(params: Parameters<M["findMany"]>[0] = {} as any): Promise<T[]> {
     try {
+      if (params && (params as any).$scalars && ((params as any).include || (params as any).select)) {
+        delete (params as any).$scalars;
+      }
+
       return await this.model.findMany(params);
     } catch (err: any) {
       throw new DatabaseError("READ_MANY", this.modelName, err);
@@ -224,7 +228,12 @@ export class DatabaseManagement<M extends Record<string, any>> {
    * @param logger       (optional) defaults to this.defaultLogger
    * @returns             The updateMany result ({ count: number })
    */
-  public async updateMany(params: Parameters<M["updateMany"]>[0], actor: string = this.defaultActor, requestId?: string, logger: Logger = this.defaultLogger): Promise<Awaited<ReturnType<M["updateMany"]>>> {
+  public async updateMany(
+    params: Parameters<M["updateMany"]>[0],
+    actor: string = this.defaultActor,
+    requestId?: string,
+    logger: Logger = this.defaultLogger
+  ): Promise<Awaited<ReturnType<M["updateMany"]>>> {
     try {
       const result = await (this.model as any).updateMany(params);
       await this.logEvent("INFO", "UPDATE_MANY", result, actor, requestId, logger);
@@ -275,7 +284,12 @@ export class DatabaseManagement<M extends Record<string, any>> {
    * @param logger       (optional) defaults to this.defaultLogger
    * @returns             The deleteMany result
    */
-  public async deleteMany(params: Parameters<M["deleteMany"]>[0], actor: string = this.defaultActor, requestId?: string, logger: Logger = this.defaultLogger): Promise<Awaited<ReturnType<M["deleteMany"]>>> {
+  public async deleteMany(
+    params: Parameters<M["deleteMany"]>[0],
+    actor: string = this.defaultActor,
+    requestId?: string,
+    logger: Logger = this.defaultLogger
+  ): Promise<Awaited<ReturnType<M["deleteMany"]>>> {
     try {
       const result = await this.model.deleteMany(params);
       await this.logEvent("INFO", "DELETE_MANY", result, actor, requestId, logger);
@@ -342,6 +356,20 @@ export class DatabaseManagement<M extends Record<string, any>> {
       return result;
     } catch (err: any) {
       throw new DatabaseError("TRANSACTION", this.modelName, err);
+    }
+  }
+
+  /**
+   * Count records with optional filters.
+   *
+   * @param args     Arguments for model.count(...)
+   * @returns        Number of matching records
+   */
+  public async count(args: Parameters<M["count"]>[0] = {}): Promise<number> {
+    try {
+      return await (this.model as any).count(args);
+    } catch (err: any) {
+      throw new DatabaseError("COUNT", this.modelName, err);
     }
   }
 }

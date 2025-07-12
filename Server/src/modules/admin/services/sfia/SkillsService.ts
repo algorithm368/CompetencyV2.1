@@ -1,9 +1,9 @@
-import { SkillsRepo } from "@Admin/repositories/sfia/SFIARepositories";
-import type { Skills } from "@prisma/client_sfia";
-import { BaseService } from "../BaseService";
+import { SubSkillRepo } from "@Admin/repositories/sfia/SFIARepositories";
+import type { SubSkill } from "@prisma/client_sfia";
+import { BaseService } from "@Utils/BaseService";
 
-export class SkillsService extends BaseService<Skills, keyof Skills> {
+export class SubSkillsService extends BaseService<SubSkill, keyof SubSkill> {
   constructor() {
-    super(new SkillsRepo(), ["skill_text", "description_id"], "id");
+    super(new SubSkillRepo(), ["skillCode"], "id");
   }
 }

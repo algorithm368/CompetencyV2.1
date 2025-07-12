@@ -1,9 +1,9 @@
-import type { unit_code } from "@prisma/client_tpqi";
+import type { UnitCode } from "@prisma/client_tpqi";
 import { UnitCodeRepo } from "@Admin/repositories/tpqi/TPQIRepositories";
-import { BaseService } from "../BaseService";
+import { BaseService } from "@Utils/BaseService";
 
-export class UnitCodeService extends BaseService<unit_code, keyof unit_code> {
+export class UnitCodeService extends BaseService<UnitCode, keyof UnitCode> {
   constructor() {
-    super(new UnitCodeRepo(), ["name", "description_unitcode", "unit_code"], "id_unit_code");
+    super(new UnitCodeRepo(), ["name", "description"], "id");
   }
 }

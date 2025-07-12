@@ -1,9 +1,9 @@
-import type { cl_skills } from "@prisma/client_tpqi";
-import { ClSkillsRepo } from "@Admin/repositories/tpqi/TPQIRepositories";
-import { BaseService } from "../BaseService";
+import type { CareerLevelSkill } from "@prisma/client_tpqi";
+import { CareerLevelSkillRepo } from "@Admin/repositories/tpqi/TPQIRepositories";
+import { BaseService } from "@Utils/BaseService";
 
-export class ClSkillsService extends BaseService<cl_skills, keyof cl_skills> {
+export class ClSkillsService extends BaseService<CareerLevelSkill, keyof CareerLevelSkill> {
   constructor() {
-    super(new ClSkillsRepo(), ["id_career_level"], "id_cl_skills");
+    super(new CareerLevelSkillRepo(), ["careerLevelId"], "id");
   }
 }

@@ -1,13 +1,13 @@
 export enum InformationApprovalStatus {
-  approved = "approved",
-  not_approved = "not_approved",
+  APPROVED = "APPROVED",
+  NOT_APPROVED = "NOT_APPROVED",
 }
 
 export interface Information {
   id: number;
-  info_text?: string | null;
-  skill_id?: number | null;
-  datacollection_id?: number | null;
-  date: string; // ISO timestamp
-  approval_status: InformationApprovalStatus;
+  text?: string | null;
+  subSkillId?: number | null;
+  dataCollectionId?: number | null;
+  createdAt: string; // ISO timestamp
+  approvalStatus: InformationApprovalStatus;
 }

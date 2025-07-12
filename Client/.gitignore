@@ -23,6 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 
+test/**/*
 # Ignore test files
 src/test/
 vitest.config.ts

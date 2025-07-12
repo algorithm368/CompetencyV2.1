@@ -1,9 +1,9 @@
-import type { skill } from "@prisma/client_tpqi";
+import type { Skill } from "@prisma/client_tpqi";
 import { SkillRepo } from "@Admin/repositories/tpqi/TPQIRepositories";
-import { BaseService } from "../BaseService";
+import { BaseService } from "@Utils/BaseService";
 
-export class SkillService extends BaseService<skill, keyof skill> {
+export class SkillService extends BaseService<Skill, keyof Skill> {
   constructor() {
-    super(new SkillRepo(), ["name_skill"], "id_skill");
+    super(new SkillRepo(), ["name"], "id");
   }
 }

@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/@prisma/client_sfia"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL_SFIA")
+}
+
+model Category {
+  id            Int          @id @default(autoincrement())
+  name          String?      @db.Text
+  subcategoryId Int?
+  subcategory   Subcategory? @relation(fields: [subcategoryId], references: [id])
+  skills        Skill[]     
+}
+
+model Subcategory {
+  id         Int        @id @default(autoincrement())
+  name       String?    @db.Text
+  categories Category[]
+}
+model Skill { 
+  code        String      @id @db.VarChar(255)
+  name        String?     @db.VarChar(255)
+  overview    String?     @db.Text
+  note        String?     @db.Text
+  levelId     Int?
+  categoryId  Int?
+  category    Category?   @relation(fields: [categoryId], references: [id])
+  levels      Level[]
+  summaries   SfiaSummary[]
+  subSkills   SubSkill[] 
+}
+
+model Level {
+  id          Int          @id @default(autoincrement())
+  name        String?      @db.VarChar(255)
+  skillCode   String?
+  skill       Skill?       @relation(fields: [skillCode], references: [code])
+  descriptions Description[]
+  summaries   SfiaSummary[]
+}
+
+model Description {
+  id          Int          @id @default(autoincrement())
+  text        String?      @db.Text
+  levelId     Int?
+  level       Level?       @relation(fields: [levelId], references: [id])
+  subSkills   SubSkill[]
+}
+
+model SubSkill {  
+  id            Int           @id @default(autoincrement())
+  skillCode     String        // FK to Skill
+  descriptionId Int
+  text          String?       @db.Text
+
+  skill         Skill         @relation(fields: [skillCode], references: [code])
+  description   Description   @relation(fields: [descriptionId], references: [id])
+  informations  Information[]
+}
+
+model Information {
+  id              Int                      @id @default(autoincrement())
+  text            String?                  @db.VarChar(255)
+  subSkillId      Int?
+  dataCollectionId Int?
+  createdAt       DateTime                 @default(now())
+  approvalStatus  InformationApprovalStatus @default(NOT_APPROVED)
+  evidenceUrl     String?                  @db.VarChar(1000)
+
+  subSkill        SubSkill?                 @relation(fields: [subSkillId], references: [id])
+  dataCollection  DataCollection?           @relation(fields: [dataCollectionId], references: [id])
+}
+
+model DataCollection {
+  id           Int          @id @default(autoincrement())
+  userId       String?      @db.Char(36)
+  informations Information[]
+}
+
+model SfiaSummary {
+  id           Int       @id @default(autoincrement())
+  userEmail    String?   @db.VarChar(255)
+  skillCode    String?
+  levelId      Int?
+  skillPercent Decimal?  @db.Decimal(5,2)
+  skill        Skill?    @relation(fields: [skillCode], references: [code])
+  level        Level?    @relation(fields: [levelId], references: [id])
+}
+
+enum InformationApprovalStatus {
+  APPROVED
+  NOT_APPROVED
+}

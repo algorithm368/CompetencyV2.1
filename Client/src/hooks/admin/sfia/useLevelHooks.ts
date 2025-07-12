@@ -1,6 +1,6 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueries, useMutation, useQueryClient } from "@tanstack/react-query";
 import { LevelService } from "@Services/admin/sfia/levelServices";
-import { Levels, CreateLevelDto, UpdateLevelDto, LevelPageResult } from "@Types/sfia/levelTypes";
+import { Level, CreateLevelDto, UpdateLevelDto, LevelPageResult } from "@Types/sfia/levelTypes";
 
 type ToastCallback = (message: string, type?: "success" | "error" | "info") => void;
 
@@ -10,27 +10,70 @@ export function useLevelManager(
     search?: string;
     page?: number;
     perPage?: number;
+    initialPrefetchPages?: number;
   },
   onToast?: ToastCallback
 ) {
-  const { id = null, search, page, perPage } = options || {};
+  const { id = null, search = "", page = 1, perPage = 10, initialPrefetchPages = 3 } = options || {};
   const queryClient = useQueryClient();
 
-  const levelsQuery = useQuery<LevelPageResult[], Error>({
-    queryKey: ["levels", { search, page, perPage }],
-    queryFn: () => LevelService.getAll(search, page, perPage),
+  // ฟังก์ชัน fetchPage ใช้ดึงข้อมูลแต่ละหน้า
+  const fetchPage = async (pageIndex: number, pageSize: number): Promise<{ data: Level[]; total: number }> => {
+    const pageNumber = pageIndex + 1;
+    const result = await LevelService.getAll(search, pageNumber, pageSize);
+    return {
+      data: result.data ?? [],
+      total: result.total ?? 0,
+    };
+  };
+
+  // prefetch หลายหน้าแรก
+  const prefetchQueries = useQueries({
+    queries: Array.from({ length: initialPrefetchPages }, (_, i) => ({
+      queryKey: ["levels", search, i + 1, perPage] as const,
+      queryFn: () => fetchPage(i, perPage),
+      staleTime: 5 * 60 * 1000,
+      enabled: true,
+    })),
   });
 
-  const levelQuery = useQuery<Levels, Error>({
-    queryKey: ["level", id],
-    queryFn: () => {
+  // โหลดหน้าปัจจุบัน ถ้าเกิน prefetch
+  const currentPageQuery = useQuery<LevelPageResult, Error>({
+    queryKey: ["levels", search, page, perPage] as const,
+    queryFn: () => LevelService.getAll(search, page, perPage),
+    enabled: page > initialPrefetchPages,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
+
+  // รวมข้อมูลจาก prefetch กับหน้าปัจจุบัน
+  const mergedData: LevelPageResult | undefined = (() => {
+    if (page <= initialPrefetchPages) {
+      const pre = prefetchQueries[page - 1];
+      if (pre && !pre.isLoading && !pre.isError) return pre.data;
+      return undefined;
+    }
+    return currentPageQuery.data;
+  })();
+
+  const isLoading = prefetchQueries.some((q) => q.isLoading) || (page > initialPrefetchPages && currentPageQuery.isLoading);
+
+  const isError = prefetchQueries.some((q) => q.isError) || (page > initialPrefetchPages && currentPageQuery.isError);
+
+  const error = prefetchQueries.find((q) => q.error)?.error || (page > initialPrefetchPages && currentPageQuery.error);
+
+  // ดึงข้อมูลเฉพาะตัวเดียว (useQuery)
+  const levelQuery = useQuery<Level, Error>({
+    queryKey: ["level", id] as const,
+    queryFn: async () => {
       if (id === null) throw new Error("Level id is null");
       return LevelService.getById(id);
     },
     enabled: id !== null,
   });
 
-  const createLevel = useMutation<Levels, Error, CreateLevelDto>({
+  // Mutation: create
+  const createLevel = useMutation<Level, Error, CreateLevelDto>({
     mutationFn: (dto) => LevelService.create(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["levels"] });
@@ -41,7 +84,8 @@ export function useLevelManager(
     },
   });
 
-  const updateLevel = useMutation<Levels, Error, { id: number; data: UpdateLevelDto }>({
+  // Mutation: update
+  const updateLevel = useMutation<Level, Error, { id: number; data: UpdateLevelDto }>({
     mutationFn: ({ id, data }) => LevelService.update(id, data),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: ["levels"] });
@@ -53,6 +97,7 @@ export function useLevelManager(
     },
   });
 
+  // Mutation: delete
   const deleteLevel = useMutation<void, Error, number>({
     mutationFn: (delId) => LevelService.delete(delId),
     onSuccess: () => {
@@ -65,7 +110,14 @@ export function useLevelManager(
   });
 
   return {
-    levelsQuery,
+    levelsQuery: {
+      data: mergedData,
+      isLoading,
+      isError,
+      error,
+      refetch: currentPageQuery.refetch,
+    },
+    fetchPage,
     levelQuery,
     createLevel,
     updateLevel,

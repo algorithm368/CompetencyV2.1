@@ -69,7 +69,7 @@ export const AddEditCareerModal: React.FC<AddEditCareerModalProps> = ({
 
 interface DeleteCareerModalProps {
     isOpen: boolean;
-    subcategoryText?: string;
+    careerText?: string;
     onClose: () => void;
     onConfirm: () => void;
     isLoading?: boolean;
@@ -77,7 +77,7 @@ interface DeleteCareerModalProps {
 
 export const DeleteCareerModal: React.FC<DeleteCareerModalProps> = ({
     isOpen,
-    subcategoryText,
+    careerText,
     onClose,
     onConfirm,
     isLoading = false,
@@ -108,7 +108,7 @@ export const DeleteCareerModal: React.FC<DeleteCareerModalProps> = ({
             }
         >
             <div className="space-y-3">
-                <p>Are you sure you want to delete the career "{subcategoryText}"?</p>
+                <p>Are you sure you want to delete the career "{careerText}"?</p>
             </div>
         </Modal>
     );

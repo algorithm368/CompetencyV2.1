@@ -6,7 +6,7 @@ import {
     CreateCareerDto,
 } from "@Types/tpqi/careerTypes";
 
-const BASE_URL = "/admin/tpqi/career-service";
+const BASE_URL = "/admin/tpqi/career";
 
 export const CareerService = {
     async getAll(

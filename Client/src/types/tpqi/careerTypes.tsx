@@ -1,6 +1,6 @@
 export interface Career {
-  id: number;
-  name?: string | null;
+  id_career: number;
+  name_career?: string | null;
 }
 
 export interface CareerPageResult {
@@ -8,5 +8,5 @@ export interface CareerPageResult {
     total?: number;
 }
 
-export type CreateCareerDto = Omit<Career, "id">;
-export type UpdateCareerDto = Partial<Omit<CreateCareerDto, "id">>;
+export type CreateCareerDto = Omit<Career, "id_career">;
+export type UpdateCareerDto = Partial<Omit<CreateCareerDto, "id_career">>;

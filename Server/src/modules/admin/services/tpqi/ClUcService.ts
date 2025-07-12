@@ -1,9 +1,9 @@
-import type { cl_uc } from "@prisma/client_tpqi";
-import { ClUcRepo } from "@Admin/repositories/tpqi/TPQIRepositories";
+import type { CareerLevelUnitCode } from "@prisma/client_tpqi";
+import { CareerLevelUnitCodeRepo } from "@Admin/repositories/tpqi/TPQIRepositories";
 import { BaseService } from "@Utils/BaseService";
 
-export class ClUcService extends BaseService<cl_uc, keyof cl_uc> {
+export class ClUcService extends BaseService<CareerLevelUnitCode, keyof CareerLevelUnitCode> {
   constructor() {
-    super(new ClUcRepo(), ["id_career_level"], "id_cl_uc");
+    super(new CareerLevelUnitCodeRepo(), ["careerLevelId"], "id");
   }
 }

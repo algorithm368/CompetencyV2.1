@@ -51,7 +51,7 @@ export default function DescriptionTablePage() {
 
   // Confirm operations
   const confirmAdd = (text: string) => {
-    const dto: CreateDescriptionDto = { description_text: text || null };
+    const dto: CreateDescriptionDto = { text: text || null };
     createDescription.mutate(dto, {
       onSuccess: () => {
         handleToast("Created successfully", "success");
@@ -66,7 +66,7 @@ export default function DescriptionTablePage() {
 
   const confirmEdit = (text: string) => {
     if (!selectedDescription) return;
-    const dto: UpdateDescriptionDto = { description_text: text };
+    const dto: UpdateDescriptionDto = { text: text };
     updateDescription.mutate(
       { id: selectedDescription.id, data: dto },
       {
@@ -101,7 +101,7 @@ export default function DescriptionTablePage() {
     () =>
       [
         { accessorKey: "id", header: "ID" },
-        { accessorKey: "description_text", header: "Description Text" },
+        { accessorKey: "text", header: "Description Text" },
         {
           id: "actions",
           header: () => (
@@ -147,7 +147,7 @@ export default function DescriptionTablePage() {
       <AddEditDescriptionModal
         isOpen={modalType === "add" || modalType === "edit"}
         mode={modalType === "edit" ? "edit" : "add"}
-        initialText={selectedDescription?.description_text || ""}
+        initialText={selectedDescription?.text || ""}
         onClose={closeModal}
         onConfirm={(text) => (modalType === "add" ? confirmAdd(text) : confirmEdit(text))}
         isLoading={createDescription.status === "pending" || updateDescription.status === "pending"}
@@ -155,7 +155,7 @@ export default function DescriptionTablePage() {
 
       <DeleteDescriptionModal
         isOpen={modalType === "delete"}
-        descriptionText={selectedDescription?.description_text ?? undefined}
+        descriptionText={selectedDescription?.text ?? undefined}
         onClose={closeModal}
         onConfirm={confirmDelete}
         isLoading={deleteDescription.status === "pending"}

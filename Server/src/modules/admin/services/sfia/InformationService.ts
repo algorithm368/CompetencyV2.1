@@ -4,6 +4,6 @@ import { BaseService } from "@Utils/BaseService";
 
 export class InformationService extends BaseService<Information, keyof Information> {
   constructor() {
-    super(new InformationRepo(), ["info_text", "date", "skill_id", "datacollection_id", "approval_status"], "id");
+    super(new InformationRepo(), ["text", "approval_status"], "id");
   }
 }

@@ -97,6 +97,8 @@ model UnitCode {
   careerLevelUnits   CareerLevelUnitCode[]
   unitSkillLinks     UserUnitSkill[]
   unitKnowledgeLinks UserUnitKnowledge[]
+    unitSectorLinks    UnitSector[] 
+    unitOccupationalLinks UnitOccupational[] 
 }
 
 model UserKnowledge {
@@ -134,6 +136,41 @@ model UserUnitSkill {
   skillId      Int
   unitCode     UnitCode  @relation(fields: [unitCodeId], references: [id])
 }
+
+model Occupational {
+  id        Int             @id @default(autoincrement())
+  name      String
+  unitLinks UnitOccupational[]
+}
+
+model UnitOccupational {
+  id             Int        @id @default(autoincrement())
+  unitCodeId     Int
+  occupationalId Int
+  unitCode       UnitCode   @relation(fields: [unitCodeId], references: [id])
+  occupational   Occupational @relation(fields: [occupationalId], references: [id])
+}
+
+model Sector {
+  id          Int           @id @default(autoincrement())
+  name        String        @db.VarChar(255)
+  unitLinks   UnitSector[]
+}
+
+model UnitSector {
+  id         Int       @id @default(autoincrement())
+  unitCodeId Int
+  sectorId   Int
+
+  unitCode   UnitCode  @relation(fields: [unitCodeId], references: [id])
+  sector     Sector    @relation(fields: [sectorId], references: [id])
+
+  @@index([unitCodeId])
+  @@index([sectorId])
+}
+
+
+
 
 model TpqiSummary {
   id                Int           @id @default(autoincrement())

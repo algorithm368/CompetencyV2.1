@@ -1,8 +1,8 @@
 export interface Permission {
-  permission_id: number;
-  permission_key: string;
-  description?: string;
-  created_at: string;
+  id: number;
+  key: string;
+  description?: string | null;
+  createdAt: string;
 }
 
 export interface TableDataResponse {
@@ -11,19 +11,19 @@ export interface TableDataResponse {
 }
 
 export interface CreatePermissionPayload {
-  permissionKey: string;
+  key: string;
   description?: string;
 }
 
 export interface UpdatePermissionPayload {
-  permission_key?: string;
+  key?: string;
   description?: string;
 }
 
 export interface PermissionRow {
-  permission_id: number;
+  id: number;
   key: string;
-  description: string;
+  description: string | null;
   assigned: boolean;
 }
 

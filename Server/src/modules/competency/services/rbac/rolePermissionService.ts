@@ -17,7 +17,7 @@ export class RolePermissionService {
     if (existing) {
       throw new Error("Permission already assigned to role");
     }
-    return this.rolePermissionModel.create({ role_id: roleId, permission_id: permissionId, granted_at: new Date() }, actor);
+    return this.rolePermissionModel.create({ roleId: roleId, permissionId: permissionId, grantedAt: new Date() }, actor);
   }
 
   /**

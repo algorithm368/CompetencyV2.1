@@ -1,7 +1,7 @@
 export interface SfiaSummaryData {
   id: number;
-  user_email?: string | null;
-  code_job?: string | null;
-  level_id?: number | null;
+  userEmail?: string | null;
+  jobCode?: string | null;
+  levelId?: number | null;
   skillPercentage?: number | null;
 }

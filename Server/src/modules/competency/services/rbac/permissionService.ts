@@ -14,7 +14,7 @@ export class PermissionService {
       {
         key: data.permission_key,
         description: data.description ?? null,
-        created_at: new Date(),
+        createdAt: new Date(),
       },
       actor
     );

@@ -17,7 +17,7 @@ export class UserRoleService {
     if (existing) {
       throw new Error("User already has this role");
     }
-    return this.userRoleModel.create({ user_id: userId, role_id: roleId, assigned_at: new Date() }, actor);
+    return this.userRoleModel.create({ userId: userId, roleId: roleId, assignedAt: new Date() }, actor);
   }
 
   /**

@@ -50,7 +50,7 @@ export default function SubcategoryTablePage() {
 
   // Confirm operations
   const confirmAdd = (text: string) => {
-    const dto: CreateSubcategoryDto = { subcategory_text: text || null };
+    const dto: CreateSubcategoryDto = { name: text || null };
     createSubcategory.mutate(dto, {
       onSuccess: () => {
         handleToast("Created successfully", "success");
@@ -65,7 +65,7 @@ export default function SubcategoryTablePage() {
 
   const confirmEdit = (text: string) => {
     if (!selectedSubcategory) return;
-    const dto: UpdateSubcategoryDto = { subcategory_text: text };
+    const dto: UpdateSubcategoryDto = { name: text };
     updateSubcategory.mutate(
       { id: selectedSubcategory.id, data: dto },
       {
@@ -99,7 +99,7 @@ export default function SubcategoryTablePage() {
   const columns = useMemo(
     () => [
       { accessorKey: "id", header: "ID" },
-      { accessorKey: "subcategory_text", header: "Subcategory Text" },
+      { accessorKey: "name", header: "Subcategory Text" },
       {
         id: "actions",
         header: () => (
@@ -145,7 +145,7 @@ export default function SubcategoryTablePage() {
       <AddEditSubcategoryModal
         isOpen={modalType === "add" || modalType === "edit"}
         mode={modalType === "edit" ? "edit" : "add"}
-        initialText={selectedSubcategory?.subcategory_text || ""}
+        initialText={selectedSubcategory?.name || ""}
         initialCategoryId={selectedSubcategory?.id ?? null}
         onClose={closeModal}
         onConfirm={(text) => (modalType === "add" ? confirmAdd(text) : confirmEdit(text))}
@@ -154,7 +154,7 @@ export default function SubcategoryTablePage() {
 
       <DeleteSubcategoryModal
         isOpen={modalType === "delete"}
-        subcategoryText={selectedSubcategory?.subcategory_text ?? undefined}
+        subcategoryText={selectedSubcategory?.name ?? undefined}
         onClose={closeModal}
         onConfirm={confirmDelete}
         isLoading={deleteSubcategory.status === "pending"}

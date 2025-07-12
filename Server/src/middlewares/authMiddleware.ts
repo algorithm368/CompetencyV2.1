@@ -25,15 +25,15 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
 
     const payload = verifyToken(token);
 
-    const user = await prisma.users.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: String(payload.userId) },
       include: {
         userRoles: {
           include: {
-            Roles: {
+            role: {
               include: {
                 rolePermissions: {
-                  include: { Permissions: true },
+                  include: { permission: true },
                 },
               },
             },
@@ -47,9 +47,10 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
       return;
     }
 
-    const permissions = user.userRoles.flatMap((ur) => ur.Roles?.rolePermissions?.map((rp) => rp.Permissions.key) || []);
+    // ดึง permissions keys
+    const permissions = user.userRoles.flatMap((ur) => ur.role?.rolePermissions?.map((rp) => rp.permission.key) || []);
 
-    const role = user.userRoles[0]?.Roles?.name || null;
+    const role = user.userRoles[0]?.role?.name || null;
 
     (req as AuthenticatedRequest).user = {
       userId: user.id,

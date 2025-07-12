@@ -29,7 +29,7 @@ export class ClUcController {
   static async create(req: Request, res: Response, next: NextFunction) {
     try {
       const actor = req.headers["x-actor-id"] as string;
-      const data = req.body as Omit<import("@prisma/client_tpqi").cl_uc, "id_cl_uc">;
+      const data = req.body as Omit<import("@prisma/client_tpqi").CareerLevelUnitCode, "id_cl_uc">;
       const newItem = await service.create(data, actor);
       res.status(201).json(newItem);
     } catch (err) {
@@ -41,7 +41,7 @@ export class ClUcController {
     try {
       const actor = req.headers["x-actor-id"] as string;
       const id = Number(req.params.id);
-      const updates = req.body as Partial<Omit<import("@prisma/client_tpqi").cl_uc, "id_cl_uc">>;
+      const updates = req.body as Partial<Omit<import("@prisma/client_tpqi").CareerLevelUnitCode, "id_cl_uc">>;
       const updated = await service.update(id, updates, actor);
       res.json(updated);
     } catch (err: any) {

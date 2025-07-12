@@ -1,7 +1,7 @@
 export interface Category {
   id: number;
-  category_text?: string | null;
-  subcategory_id?: number | null;
+  name?: string | null;
+  subcategoryId?: number | null;
 }
 
 export interface CategoryPageResult {
@@ -10,4 +10,4 @@ export interface CategoryPageResult {
 }
 
 export type CreateCategoryDto = Omit<Category, "id">;
-export type UpdateCategoryDto = Partial<Omit<CreateCategoryDto, "id">>;
+export type UpdateCategoryDto = Partial<Omit<Category, "id">>;

@@ -4,23 +4,23 @@ export interface TableDataResponse {
 }
 
 export interface RoleEntity {
-  role_id: number;
-  role_name: string;
-  description: string;
-  created_at: string;
-  UserRoles?: {
-    user_id: string;
-    assigned_at: string;
+  id: number;
+  name: string;
+  description: string | null;
+  createdAt: string;
+  userRoles?: {
+    userId: string;
+    assignedAt: string;
   }[];
 }
 
 export interface RolePayload {
-  roleName: string;
+  name: string;
   description?: string;
 }
 
 export interface RoleUpdatePayload extends RolePayload {
-  role_id: number;
+  id: number;
 }
 
 export type TabKey = "roles" | "permissions" | "assignPermissions" | "assignRoles";

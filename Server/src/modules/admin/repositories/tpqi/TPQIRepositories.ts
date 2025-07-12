@@ -16,6 +16,10 @@ import type {
   UserUnitKnowledge,
   UserUnitSkill,
   TpqiSummary,
+  Occupational,
+  UnitOccupational,
+  Sector,
+  UnitSector,
 } from "@prisma/client_tpqi";
 import { DatabaseManagement } from "@Utils/databaseUtils";
 
@@ -120,6 +124,34 @@ export class UserUnitSkillRepo extends BaseRepository<UserUnitSkill, "id"> {
 // TpqiSummary Repository
 export class TpqiSummaryRepo extends BaseRepository<TpqiSummary, "id"> {
   constructor(manager: DatabaseManagement<any> = TPQI.tpqiSummary, pkField: "id" = "id") {
+    super(manager, pkField);
+  }
+}
+
+// Occupational Repository
+export class OccupationalRepo extends BaseRepository<Occupational, "id"> {
+  constructor(manager: DatabaseManagement<any> = TPQI.occupational, pkField: "id" = "id") {
+    super(manager, pkField);
+  }
+}
+
+// UnitOccupational Repository
+export class UnitOccupationalRepo extends BaseRepository<UnitOccupational, "id"> {
+  constructor(manager: DatabaseManagement<any> = TPQI.unitOccupational, pkField: "id" = "id") {
+    super(manager, pkField);
+  }
+}
+
+// Sector Repository
+export class SectorRepo extends BaseRepository<Sector, "id"> {
+  constructor(manager: DatabaseManagement<any> = TPQI.sector, pkField: "id" = "id") {
+    super(manager, pkField);
+  }
+}
+
+// UnitSector Repository
+export class UnitSectorRepo extends BaseRepository<UnitSector, "id"> {
+  constructor(manager: DatabaseManagement<any> = TPQI.unitSector, pkField: "id" = "id") {
     super(manager, pkField);
   }
 }

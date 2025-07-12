@@ -1,9 +1,9 @@
-import type { users_knowledge } from "@prisma/client_tpqi";
-import { UsersKnowledgeRepo } from "@Admin/repositories/tpqi/TPQIRepositories";
+import type { UserKnowledge } from "@prisma/client_tpqi";
+import { UserKnowledgeRepo } from "@Admin/repositories/tpqi/TPQIRepositories";
 import { BaseService } from "@Utils/BaseService";
 
-export class UsersKnowledgeService extends BaseService<users_knowledge, keyof users_knowledge> {
+export class UsersKnowledgeService extends BaseService<UserKnowledge, keyof UserKnowledge> {
   constructor() {
-    super(new UsersKnowledgeRepo(), ["link_knowledge", "email", "approval_status"], "id_users_knowledge");
+    super(new UserKnowledgeRepo(), ["userEmail"], "id");
   }
 }

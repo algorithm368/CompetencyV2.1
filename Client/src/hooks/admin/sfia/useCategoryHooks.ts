@@ -21,6 +21,8 @@ export function useCategoryManager(
   const fetchPage = async (pageIndex: number, pageSize: number): Promise<{ data: Category[]; total: number }> => {
     const pageNumber = pageIndex + 1;
     const result = await CategoryService.getAll(search, pageNumber, pageSize);
+    console.log(result.data);
+
     return {
       data: result.data ?? [],
       total: result.total ?? 0,

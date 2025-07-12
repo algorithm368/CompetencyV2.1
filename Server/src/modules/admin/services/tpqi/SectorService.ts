@@ -1,9 +1,9 @@
-import type { sector } from "@prisma/client_tpqi";
+import type { Sector } from "@prisma/client_tpqi";
 import { SectorRepo } from "@Admin/repositories/tpqi/TPQIRepositories";
 import { BaseService } from "@Utils/BaseService";
 
-export class SectorService extends BaseService<sector, keyof sector> {
+export class SectorService extends BaseService<Sector, keyof Sector> {
   constructor() {
-    super(new SectorRepo(), ["name_sector"], "id_sector");
+    super(new SectorRepo(), ["name"], "id");
   }
 }

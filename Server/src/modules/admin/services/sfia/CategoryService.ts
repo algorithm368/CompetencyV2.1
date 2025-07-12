@@ -4,6 +4,6 @@ import { BaseService } from "@Utils/BaseService";
 
 export class CategoryService extends BaseService<Category, keyof Category> {
   constructor() {
-    super(new CategoryRepo(), ["category_text"], "id");
+    super(new CategoryRepo(), ["name"], "id");
   }
 }

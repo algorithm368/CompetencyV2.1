@@ -1,12 +1,13 @@
-export interface Levels {
+export interface Level {
   id: number;
-  level_name?: string | null;
-  code_job?: string | null;
+  name?: string | null;
+  skillCode?: string | null;
 }
+
 export interface LevelPageResult {
-  data: Levels[];
+  data: Level[];
   total?: number;
 }
 
-export type CreateLevelDto = Omit<Levels, "id">;
-export type UpdateLevelDto = Partial<Omit<Levels, "id">>;
+export type CreateLevelDto = Omit<Level, "id">;
+export type UpdateLevelDto = Partial<Omit<Level, "id">>;

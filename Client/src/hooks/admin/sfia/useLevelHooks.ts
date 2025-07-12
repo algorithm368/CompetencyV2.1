@@ -1,6 +1,6 @@
 import { useQuery, useQueries, useMutation, useQueryClient } from "@tanstack/react-query";
 import { LevelService } from "@Services/admin/sfia/levelServices";
-import { Levels, CreateLevelDto, UpdateLevelDto, LevelPageResult } from "@Types/sfia/levelTypes";
+import { Level, CreateLevelDto, UpdateLevelDto, LevelPageResult } from "@Types/sfia/levelTypes";
 
 type ToastCallback = (message: string, type?: "success" | "error" | "info") => void;
 
@@ -18,7 +18,7 @@ export function useLevelManager(
   const queryClient = useQueryClient();
 
   // ฟังก์ชัน fetchPage ใช้ดึงข้อมูลแต่ละหน้า
-  const fetchPage = async (pageIndex: number, pageSize: number): Promise<{ data: Levels[]; total: number }> => {
+  const fetchPage = async (pageIndex: number, pageSize: number): Promise<{ data: Level[]; total: number }> => {
     const pageNumber = pageIndex + 1;
     const result = await LevelService.getAll(search, pageNumber, pageSize);
     return {
@@ -63,7 +63,7 @@ export function useLevelManager(
   const error = prefetchQueries.find((q) => q.error)?.error || (page > initialPrefetchPages && currentPageQuery.error);
 
   // ดึงข้อมูลเฉพาะตัวเดียว (useQuery)
-  const levelQuery = useQuery<Levels, Error>({
+  const levelQuery = useQuery<Level, Error>({
     queryKey: ["level", id] as const,
     queryFn: async () => {
       if (id === null) throw new Error("Level id is null");
@@ -73,7 +73,7 @@ export function useLevelManager(
   });
 
   // Mutation: create
-  const createLevel = useMutation<Levels, Error, CreateLevelDto>({
+  const createLevel = useMutation<Level, Error, CreateLevelDto>({
     mutationFn: (dto) => LevelService.create(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["levels"] });
@@ -85,7 +85,7 @@ export function useLevelManager(
   });
 
   // Mutation: update
-  const updateLevel = useMutation<Levels, Error, { id: number; data: UpdateLevelDto }>({
+  const updateLevel = useMutation<Level, Error, { id: number; data: UpdateLevelDto }>({
     mutationFn: ({ id, data }) => LevelService.update(id, data),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: ["levels"] });

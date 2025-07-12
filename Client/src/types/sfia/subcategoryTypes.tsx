@@ -1,6 +1,6 @@
 export interface Subcategory {
   id: number;
-  subcategory_text?: string | null;
+  name?: string | null;
 }
 
 export interface SubcategoryPageResult {

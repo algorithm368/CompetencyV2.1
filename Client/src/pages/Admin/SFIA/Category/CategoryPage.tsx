@@ -47,7 +47,7 @@ export default function CategoryTablePage() {
   };
 
   const confirmAdd = (text: string, subId: number | null) => {
-    const dto: CreateCategoryDto = { category_text: text || null, subcategory_id: subId };
+    const dto: CreateCategoryDto = { name: text || null, subcategoryId: subId };
     createCategory.mutate(dto, {
       onSuccess: () => {
         handleToast("Created successfully", "success");
@@ -60,7 +60,7 @@ export default function CategoryTablePage() {
 
   const confirmEdit = (text: string, subId: number | null) => {
     if (!selectedCategory) return;
-    const dto: UpdateCategoryDto = { category_text: text, subcategory_id: subId };
+    const dto: UpdateCategoryDto = { name: text, subcategoryId: subId };
     updateCategory.mutate(
       { id: selectedCategory.id, data: dto },
       {
@@ -90,8 +90,8 @@ export default function CategoryTablePage() {
     () =>
       [
         { accessorKey: "id", header: "ID" },
-        { accessorKey: "category_text", header: "Category Text" },
-        { accessorKey: "subcategory_id", header: "Subcategory ID" },
+        { accessorKey: "name", header: "Category Text" },
+        { accessorKey: "subcategoryId", header: "Subcategory ID" },
         {
           id: "actions",
           header: () => (
@@ -137,8 +137,8 @@ export default function CategoryTablePage() {
       <AddEditCategoryModal
         isOpen={modalType === "add" || modalType === "edit"}
         mode={modalType === "edit" ? "edit" : "add"}
-        initialCategoryText={selectedCategory?.category_text || ""}
-        initialSubcategoryId={selectedCategory?.subcategory_id ?? null}
+        initialCategoryText={selectedCategory?.name || ""}
+        initialSubcategoryId={selectedCategory?.subcategoryId ?? null}
         subcategoryOptions={[] /* pass real options */}
         onClose={closeModal}
         onConfirm={(text, subId) => (modalType === "add" ? confirmAdd(text, subId) : confirmEdit(text, subId))}
@@ -147,7 +147,7 @@ export default function CategoryTablePage() {
 
       <DeleteCategoryModal
         isOpen={modalType === "delete"}
-        categoryText={selectedCategory?.category_text ?? undefined}
+        categoryText={selectedCategory?.name ?? undefined}
         onClose={closeModal}
         onConfirm={confirmDelete}
         isLoading={deleteCategory.status === "pending"}

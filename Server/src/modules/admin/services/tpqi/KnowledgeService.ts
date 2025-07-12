@@ -1,9 +1,9 @@
-import type { knowledge } from "@prisma/client_tpqi";
+import type { Knowledge } from "@prisma/client_tpqi";
 import { KnowledgeRepo } from "@Admin/repositories/tpqi/TPQIRepositories";
 import { BaseService } from "@Utils/BaseService";
 
-export class KnowledgeService extends BaseService<knowledge, keyof knowledge> {
+export class KnowledgeService extends BaseService<Knowledge, keyof Knowledge> {
   constructor() {
-    super(new KnowledgeRepo(), ["name_knowledge"], "id_knowledge");
+    super(new KnowledgeRepo(), ["name"], "id");
   }
 }

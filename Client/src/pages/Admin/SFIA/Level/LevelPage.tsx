@@ -3,14 +3,14 @@ import { FiPlus, FiSearch, FiSettings } from "react-icons/fi";
 import { RowActions, Button, Input, Toast, DataTable } from "@Components/Common/ExportComponent";
 import { AdminLayout } from "@Layouts/AdminLayout";
 import { useLevelManager } from "@Hooks/admin/sfia/useLevelHooks";
-import { Levels, CreateLevelDto, UpdateLevelDto } from "@Types/sfia/levelTypes";
+import { Level, CreateLevelDto, UpdateLevelDto } from "@Types/sfia/levelTypes";
 import { AddEditLevelModal, DeleteLevelModal } from "./LevelModals";
 
 export default function LevelTablePage() {
   const [searchText, setSearchText] = useState<string>("");
   const [debouncedSearchText, setDebouncedSearchText] = useState<string>("");
   const [modalType, setModalType] = useState<"add" | "edit" | "delete" | null>(null);
-  const [selectedLevel, setSelectedLevel] = useState<Levels | null>(null);
+  const [selectedLevel, setSelectedLevel] = useState<Level | null>(null);
   const [page, setPage] = useState(1);
   const perPage = 10;
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
@@ -35,11 +35,11 @@ export default function LevelTablePage() {
     setSelectedLevel(null);
     setModalType("add");
   };
-  const openEditModal = (lvl: Levels) => {
+  const openEditModal = (lvl: Level) => {
     setSelectedLevel(lvl);
     setModalType("edit");
   };
-  const openDeleteModal = (lvl: Levels) => {
+  const openDeleteModal = (lvl: Level) => {
     setSelectedLevel(lvl);
     setModalType("delete");
   };
@@ -51,8 +51,8 @@ export default function LevelTablePage() {
   // Confirm operations
   const confirmAdd = (levelName: string, codeJob: string) => {
     const dto: CreateLevelDto = {
-      level_name: levelName || null,
-      code_job: codeJob || null,
+      name: levelName || null,
+      skillCode: codeJob || null,
     };
     createLevel.mutate(dto, {
       onSuccess: () => {
@@ -68,7 +68,7 @@ export default function LevelTablePage() {
 
   const confirmEdit = (levelName: string, codeJob: string) => {
     if (!selectedLevel) return;
-    const dto: UpdateLevelDto = { level_name: levelName, code_job: codeJob };
+    const dto: UpdateLevelDto = { name: levelName, skillCode: codeJob };
     updateLevel.mutate(
       { id: selectedLevel.id, data: dto },
       {
@@ -102,8 +102,8 @@ export default function LevelTablePage() {
   const columns = useMemo(
     () => [
       { accessorKey: "id", header: "ID" },
-      { accessorKey: "level_name", header: "Level Name" },
-      { accessorKey: "code_job", header: "Code Job" },
+      { accessorKey: "name", header: "Level Name" },
+      { accessorKey: "skillCode", header: "Code Job" },
       {
         id: "actions",
         header: () => (
@@ -111,7 +111,7 @@ export default function LevelTablePage() {
             <FiSettings />
           </span>
         ),
-        cell: ({ row }: { row: { original: Levels } }) => (
+        cell: ({ row }: { row: { original: Level } }) => (
           <div className="text-right">
             <RowActions onEdit={() => openEditModal(row.original)} onDelete={() => openDeleteModal(row.original)} />
           </div>
@@ -136,7 +136,7 @@ export default function LevelTablePage() {
         </div>
       </div>
 
-      <DataTable<Levels>
+      <DataTable<Level>
         key={debouncedSearchText}
         resetTrigger={debouncedSearchText}
         fetchPage={fetchPage}
@@ -149,20 +149,14 @@ export default function LevelTablePage() {
       <AddEditLevelModal
         isOpen={modalType === "add" || modalType === "edit"}
         mode={modalType === "edit" ? "edit" : "add"}
-        initialLevelName={selectedLevel?.level_name || ""}
-        initialCodeJob={selectedLevel?.code_job || ""}
+        initialLevelName={selectedLevel?.name || ""}
+        initialCodeJob={selectedLevel?.skillCode || ""}
         onClose={closeModal}
         onConfirm={(name, code) => (modalType === "add" ? confirmAdd(name, code) : confirmEdit(name, code))}
         isLoading={createLevel.status === "pending" || updateLevel.status === "pending"}
       />
 
-      <DeleteLevelModal
-        isOpen={modalType === "delete"}
-        levelName={selectedLevel?.level_name ?? undefined}
-        onClose={closeModal}
-        onConfirm={confirmDelete}
-        isLoading={deleteLevel.status === "pending"}
-      />
+      <DeleteLevelModal isOpen={modalType === "delete"} levelName={selectedLevel?.name ?? undefined} onClose={closeModal} onConfirm={confirmDelete} isLoading={deleteLevel.status === "pending"} />
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </AdminLayout>

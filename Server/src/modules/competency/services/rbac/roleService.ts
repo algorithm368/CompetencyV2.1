@@ -14,7 +14,7 @@ export class RoleService {
       {
         name: data.role_name,
         description: data.description ?? null,
-        created_at: new Date(),
+        createdAt: new Date(),
       },
       actor
     );

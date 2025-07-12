@@ -1,5 +1,8 @@
-export interface Skills {
-  id: number;
-  description_id: number;
-  skill_text?: string | null;
+export interface Skill {
+  code: string;
+  name?: string | null;
+  overview?: string | null;
+  note?: string | null;
+  levelId?: number | null;
+  categoryId?: number | null;
 }

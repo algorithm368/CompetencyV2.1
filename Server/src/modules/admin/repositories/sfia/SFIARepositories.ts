@@ -1,6 +1,6 @@
 import { BaseRepository } from "@Utils/BaseRepository";
 import { SFIA } from "@Database/dbManagers";
-import type { Category, Datacollection, Description, Education, Experience, Information, Jobs, Levels, Portfolio, Skills, Subcategory, sfia_summary_data } from "@prisma/client_sfia";
+import type { Category, DataCollection, Description, Information, Level, Skill, SubSkill, Subcategory, SfiaSummary } from "@prisma/client_sfia";
 import { DatabaseManagement } from "@Utils/databaseUtils";
 
 // Category Repository
@@ -10,9 +10,9 @@ export class CategoryRepo extends BaseRepository<Category, "id"> {
   }
 }
 
-// Datacollection Repository
-export class DatacollectionRepo extends BaseRepository<Datacollection, "id"> {
-  constructor(manager: DatabaseManagement<any> = SFIA.datacollection, pkField: "id" = "id") {
+// DataCollection Repository
+export class DataCollectionRepo extends BaseRepository<DataCollection, "id"> {
+  constructor(manager: DatabaseManagement<any> = SFIA.dataCollection, pkField: "id" = "id") {
     super(manager, pkField);
   }
 }
@@ -24,20 +24,6 @@ export class DescriptionRepo extends BaseRepository<Description, "id"> {
   }
 }
 
-// Education Repository
-export class EducationRepo extends BaseRepository<Education, "id"> {
-  constructor(manager: DatabaseManagement<any> = SFIA.education, pkField: "id" = "id") {
-    super(manager, pkField);
-  }
-}
-
-// Experience Repository
-export class ExperienceRepo extends BaseRepository<Experience, "id"> {
-  constructor(manager: DatabaseManagement<any> = SFIA.experience, pkField: "id" = "id") {
-    super(manager, pkField);
-  }
-}
-
 // Information Repository
 export class InformationRepo extends BaseRepository<Information, "id"> {
   constructor(manager: DatabaseManagement<any> = SFIA.information, pkField: "id" = "id") {
@@ -45,30 +31,23 @@ export class InformationRepo extends BaseRepository<Information, "id"> {
   }
 }
 
-// Jobs Repository
-export class JobsRepo extends BaseRepository<Jobs, "code_job"> {
-  constructor(manager: DatabaseManagement<any> = SFIA.jobs, pkField: "code_job" = "code_job") {
+// Level Repository
+export class LevelRepo extends BaseRepository<Level, "id"> {
+  constructor(manager: DatabaseManagement<any> = SFIA.level, pkField: "id" = "id") {
     super(manager, pkField);
   }
 }
 
-// Levels Repository
-export class LevelsRepo extends BaseRepository<Levels, "id"> {
-  constructor(manager: DatabaseManagement<any> = SFIA.levels, pkField: "id" = "id") {
+// Skill Repository
+export class SkillRepo extends BaseRepository<Skill, "code"> {
+  constructor(manager: DatabaseManagement<any> = SFIA.skill, pkField: "code" = "code") {
     super(manager, pkField);
   }
 }
 
-// Portfolio Repository
-export class PortfolioRepo extends BaseRepository<Portfolio, "id"> {
-  constructor(manager: DatabaseManagement<any> = SFIA.portfolio, pkField: "id" = "id") {
-    super(manager, pkField);
-  }
-}
-
-// Skills Repository
-export class SkillsRepo extends BaseRepository<Skills, "id"> {
-  constructor(manager: DatabaseManagement<any> = SFIA.skills, pkField: "id" = "id") {
+// SubSkill Repository
+export class SubSkillRepo extends BaseRepository<SubSkill, "id"> {
+  constructor(manager: DatabaseManagement<any> = SFIA.subSkill, pkField: "id" = "id") {
     super(manager, pkField);
   }
 }
@@ -80,9 +59,9 @@ export class SubcategoryRepo extends BaseRepository<Subcategory, "id"> {
   }
 }
 
-// SFIA Summary Data Repository
-export class SummaryDataRepo extends BaseRepository<sfia_summary_data, "id"> {
-  constructor(manager: DatabaseManagement<any> = SFIA.sfia_summary_data, pkField: "id" = "id") {
+// SfiaSummary Repository
+export class SfiaSummaryRepo extends BaseRepository<SfiaSummary, "id"> {
+  constructor(manager: DatabaseManagement<any> = SFIA.sfiaSummary, pkField: "id" = "id") {
     super(manager, pkField);
   }
 }

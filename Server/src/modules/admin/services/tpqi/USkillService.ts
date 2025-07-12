@@ -1,9 +1,9 @@
-import type { u_skill } from "@prisma/client_tpqi";
-import { USkillRepo } from "@Admin/repositories/tpqi/TPQIRepositories";
+import type { UserUnitSkill } from "@prisma/client_tpqi";
+import { UserUnitSkillRepo } from "@Admin/repositories/tpqi/TPQIRepositories";
 import { BaseService } from "@Utils/BaseService";
 
-export class USkillService extends BaseService<u_skill, keyof u_skill> {
+export class USkillService extends BaseService<UserUnitSkill, keyof UserUnitSkill> {
   constructor() {
-    super(new USkillRepo(), ["id_u_skill", "id_unit_code", "id_skill"], "id_u_skill");
+    super(new UserUnitSkillRepo(), ["unitCodeId"], "id");
   }
 }

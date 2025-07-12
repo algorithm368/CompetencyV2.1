@@ -1,9 +1,9 @@
-import type { occupational } from "@prisma/client_tpqi";
+import type { Occupational } from "@prisma/client_tpqi";
 import { OccupationalRepo } from "@Admin/repositories/tpqi/TPQIRepositories";
 import { BaseService } from "@Utils/BaseService";
 
-export class OccupationalService extends BaseService<occupational, keyof occupational> {
+export class OccupationalService extends BaseService<Occupational, keyof Occupational> {
   constructor() {
-    super(new OccupationalRepo(), ["name_occupational"], "id_occupational");
+    super(new OccupationalRepo(), ["name"], "id");
   }
 }

@@ -1,13 +1,13 @@
 import { Router, RequestHandler } from "express";
-import { SkillsController } from "@Admin/controllers/sfia/subSkillController";
+import { SubSkillController } from "@Admin/controllers/sfia/subSkillController";
 
 const router: Router = Router();
 
-// Skills routes
-router.get("/", SkillsController.getAll as RequestHandler);
-router.get("/:id", SkillsController.getById as RequestHandler);
-router.post("/", SkillsController.create as RequestHandler);
-router.put("/:id", SkillsController.update as RequestHandler);
-router.delete("/:id", SkillsController.delete as RequestHandler);
+// SubSkills routes
+router.get("/", SubSkillController.getAll as RequestHandler);
+router.get("/:id", SubSkillController.getById as RequestHandler);
+router.post("/", SubSkillController.create as RequestHandler);
+router.put("/:id", SubSkillController.update as RequestHandler);
+router.delete("/:id", SubSkillController.delete as RequestHandler);
 
 export default router;

@@ -36,7 +36,7 @@ export async function getJobLevels(jobCode: string): Promise<JobLevel[]> {
   try {
     // COMBINED QUERY: Fetch all data in a single database call.
     // This is more performant than making two separate calls.
-    const levels = await prismaSfia.levels.findMany({
+    const levels = await prismaSfia.level.findMany({
       where: { code_job: normalizedJobCode },
       select: {
         id: true,

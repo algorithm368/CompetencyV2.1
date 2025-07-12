@@ -1,6 +1,6 @@
 import { Router } from "express";
 import {
-  getJobs,
+  getSkills,
   searchCareer,
 } from "@Competency/controllers/searchCareerController";
 
@@ -15,7 +15,7 @@ const router = Router();
  *   GET /api/competency/careers/sfia
  *   Response: ["Software Engineer", "Data Scientist"]
  */
-router.get("/:dbType", getJobs);
+router.get("/:dbType", getSkills);
 
 
 /**

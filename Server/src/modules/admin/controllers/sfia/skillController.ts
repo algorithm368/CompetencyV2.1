@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { SkillService } from "@Admin/services/sfia/JobsService";
+import { SkillService } from "@Admin/services/sfia/SkillService";
 import type { Skill } from "@prisma/client_sfia";
 
 const skillService = new SkillService();
@@ -25,7 +25,7 @@ export class SkillController {
       const code = req.params.code;
       const item = await skillService.getById(code);
       if (!item) {
-        return res.status(404).json({ error: `Jobs with code ${code} not found` });
+        return res.status(404).json({ error: `Skill with code ${code} not found` });
       }
       res.json(item);
     } catch (err) {
@@ -53,7 +53,7 @@ export class SkillController {
       res.json(updated);
     } catch (err: any) {
       if (err.code === "P2025") {
-        return res.status(404).json({ error: `Jobs with code ${req.params.code} not found` });
+        return res.status(404).json({ error: `Skill with code ${req.params.code} not found` });
       }
       next(err);
     }
@@ -67,7 +67,7 @@ export class SkillController {
       res.status(204).send();
     } catch (err: any) {
       if (err.code === "P2025") {
-        return res.status(404).json({ error: `Jobs with code ${req.params.code} not found` });
+        return res.status(404).json({ error: `Skill with code ${req.params.code} not found` });
       }
       next(err);
     }

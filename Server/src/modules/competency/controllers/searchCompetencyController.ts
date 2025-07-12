@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import * as searchCompetencyServices from "@Competency/services/searchCompetencyServices";
 
-// Get all jobs/careers from the specified database (sfia or tpqi)
+// Get all skills/careers from the specified database (sfia or tpqi)
 export const getCompetencies = async (req: Request, res: Response): Promise<void> => {
   const dbType = req.params?.dbType as "sfia" | "tpqi";
   if (!dbType || (dbType !== "sfia" && dbType !== "tpqi")) {
@@ -17,11 +17,11 @@ export const getCompetencies = async (req: Request, res: Response): Promise<void
   } catch (err: any) {
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: err.message ?? "Failed to fetch Competencies" });
+      .json({ message: err?.message ?? "Failed to fetch Competencies" });
   }
 };
 
-// Search for jobs/careers by name from the specified database (sfia or tpqi)
+// Search for skills/careers by name from the specified database (sfia or tpqi)
 export const searchCompetency = async (
   req: Request,
   res: Response
@@ -51,6 +51,6 @@ export const searchCompetency = async (
   } catch (err: any) {
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: err.message ?? "Failed to search Competencies" });
+      .json({ message: err?.message ?? "Failed to search Competencies" });
   }
 };

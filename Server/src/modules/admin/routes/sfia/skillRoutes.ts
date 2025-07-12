@@ -3,7 +3,7 @@ import { SkillController } from "@Admin/controllers/sfia/skillController";
 
 const router: Router = Router();
 
-// Jobs routes
+// Skill routes
 router.get("/", SkillController.getAll as RequestHandler);
 router.get("/:code", SkillController.getById as RequestHandler);
 router.post("/", SkillController.create as RequestHandler);

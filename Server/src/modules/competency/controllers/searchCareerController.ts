@@ -2,8 +2,8 @@ import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import * as searchCareerServices from "@Competency/services/searchCareerServices";
 
-// Get all jobs/careers from the specified database (sfia or tpqi)
-export const getJobs = async (req: Request, res: Response): Promise<void> => {
+// Get all skills/careers from the specified database (sfia or tpqi)
+export const getSkills = async (req: Request, res: Response): Promise<void> => {
   const dbType = req.params?.dbType as "sfia" | "tpqi";
   if (!dbType || (dbType !== "sfia" && dbType !== "tpqi")) {
     res.status(StatusCodes.BAD_REQUEST).json({
@@ -12,16 +12,16 @@ export const getJobs = async (req: Request, res: Response): Promise<void> => {
     return;
   }
   try {
-    const jobs = await searchCareerServices.getJobs(dbType);
-    res.status(StatusCodes.OK).json({ jobs });
+    const skills = await searchCareerServices.getSkills(dbType);
+    res.status(StatusCodes.OK).json({ skills });
   } catch (err: any) {
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: err.message ?? "Failed to fetch jobs" });
+      .json({ message: err.message ?? "Failed to fetch skills" });
   }
 };
 
-// Search for jobs/careers by name from the specified database (sfia or tpqi)
+// Search for skills/careers by name from the specified database (sfia or tpqi)
 export const searchCareer = async (
   req: Request,
   res: Response

@@ -32,93 +32,107 @@ export interface UnitCodeSkillsAndKnowledge {
 }
 
 /**
- * Search for unit code details including skills and knowledge by unit_code
- * @param unit_code - The unit code to search for
+ * Search for unit code details including skills and knowledge by UnitCode
+ * @param UnitCode - The unit code to search for
  * @returns Promise<UnitCodeSkillsAndKnowledge | null>
  */
 export async function getUnitCodeDetailsByCode(
-  unit_code: string
+  UnitCode: string
 ): Promise<UnitCodeSkillsAndKnowledge | null> {
   try {
-    const unitCodeData = await prismaTpqi.unit_code.findFirst({
+    const UnitCodeData = await prismaTpqi.unitCode.findFirst({
       where: {
-        unit_code: unit_code,
+        code: UnitCode,
       },
       include: {
-        unit_occupational: {
+        unitOccupationalLinks: {
           include: {
             occupational: {
               select: {
-                id_occupational: true,
-                name_occupational: true,
+                id: true,
+                name: true,
               },
             },
           },
         },
-        unit_sector: {
+        unitSectorLinks: {
           include: {
             sector: {
               select: {
-                id_sector: true,
-                name_sector: true,
+                id: true,
+                name: true,
               },
             },
           },
         },
-        u_skill: {
-          include: {
-            skill: {
-              select: {
-                id_skill: true,
-                name_skill: true,
-              },
-            },
-          },
-        },
-        u_knowledge: {
-          include: {
-            knowledge: {
-              select: {
-                id_knowledge: true,
-                name_knowledge: true,
-              },
-            },
-          },
-        },
+        unitSkillLinks: true,
+        unitKnowledgeLinks: true,
       },
     });
 
-    if (!unitCodeData) {
+    if (!UnitCodeData) {
+      return null;
+    }
+
+    // Get skills data
+    const skillIds = UnitCodeData.unitSkillLinks.map(link => link.skillId);
+    const skills = await prismaTpqi.skill.findMany({
+      where: {
+        id: {
+          in: skillIds
+        }
+      },
+      select: {
+        id: true,
+        name: true
+      }
+    });
+
+    // Get knowledge data  
+    const knowledgeIds = UnitCodeData.unitKnowledgeLinks.map(link => link.knowledgeId);
+    const knowledge = await prismaTpqi.knowledge.findMany({
+      where: {
+        id: {
+          in: knowledgeIds
+        }
+      },
+      select: {
+        id: true,
+        name: true
+      }
+    });
+
+    if (!UnitCodeData) {
       return null;
     }
 
     const transformedUnitCode: UnitCodeDetail = {
-      competency_id: unitCodeData.unit_code,
-      competency_name: unitCodeData.name,
-      overall: unitCodeData.description_unitcode,
-      note: unitCodeData.unit_code,
-      occupational: unitCodeData.unit_occupational.map((uo) => ({
-        id: uo.occupational.id_occupational,
-        name_occupational: uo.occupational.name_occupational,
+      competency_id: UnitCodeData.code,
+      competency_name: UnitCodeData.name,
+      overall: UnitCodeData.description,
+      note: UnitCodeData.code,
+      occupational: UnitCodeData.unitOccupationalLinks.map((uo) => ({
+        id: uo.occupational.id,
+        name_occupational: uo.occupational.name,
       })),
-      sector: unitCodeData.unit_sector.map((us) => ({
-        id: us.sector.id_sector,
-        name_sector: us.sector.name_sector,
+      sector: UnitCodeData.unitSectorLinks.map((us) => ({
+        id: us.sector.id,
+        name_sector: us.sector.name,
       })),
-      skills: unitCodeData.u_skill.map((us) => ({
-        id: us.skill.id_skill,
-        name_skill: us.skill.name_skill,
+      skills: skills.map((skill) => ({
+        id: skill.id,
+        name_skill: skill.name,
       })),
-      knowledge: unitCodeData.u_knowledge.map((uk) => ({
-        id: uk.knowledge.id_knowledge,
-        name_knowledge: uk.knowledge.name_knowledge,
+      knowledge: knowledge.map((knowledgeItem) => ({
+        id: knowledgeItem.id,
+        name_knowledge: knowledgeItem.name,
       })),
     };
 
-    const totalSkills = unitCodeData.u_skill.length;
-    const totalKnowledge = unitCodeData.u_knowledge.length;
-    const totalOccupational = unitCodeData.unit_occupational.length;
-    const totalSector = unitCodeData.unit_sector.length;
+    const totalSkills = UnitCodeData.unitSkillLinks.length;
+    const totalKnowledge = UnitCodeData.unitKnowledgeLinks.length;
+    const totalOccupational = UnitCodeData.unitOccupationalLinks.length;
+    const totalSector = UnitCodeData.unitSectorLinks.length;
 
     return {
       competency: transformedUnitCode,
@@ -129,6 +143,6 @@ export async function getUnitCodeDetailsByCode(
     };
   } catch (error) {
     console.error("Error fetching unit code details:", error);
-    throw new Error(`Failed to fetch unit code details for code: ${unit_code}`);
+    throw new Error(`Failed to fetch unit code details for code: ${UnitCode}`);
   }
 }

@@ -1,13 +1,13 @@
 import { Router, RequestHandler } from "express";
-import { LevelsController } from "@Admin/controllers/sfia/levelController";
+import { LevelController } from "@Admin/controllers/sfia/levelController";
 
 const router: Router = Router();
 
-// Levels routes
-router.get("/", LevelsController.getAll as RequestHandler);
-router.get("/:id", LevelsController.getById as RequestHandler);
-router.post("/", LevelsController.create as RequestHandler);
-router.put("/:id", LevelsController.update as RequestHandler);
-router.delete("/:id", LevelsController.delete as RequestHandler);
+// Level routes
+router.get("/", LevelController.getAll as RequestHandler);
+router.get("/:id", LevelController.getById as RequestHandler);
+router.post("/", LevelController.create as RequestHandler);
+router.put("/:id", LevelController.update as RequestHandler);
+router.delete("/:id", LevelController.delete as RequestHandler);
 
 export default router;

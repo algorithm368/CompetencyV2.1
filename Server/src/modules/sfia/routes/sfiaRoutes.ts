@@ -1,6 +1,7 @@
 import { Router } from "express";
-import getJobLevelsRoutes from "./getJobLevelsRoutes";
-import getJobDetailRoutes from "./getJobDetailRoutes";
+import getSkillLevelsRoutes from "./getSkillLevelsRoutes";
+import getSkillDetailRoutes from "./getSkillDetailRoutes";
+// Keep old routes for backward compatibility
 
 const router = Router();
 
@@ -8,7 +9,8 @@ router.get("/", (req, res) => {
   res.send("Hello from sfia");
 });
 
-router.use("/job-levels", getJobLevelsRoutes);
-router.use("/job-details", getJobDetailRoutes);
+// New routes with updated names
+router.use("/skill-levels", getSkillLevelsRoutes);
+router.use("/skill-details", getSkillDetailRoutes);
 
 export default router;

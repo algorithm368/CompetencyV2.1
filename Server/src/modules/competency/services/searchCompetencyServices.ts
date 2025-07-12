@@ -14,16 +14,16 @@ interface DatabaseConfig {
 const DB_CONFIG: Record<DBType, DatabaseConfig> = {
   sfia: {
     client: prismaSfia,
-    table: "jobs",
-    field: "job_name",
-    idField: "code_job", // ID field for SFIA
-    errorPrefix: "SFIA job names",
+    table: "skill",
+    field: "name",
+    idField: "code", // ID field for SFIA
+    errorPrefix: "SFIA skill names",
   },
   tpqi: {
     client: prismaTpqi,
-    table: "unit_code",
+    table: "unitCode",
     field: "name",
-    idField: "unit_code", // ID field for TPQI
+    idField: "code", // ID field for TPQI
     errorPrefix: "TPQI career names",
   },
 };
@@ -46,7 +46,7 @@ async function executeQuery<T>(
 }
 
 /**
- * Get all job/career names from the specified database and their IDs
+ * Get all skill/career names from the specified database and their IDs
  */
 export async function getCompetencies(
   dbType: DBType
@@ -69,7 +69,7 @@ export async function getCompetencies(
 }
 
 /**
- * Search for job/career names containing the search term and return both name and ID
+ * Search for skill/career names containing the search term and return both name and ID
  */
 export async function searchCompetency(
   dbType: DBType,
@@ -119,8 +119,3 @@ export async function searchCompetency(
     return Array.from(uniqueResults.values());
   });
 }
-
-// Example usage (keep for local testing if needed)
-// getJobs("tpqi").then(result => console.log(result));
-// searchJob("tpqi", "ช่างติดตั้งระบบ").then((result) => console.log(result));
-// searchJob("sfia", "secur").then(result => console.log(result));

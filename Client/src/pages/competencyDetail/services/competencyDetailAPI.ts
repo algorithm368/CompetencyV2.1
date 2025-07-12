@@ -1,4 +1,4 @@
-const BASE_API = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
+const BASE_API = import.meta.env.VITE_API_BASE_URL
 
 // Enhanced error class for better error handling
 class APIError extends Error {
@@ -88,7 +88,7 @@ async function fetchSfiaJobDetail(jobCode: string): Promise<SfiaJobResponse> {
   const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
   try {
-    const url = `${BASE_API}/sfia/job-details/${encodeURIComponent(jobCode)}`;
+    const url = `${BASE_API}/api/sfia/skill-details/${encodeURIComponent(jobCode)}`;
     
     const res = await fetch(url, {
       method: "GET",
@@ -159,7 +159,7 @@ async function fetchTpqiUnitDetail(unitCode: string): Promise<TpqiUnitResponse> 
   const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
   try {
-    const url = `${BASE_API}/tpqi/unit-code-details/${encodeURIComponent(unitCode)}`;
+    const url = `${BASE_API}/api/tpqi/unit-code-details/${encodeURIComponent(unitCode)}`;
     
     const res = await fetch(url, {
       method: "GET",

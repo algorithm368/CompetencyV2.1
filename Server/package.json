@@ -16,7 +16,7 @@
     "prisma:generate": "prisma generate",
     "prisma:generate:sfia": "prisma generate --schema=prisma/schema_sfia.prisma",
     "prisma:generate:competency": "prisma generate --schema=prisma/schema_competency.prisma",
-    "prisma:generate:tpqi": "prisma generate --schema=prisma/schema_tpqi.prisma",
+    "prisma:generate:tpqi": "prisma generate --schema=prisma/tpqi.prisma",
     "prisma:migrate": "prisma migrate deploy",
     "prisma:push": "prisma db push",
     "prisma:studio": "prisma studio"

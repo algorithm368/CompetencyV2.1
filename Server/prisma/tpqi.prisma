@@ -1,0 +1,152 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/@prisma/client_tpqi"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL_TPQI")
+}
+
+enum ApprovalStatus {
+  APPROVED
+  NOT_APPROVED
+}
+
+model Career {
+  id             Int              @id @default(autoincrement())
+  name           String           @db.VarChar(255)
+  careerLevels   CareerLevel[]
+  summaries      TpqiSummary[]
+}
+
+model CareerLevel {
+  id                     Int                     @id @default(autoincrement())
+  careerId               Int
+  levelId                Int
+  career                 Career                  @relation(fields: [careerId], references: [id])
+  level                  Level                   @relation(fields: [levelId], references: [id])
+  careerLevelDetails     CareerLevelDetail[]
+  careerLevelKnowledge   CareerLevelKnowledge[]
+  careerLevelSkills      CareerLevelSkill[]
+  careerLevelUnitCodes   CareerLevelUnitCode[]
+  summaries              TpqiSummary[]
+}
+
+model Level {
+  id             Int             @id @default(autoincrement())
+  name           String          @db.VarChar(255)
+  careerLevels   CareerLevel[]
+  summaries      TpqiSummary[]
+}
+
+model CareerLevelDetail {
+  id             Int           @id @default(autoincrement())
+  detailsId      Int
+  description    String        @db.VarChar(1200)
+  careerLevelId  Int
+  careerLevel    CareerLevel   @relation(fields: [careerLevelId], references: [id])
+
+  @@unique([detailsId, careerLevelId]) 
+}
+
+
+model CareerLevelKnowledge {
+  id             Int           @id @default(autoincrement())
+  careerLevelId  Int
+  knowledgeId    Int
+  careerLevel    CareerLevel   @relation(fields: [careerLevelId], references: [id])
+  knowledge      Knowledge     @relation(fields: [knowledgeId], references: [id])
+}
+
+model CareerLevelSkill {
+  id             Int           @id @default(autoincrement())
+  careerLevelId  Int
+  skillId        Int
+  careerLevel    CareerLevel   @relation(fields: [careerLevelId], references: [id])
+  skill          Skill         @relation(fields: [skillId], references: [id])
+}
+
+model CareerLevelUnitCode {
+  id             Int           @id @default(autoincrement())
+  careerLevelId  Int
+  unitCodeId     Int
+  careerLevel    CareerLevel   @relation(fields: [careerLevelId], references: [id])
+  unitCode       UnitCode      @relation(fields: [unitCodeId], references: [id])
+}
+
+model Knowledge {
+  id                   Int                   @id @default(autoincrement())
+  name                 String                @db.VarChar(255)
+  userKnowledge        UserKnowledge[]
+  careerLevelKnowledge CareerLevelKnowledge[]
+}
+
+model Skill {
+  id                Int                @id @default(autoincrement())
+  name              String             @db.VarChar(255)
+  userSkills        UserSkill[]
+  careerLevelSkills CareerLevelSkill[]
+}
+
+model UnitCode {
+  id                 Int                  @id @default(autoincrement())
+  code               String               @db.VarChar(255)
+  name               String               @db.VarChar(255)
+  description        String               @db.VarChar(255)
+  careerLevelUnits   CareerLevelUnitCode[]
+  unitSkillLinks     UserUnitSkill[]
+  unitKnowledgeLinks UserUnitKnowledge[]
+}
+
+model UserKnowledge {
+  id              Int            @id @default(autoincrement())
+  knowledgeId     Int
+  userEmail       String         @db.VarChar(255)
+  evidenceUrl     String?        @db.VarChar(1000)
+  approvalStatus  ApprovalStatus @default(NOT_APPROVED)
+  knowledge       Knowledge      @relation(fields: [knowledgeId], references: [id])
+
+  @@index([userEmail])
+}
+
+model UserSkill {
+  id              Int            @id @default(autoincrement())
+  skillId         Int
+  userEmail       String         @db.VarChar(255)
+  evidenceUrl     String?        @db.VarChar(1000)
+  approvalStatus  ApprovalStatus @default(NOT_APPROVED)
+  skill           Skill          @relation(fields: [skillId], references: [id])
+
+  @@index([userEmail])
+}
+
+model UserUnitKnowledge {
+  id           Int       @id @default(autoincrement())
+  unitCodeId   Int
+  knowledgeId  Int
+  unitCode     UnitCode  @relation(fields: [unitCodeId], references: [id])
+}
+
+model UserUnitSkill {
+  id           Int       @id @default(autoincrement())
+  unitCodeId   Int
+  skillId      Int
+  unitCode     UnitCode  @relation(fields: [unitCodeId], references: [id])
+}
+
+model TpqiSummary {
+  id                Int           @id @default(autoincrement())
+  userEmail         String        @db.VarChar(255)
+  careerId          Int
+  levelId           Int
+  careerLevelId     Int
+  skillPercent      Decimal?      @db.Decimal(5, 2)
+  knowledgePercent  Decimal?      @db.Decimal(5, 2)
+  career            Career        @relation(fields: [careerId], references: [id])
+  level             Level         @relation(fields: [levelId], references: [id])
+  careerLevel       CareerLevel   @relation(fields: [careerLevelId], references: [id])
+
+  @@unique([userEmail, careerLevelId])
+  @@index([userEmail])
+}

@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { JobsService } from "@Admin/services/sfia/JobsService";
-import type { Jobs } from "@prisma/client_sfia";
+import type { Skill } from "@prisma/client_sfia";
 
 const jobsService = new JobsService();
 
@@ -36,7 +36,7 @@ export class JobsController {
   static async create(req: Request, res: Response, next: NextFunction) {
     try {
       const actor = req.headers["x-actor-id"] as string;
-      const data = req.body as Omit<Jobs, "code_job">;
+      const data = req.body as Omit<Skill, "code">;
       const newItem = await jobsService.create(data, actor);
       res.status(201).json(newItem);
     } catch (err) {
@@ -48,7 +48,7 @@ export class JobsController {
     try {
       const actor = req.headers["x-actor-id"] as string;
       const code = req.params.code;
-      const updates = req.body as Partial<Omit<Jobs, "code_job">>;
+      const updates = req.body as Partial<Omit<Skill, "code">>;
       const updated = await jobsService.update(code, updates, actor);
       res.json(updated);
     } catch (err: any) {

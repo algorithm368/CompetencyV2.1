@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { LevelsService } from "@Admin/services/sfia/LevelsService";
-import type { Levels } from "@prisma/client_sfia";
+import type { Level } from "@prisma/client_sfia";
 
 const levelsService = new LevelsService();
 
@@ -36,7 +36,7 @@ export class LevelsController {
   static async create(req: Request, res: Response, next: NextFunction) {
     try {
       const actor = req.headers["x-actor-id"] as string;
-      const data = req.body as Omit<Levels, "id">;
+      const data = req.body as Omit<Level, "id">;
       const newItem = await levelsService.create(data, actor);
       res.status(201).json(newItem);
     } catch (err) {
@@ -48,7 +48,7 @@ export class LevelsController {
     try {
       const actor = req.headers["x-actor-id"] as string;
       const id = Number(req.params.id);
-      const updates = req.body as Partial<Omit<Levels, "id">>;
+      const updates = req.body as Partial<Omit<Level, "id">>;
       const updated = await levelsService.update(id, updates, actor);
       res.json(updated);
     } catch (err: any) {

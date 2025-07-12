@@ -29,7 +29,7 @@ export class AllDetailsController {
   static async create(req: Request, res: Response, next: NextFunction) {
     try {
       const actor = req.headers["x-actor-id"] as string;
-      const data = req.body as Omit<import("@prisma/client_tpqi").all_details, "id_all_details">;
+      const data = req.body as Omit<import("@prisma/client_tpqi").All_detais, "id_all_details">;
       const newItem = await service.create(data, actor);
       res.status(201).json(newItem);
     } catch (err) {

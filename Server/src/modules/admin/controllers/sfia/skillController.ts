@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { SkillsService } from "@Admin/services/sfia/SkillsService";
-import type { Skills } from "@prisma/client_sfia";
+import type { SubSkill } from "@prisma/client_sfia";
 
 const skillsService = new SkillsService();
 
@@ -36,7 +36,7 @@ export class SkillsController {
   static async create(req: Request, res: Response, next: NextFunction) {
     try {
       const actor = req.headers["x-actor-id"] as string;
-      const data = req.body as Omit<Skills, "id">;
+      const data = req.body as Omit<SubSkill, "id">;
       const newItem = await skillsService.create(data, actor);
       res.status(201).json(newItem);
     } catch (err) {
@@ -48,7 +48,7 @@ export class SkillsController {
     try {
       const actor = req.headers["x-actor-id"] as string;
       const id = Number(req.params.id);
-      const updates = req.body as Partial<Omit<Skills, "id">>;
+      const updates = req.body as Partial<Omit<SubSkill, "id">>;
       const updated = await skillsService.update(id, updates, actor);
       res.json(updated);
     } catch (err: any) {

@@ -137,14 +137,14 @@ export async function fetchCompetenciesBySearchTerm(
     }
   });
 
-  // If all sources failed, log error but return empty results instead of throwing
+  // If all sources failed, throw the first error to trigger error handling in UI
   if (errors.length === dbTypes.length) {
     console.error(
       `All sources failed:`,
       errors.map((e) => e.message)
     );
-    // Return empty results for all sources instead of throwing
-    return results;
+    // Throw the first error to trigger the error state in the UI
+    throw errors[0];
   }
 
   // If some sources failed but we have results, log warnings but continue
@@ -328,4 +328,72 @@ export function isTimeoutError(error: unknown): boolean {
     message.includes("timed out") ||
     (message.includes("timeout") && !message.includes("not a timeout"))
   );
+}
+
+// Test functions for error handling (remove in production)
+export async function testNetworkError(): Promise<CompetencyResponse[]> {
+  throw new APIError("Network error", 0, undefined, "test");
+}
+
+export async function testValidationError(): Promise<CompetencyResponse[]> {
+  throw new APIError("Search term must be at least 2 characters long", 400, undefined, "test");
+}
+
+export async function testServerError(): Promise<CompetencyResponse[]> {
+  throw new APIError("Internal server error", 500, undefined, "test");
+}
+
+export async function testTimeoutError(): Promise<CompetencyResponse[]> {
+  throw new APIError("Request timeout", 408, undefined, "test");
+}
+
+// Enhanced error simulation for different scenarios
+export async function testErrorByType(errorType: 'network' | 'validation' | 'server' | 'timeout' | 'structured'): Promise<CompetencyResponse[]> {
+  switch (errorType) {
+    case 'network': {
+      throw new TypeError("fetch is not defined");
+    }
+    case 'validation': {
+      const validationError = new Error("Bad Request") as Error & { response?: { status: number; data: Record<string, unknown> } };
+      validationError.response = {
+        status: 400,
+        data: {
+          errorType: 'validation',
+          message: 'Search term must be at least 2 characters long',
+          details: { minLength: 2, provided: 1 }
+        }
+      };
+      throw validationError;
+    }
+    case 'server': {
+      const serverError = new Error("Internal Server Error") as Error & { response?: { status: number; data: Record<string, unknown> } };
+      serverError.response = {
+        status: 500,
+        data: {
+          errorType: 'database_connection',
+          message: 'Database connection failed'
+        }
+      };
+      throw serverError;
+    }
+    case 'timeout': {
+      const timeoutError = new Error("Timeout") as Error & { name: string };
+      timeoutError.name = "TimeoutError";
+      throw timeoutError;
+    }
+    case 'structured': {
+      const structuredError = new Error("Structured Error") as Error & { response?: { status: number; data: Record<string, unknown> } };
+      structuredError.response = {
+        status: 503,
+        data: {
+          errorType: 'database_connection',
+          message: 'Database connection failed',
+          details: { code: 'ECONNREFUSED' }
+        }
+      };
+      throw structuredError;
+    }
+    default:
+      throw new APIError("Unknown error type", 500, undefined, "test");
+  }
 }

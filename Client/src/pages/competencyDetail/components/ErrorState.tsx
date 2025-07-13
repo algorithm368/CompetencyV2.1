@@ -38,7 +38,7 @@ const ErrorState: React.FC<ErrorStateProps> = ({ error, source, id, retryCount, 
     variants={containerVariants}
     initial="hidden"
     animate="visible"
-    className="max-w-2xl mx-auto text-center py-16"
+    className="max-w-2xl mx-auto text-center py-1"
   >
     <motion.div variants={itemVariants}>
       <FaTimesCircle className="text-red-500 text-6xl mx-auto mb-6" />

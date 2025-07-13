@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { CompetencyResponse } from "../types/CompetencyTypes";
-import { fetchCompetenciesBySearchTerm } from "../services/searchCompetencyAPI";
+import { fetchCompetenciesBySearchTerm, testErrorByType } from "../services/searchCompetencyAPI";
 
 /**
  * @constant DEBOUNCE_DELAY
@@ -24,6 +24,152 @@ export type ItemType = {
   id: string;
   name: string;
   framework: string;
+};
+
+/**
+ * @function getStructuredErrorMessage
+ * @description Handles new structured server error responses
+ */
+const getStructuredErrorMessage = (errorType: string, message: string): string => {
+  switch (errorType) {
+    case 'validation':
+      if (message?.includes('Search term must be at least')) {
+        return "คำค้นหาต้องมีอย่างน้อย 2 ตัวอักษร";
+      }
+      if (message?.includes('too long')) {
+        return "คำค้นหายาวเกินไป (สูงสุด 100 ตัวอักษร)";
+      }
+      if (message?.includes('searchTerm')) {
+        return "กรุณาใส่คำค้นหาที่ถูกต้อง";
+      }
+      return "ข้อมูลที่ป้อนไม่ถูกต้อง กรุณาตรวจสอบและลองใหม่อีกครั้ง";
+      
+    case 'database_connection':
+      return "ไม่สามารถเชื่อมต่อกับฐานข้อมูลได้ กรุณาลองใหม่อีกครั้งในภายหลัง";
+      
+    case 'database_query':
+      return "เกิดข้อผิดพลาดในการค้นหาข้อมูล กรุณาลองใหม่อีกครั้ง";
+      
+    case 'timeout':
+      return "การค้นหาใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง";
+      
+    default:
+      return "เกิดข้อผิดพลาดในระบบ กรุณาลองใหม่อีกครั้ง";
+  }
+};
+
+/**
+ * @function getHTTPErrorMessage
+ * @description Handles HTTP status code errors
+ */
+const getHTTPErrorMessage = (status: number, responseData?: Record<string, unknown>): string => {
+  switch (status) {
+    case 400: {
+      // Check if it's a specific validation error from server
+      const serverMessage = responseData?.message;
+      if (typeof serverMessage === 'string') {
+        if (serverMessage.includes('Search term must be at least')) {
+          return "คำค้นหาต้องมีอย่างน้อย 2 ตัวอักษร";
+        }
+        if (serverMessage.includes('too long')) {
+          return "คำค้นหายาวเกินไป กรุณาใช้คำค้นหาที่สั้นกว่า";
+        }
+      }
+      return "คำค้นหาไม่ถูกต้อง กรุณาตรวจสอบและลองใหม่อีกครั้ง";
+    }
+    case 401:
+      return "ไม่ได้รับอนุญาตให้เข้าถึงข้อมูล กรุณาเข้าสู่ระบบใหม่";
+    case 403:
+      return "ไม่มีสิทธิ์เข้าถึงข้อมูลนี้";
+    case 404:
+      return "ไม่พบข้อมูลที่ต้องการ";
+    case 408:
+    case 504:
+      return "การเชื่อมต่อหมดเวลา กรุณาลองใหม่อีกครั้ง";
+    case 429:
+      return "ค้นหาบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่อีกครั้ง";
+    case 500:
+      return "เกิดข้อผิดพลาดในระบบเซิร์ฟเวอร์ กรุณาลองใหม่อีกครั้งในภายหลัง";
+    case 502:
+    case 503:
+      return "เซิร์ฟเวอร์ไม่สามารถให้บริการได้ในขณะนี้ กรุณาลองใหม่อีกครั้งในภายหลัง";
+    default:
+      return `เกิดข้อผิดพลาดในการดึงข้อมูล (รหัสข้อผิดพลาด: ${status})`;
+  }
+};
+
+/**
+ * @function getErrorMessage
+ * @description A robust error message translator that handles both new structured server errors
+ * and legacy error formats. It inspects an error object and returns a specific, 
+ * user-friendly, and localized (Thai) error message.
+ * @param {unknown} err - The error object caught in a try-catch block.
+ * @returns {string} A human-readable error message in Thai.
+ */
+const getErrorMessage = (err: unknown): string => {
+  // Type guard for error objects
+  if (!err || typeof err !== 'object') {
+    return "เกิดข้อผิดพลาดที่ไม่คาดคิด กรุณาลองใหม่อีกครั้ง";
+  }
+
+  const error = err as Record<string, unknown>;
+
+  // Handle new structured server error responses
+  if (error.response && typeof error.response === 'object') {
+    const response = error.response as Record<string, unknown>;
+    if (response.data && typeof response.data === 'object') {
+      const data = response.data as Record<string, unknown>;
+      if (data.errorType && typeof data.errorType === 'string' && 
+          data.message && typeof data.message === 'string') {
+        return getStructuredErrorMessage(data.errorType, data.message);
+      }
+    }
+  }
+
+  // Handle legacy fetch-related TypeError, a common client-side network issue.
+  if (error instanceof TypeError && typeof error.message === 'string' && error.message.includes("fetch")) {
+    return "ไม่สามารถเชื่อมต่อเครือข่ายได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตและลองใหม่อีกครั้ง";
+  }
+  
+  // Handle generic network error names or codes.
+  if (error.name === "NetworkError" || error.code === "NETWORK_ERROR") {
+    return "เกิดปัญหาเครือข่าย กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตและลองใหม่อีกครั้ง";
+  }
+  
+  // Broadly catch messages that imply a network problem.
+  const message = typeof error.message === 'string' ? error.message.toLowerCase() : '';
+  if (message.includes("network") || message.includes("fetch") || message.includes("connection")) {
+    return "ไม่สามารถเชื่อมต่อเครือข่ายได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตและลองใหม่อีกครั้ง";
+  }
+  
+  // Handle errors based on the HTTP response status code
+  if (error.response && typeof error.response === 'object') {
+    const response = error.response as Record<string, unknown>;
+    if (typeof response.status === 'number') {
+      return getHTTPErrorMessage(response.status, response.data as Record<string, unknown>);
+    }
+  }
+  
+  // Handle specific error types like timeouts or user-aborted requests.
+  if (error.name === "TimeoutError" || message.includes("timeout")) {
+    return "การเชื่อมต่อหมดเวลา กรุณาลองใหม่อีกครั้ง";
+  }
+  if (error.name === "AbortError") {
+    return "การค้นหาถูกยกเลิก กรุณาลองใหม่อีกครั้ง";
+  }
+  
+  // Handle empty search term on client side
+  if (message.includes("empty") || message.includes("searchterm")) {
+    return "กรุณาใส่คำค้นหา";
+  }
+  
+  // Fallback for errors that have a message property
+  if (typeof error.message === 'string' && error.message) {
+    return `เกิดข้อผิดพลาดในการดึงข้อมูล: ${error.message}`;
+  }
+  
+  // The ultimate fallback for any unexpected error type.
+  return "เกิดข้อผิดพลาดที่ไม่คาดคิด กรุณาลองใหม่อีกครั้ง";
 };
 
 /**
@@ -94,68 +240,73 @@ export function useCompetencyResults() {
   // --- ERROR HANDLING UTILITY ---
 
   /**
-   * @function getErrorMessage
-   * @description A robust error message translator. It inspects an error object of unknown type (`any`)
-   * and returns a specific, user-friendly, and localized (Thai) error message. This function is a critical
-   * piece of the user experience, abstracting away cryptic technical errors into actionable feedback.
-   * @param {any} err - The error object caught in a try-catch block.
-   * @returns {string} A human-readable error message in Thai.
+   * @function getStructuredErrorMessage
+   * @description Handles new structured server error responses
    */
-  const getErrorMessage = (err: any): string => {
-    // Handle specific fetch-related TypeError, a common client-side network issue.
-    if (err instanceof TypeError && err.message.includes("fetch")) {
-      return "ไม่สามารถเชื่อมต่อเครือข่ายได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตและลองใหม่อีกครั้ง";
+  const getStructuredErrorMessage = (errorType: string, message: string): string => {
+    switch (errorType) {
+      case 'validation':
+        if (message?.includes('Search term must be at least')) {
+          return "คำค้นหาต้องมีอย่างน้อย 2 ตัวอักษร";
+        }
+        if (message?.includes('too long')) {
+          return "คำค้นหายาวเกินไป (สูงสุด 100 ตัวอักษร)";
+        }
+        if (message?.includes('searchTerm')) {
+          return "กรุณาใส่คำค้นหาที่ถูกต้อง";
+        }
+        return "ข้อมูลที่ป้อนไม่ถูกต้อง กรุณาตรวจสอบและลองใหม่อีกครั้ง";
+        
+      case 'database_connection':
+        return "ไม่สามารถเชื่อมต่อกับฐานข้อมูลได้ กรุณาลองใหม่อีกครั้งในภายหลัง";
+        
+      case 'database_query':
+        return "เกิดข้อผิดพลาดในการค้นหาข้อมูล กรุณาลองใหม่อีกครั้ง";
+        
+      case 'timeout':
+        return "การค้นหาใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง";
+        
+      default:
+        return "เกิดข้อผิดพลาดในระบบ กรุณาลองใหม่อีกครั้ง";
     }
-    // Handle generic network error names or codes.
-    if (err.name === "NetworkError" || err.code === "NETWORK_ERROR") {
-      return "เกิดปัญหาเครือข่าย กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตและลองใหม่อีกครั้ง";
-    }
-    // Broadly catch messages that imply a network problem.
-    if (
-      err.message?.toLowerCase().includes("network") ||
-      err.message?.toLowerCase().includes("fetch") ||
-      err.message?.toLowerCase().includes("connection")
-    ) {
-      return "ไม่สามารถเชื่อมต่อเครือข่ายได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตและลองใหม่อีกครั้ง";
-    }
-    // Handle errors based on the HTTP response status code, providing context-specific messages.
-    if (err.response) {
-      const status = err.response.status;
-      switch (status) {
-        case 400:
-          return "คำค้นหาไม่ถูกต้อง กรุณาตรวจสอบและลองใหม่อีกครั้ง";
-        case 401:
-          return "ไม่ได้รับอนุญาตให้เข้าถึงข้อมูล กรุณาเข้าสู่ระบบใหม่";
-        case 403:
-          return "ไม่มีสิทธิ์เข้าถึงข้อมูลนี้";
-        case 404:
-          return "ไม่พบข้อมูลที่ต้องการ";
-        case 429:
-          return "ค้นหาบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่อีกครั้ง";
-        case 500:
-          return "เกิดข้อผิดพลาดในระบบเซิร์ฟเวอร์ กรุณาลองใหม่อีกครั้งในภายหลัง";
-        case 502:
-        case 503:
-        case 504:
-          return "เซิร์ฟเวอร์ไม่สามารถให้บริการได้ในขณะนี้ กรุณาลองใหม่อีกครั้งในภายหลัง";
-        default:
-          return `เกิดข้อผิดพลาดในการดึงข้อมูล (รหัสข้อผิดพลาด: ${status})`;
+  };
+
+  /**
+   * @function getHTTPErrorMessage
+   * @description Handles HTTP status code errors
+   */
+  const getHTTPErrorMessage = (status: number, responseData?: Record<string, unknown>): string => {
+    switch (status) {
+      case 400: {
+        // Check if it's a specific validation error from server
+        const serverMessage = responseData?.message;
+        if (serverMessage?.includes('Search term must be at least')) {
+          return "คำค้นหาต้องมีอย่างน้อย 2 ตัวอักษร";
+        }
+        if (serverMessage?.includes('too long')) {
+          return "คำค้นหายาวเกินไป กรุณาใช้คำค้นหาที่สั้นกว่า";
+        }
+        return "คำค้นหาไม่ถูกต้อง กรุณาตรวจสอบและลองใหม่อีกครั้ง";
       }
+      case 401:
+        return "ไม่ได้รับอนุญาตให้เข้าถึงข้อมูล กรุณาเข้าสู่ระบบใหม่";
+      case 403:
+        return "ไม่มีสิทธิ์เข้าถึงข้อมูลนี้";
+      case 404:
+        return "ไม่พบข้อมูลที่ต้องการ";
+      case 408:
+      case 504:
+        return "การเชื่อมต่อหมดเวลา กรุณาลองใหม่อีกครั้ง";
+      case 429:
+        return "ค้นหาบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่อีกครั้ง";
+      case 500:
+        return "เกิดข้อผิดพลาดในระบบเซิร์ฟเวอร์ กรุณาลองใหม่อีกครั้งในภายหลัง";
+      case 502:
+      case 503:
+        return "เซิร์ฟเวอร์ไม่สามารถให้บริการได้ในขณะนี้ กรุณาลองใหม่อีกครั้งในภายหลัง";
+      default:
+        return `เกิดข้อผิดพลาดในการดึงข้อมูล (รหัสข้อผิดพลาด: ${status})`;
     }
-    // Handle specific error types like timeouts or user-aborted requests.
-    if (err.name === "TimeoutError" || err.message?.includes("timeout")) {
-      return "การเชื่อมต่อหมดเวลา กรุณาลองใหม่อีกครั้ง";
-    }
-    if (err.name === "AbortError") {
-      // This can happen if the component unmounts or a new request is fired before the previous one completes.
-      return "การค้นหาถูกยกเลิก กรุณาลองใหม่อีกครั้ง";
-    }
-    // Fallback for errors that have a message property but don't fit other categories.
-    if (err.message) {
-      return `เกิดข้อผิดพลาดในการดึงข้อมูล: ${err.message}`;
-    }
-    // The ultimate fallback for any unexpected error type.
-    return "เกิดข้อผิดพลาดที่ไม่คาดคิด กรุณาลองใหม่อีกครั้ง";
   };
 
   // --- SIDE EFFECTS ---
@@ -189,8 +340,19 @@ export function useCompetencyResults() {
     // Set up the debounced execution using setTimeout.
     const handler = setTimeout(async () => {
       try {
-        // Execute the search. We trim the term again as a final safeguard.
-        const data = await fetchCompetenciesBySearchTerm(safeSearchTerm.trim());
+        let data: CompetencyResponse[];
+        
+        // Check for test error terms (remove in production)
+        const trimmedTerm = safeSearchTerm.trim().toLowerCase();
+        if (trimmedTerm.startsWith('test-error-')) {
+          const errorType = trimmedTerm.replace('test-error-', '') as 'network' | 'validation' | 'server' | 'timeout' | 'structured';
+          console.log(`Testing error type: ${errorType}`);
+          data = await testErrorByType(errorType);
+        } else {
+          // Execute the normal search
+          data = await fetchCompetenciesBySearchTerm(safeSearchTerm.trim());
+        }
+        
         // Ensure the API response is an array before setting it to state to prevent crashes.
         setResults(Array.isArray(data) ? data : []);
         // The search was successful; update the 'query' to reflect this executed term.

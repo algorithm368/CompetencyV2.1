@@ -18,7 +18,7 @@ const SearchEmptyState: React.FC<SearchEmptyStateProps> = ({ query, onNewSearch 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="text-center py-16"
+      className="text-center py-1"
     >
       <div className="max-w-xl mx-auto">
         <div className="p-8 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20">
@@ -55,7 +55,7 @@ const SearchEmptyState: React.FC<SearchEmptyStateProps> = ({ query, onNewSearch 
           
           <button
             onClick={onNewSearch}
-            className="mt-6 inline-flex items-center px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
+            className="mt-6 inline-flex items-center px-4 py-2 bg-teal-600 text-white font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
           >
             ค้นหาใหม่
           </button>

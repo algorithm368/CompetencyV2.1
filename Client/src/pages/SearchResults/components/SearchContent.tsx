@@ -6,7 +6,7 @@ import SearchLoadingState from "./SearchLoadingState";
 import SearchErrorState from "./SearchErrorState";
 import SearchWelcomeState from "./SearchWelcomeState";
 import SearchEmptyState from "./SearchEmptyState";
-import SuccessState from "./SuccessState";
+import SuccessState from "./SearchSuccessState";
 
 interface CompetencyItem {
   id: string;

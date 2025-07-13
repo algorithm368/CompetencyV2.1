@@ -145,13 +145,23 @@ const SfiaSection: React.FC<SfiaSectionProps> = ({ levels }) => {
             return null;
           }
 
+          // Count total subskills for this level
+          const totalSubskills = filteredDescriptions.reduce((count, desc) => {
+            return count + (desc.subskills?.filter(subskill => subskill.subskill_text?.trim()).length || 0);
+          }, 0);
+
           return (
             <div key={level.id} className="mb-8">
               <div className="flex flex-col p-6 bg-white/80 backdrop-blur-md rounded-2xl border border-blue-200 gap-2 shadow-md hover:shadow-xl transition-all duration-300 relative overflow-hidden">
                 {/* Decorative dot */}
                 <div className="absolute top-2 right-4 w-2 h-2 bg-blue-400 rounded-full opacity-20"></div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-3 flex items-center">
-                  {level.level_name ? `Level ${level.level_name}` : `Level ${index + 1}`}
+                <h3 className="text-xl font-semibold text-gray-800 mb-3 flex items-center justify-between">
+                  <span>{level.level_name ? `Level ${level.level_name}` : `Level ${index + 1}`}</span>
+                  {totalSubskills > 0 && (
+                    <span className="text-sm font-normal text-blue-600 bg-blue-100 px-3 py-1 rounded-full">
+                      {totalSubskills} subskill{totalSubskills !== 1 ? 's' : ''}
+                    </span>
+                  )}
                 </h3>
                 {filteredDescriptions.map((desc) => (
                   <div key={desc.id} className="mb-4">

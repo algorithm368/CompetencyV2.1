@@ -31,11 +31,13 @@ interface SfiaSectionProps {
 }
 
 const SfiaSection: React.FC<SfiaSectionProps> = ({ competency }) => {
+  console.log("SfiaSection competency:", competency);
   return (
     <>
       <OverviewSection overall={competency?.overall} />
       <NotesSection note={competency?.note} />
       {competency?.levels && competency.levels.length > 0 && <SfiaSkillLevels levels={competency.levels} />}
+
     </>
   );
 };

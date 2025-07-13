@@ -7,7 +7,6 @@ import BackgroundDecor from "./components/BackgroundDecor";
 import SearchHeader from "./components/SearchHeader";
 import SearchContent from "./components/SearchContent";
 import ResultsSummary from "./components/ResultsSummary";
-import FloatingActionButtons from "./components/FloatingActionButtons";
 
 // Hooks
 import { useCompetencyResults } from "./hooks/useCompetencyResults";
@@ -173,21 +172,6 @@ const ResultsPage: React.FC = () => {
   }, [setSearchTerm, handleSearch]);
 
   /**
-   * Handles scroll to top functionality
-   */
-  const handleScrollToTop = useCallback(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
-
-  /**
-   * Handles clear search functionality
-   */
-  const handleClearSearch = useCallback(() => {
-    setSearchTerm("");
-    handleSearch("");
-  }, [setSearchTerm, handleSearch]);
-
-  /**
    * Handles search execution with input validation
    *
    * Search Logic:
@@ -254,14 +238,6 @@ const ResultsPage: React.FC = () => {
             onNewSearch={handleNewSearch}
           />
         </div>
-
-        {/* Enhanced floating action button for quick actions */}
-        {query && (
-          <FloatingActionButtons
-            onClearSearch={handleClearSearch}
-            onScrollToTop={handleScrollToTop}
-          />
-        )}
       </div>
     </Layout>
   );

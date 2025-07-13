@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { FaSignInAlt, FaBars, FaTimes } from "react-icons/fa";
 import ProfileDisplay from "./ProfileDisplay";
 import Login from "./Login";
@@ -7,6 +7,7 @@ import AuthContext from "@Contexts/AuthContext";
 
 const NAV_ITEMS: { name: string; path: string }[] = [
   { name: "Home", path: "/home" },
+  { name: "Search", path: "/results" },
   { name: "About", path: "/about" },
   { name: "Features", path: "/features" },
   { name: "Comparison", path: "/comparison" },
@@ -20,6 +21,7 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ isTop }) => {
   const auth = useContext(AuthContext);
+  const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
 
@@ -62,6 +64,11 @@ const Navbar: React.FC<NavbarProps> = ({ isTop }) => {
 
   const isLoggedIn = !!auth?.user;
 
+  // Helper function to check if a nav item is active
+  const isActiveNavItem = (itemPath: string) => {
+    return location.pathname === itemPath;
+  };
+
   const handleLogin = async (response: { credential?: string }) => {
     if (response.credential) {
       try {
@@ -98,19 +105,22 @@ const Navbar: React.FC<NavbarProps> = ({ isTop }) => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex space-x-6 lg:space-x-8 flex-1 justify-center px-5">
-            {NAV_ITEMS.map((item) => (
-              <Link
-                key={item.name}
-                to={item.path}
-                className={`relative font-medium transition-all duration-300 hover:scale-105 text-sm lg:text-base ${
-                  isTop
-                    ? "text-gray-600 hover:text-teal-600 after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-teal-600 hover:after:w-full after:transition-all after:duration-300"
-                    : "text-gray-600 hover:text-teal-600 after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-teal-600 hover:after:w-full after:transition-all after:duration-300"
-                }`}
-              >
-                {item.name}
-              </Link>
-            ))}
+            {NAV_ITEMS.map((item) => {
+              const isActive = isActiveNavItem(item.path);
+              return (
+                <Link
+                  key={item.name}
+                  to={item.path}
+                  className={`relative font-medium transition-all duration-300 hover:scale-105 text-sm lg:text-base ${
+                    isActive
+                      ? "text-teal-600 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-teal-600 after:transition-all after:duration-300"
+                      : "text-gray-600 hover:text-teal-600 after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-teal-600 hover:after:w-full after:transition-all after:duration-300"
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              );
+            })}
           </div>
 
           {/* Desktop Login/Profile */}
@@ -188,22 +198,29 @@ const Navbar: React.FC<NavbarProps> = ({ isTop }) => {
 
               {/* Menu Items */}
               <div className="flex flex-col p-4 space-y-2">
-                {NAV_ITEMS.map((item, index) => (
-                  <Link
-                    key={item.name}
-                    to={item.path}
-                    onClick={() => setMenuOpen(false)}
-                    className="flex items-center text-gray-700 hover:text-teal-600 font-medium py-4 px-4 rounded-xl hover:bg-teal-50 transition-all duration-200 transform hover:translate-x-1 border-b border-gray-100 last:border-b-0"
-                    style={{
-                      animationDelay: `${index * 50}ms`,
-                      animation: menuOpen
-                        ? "slideInRight 0.3s ease-out forwards"
-                        : "none",
-                    }}
-                  >
-                    <span className="text-base">{item.name}</span>
-                  </Link>
-                ))}
+                {NAV_ITEMS.map((item, index) => {
+                  const isActive = isActiveNavItem(item.path);
+                  return (
+                    <Link
+                      key={item.name}
+                      to={item.path}
+                      onClick={() => setMenuOpen(false)}
+                      className={`flex items-center font-medium py-4 px-4 rounded-xl transition-all duration-200 transform hover:translate-x-1 border-b border-gray-100 last:border-b-0 ${
+                        isActive
+                          ? "text-teal-600 bg-teal-50 border-l-4 border-l-teal-600"
+                          : "text-gray-700 hover:text-teal-600 hover:bg-teal-50"
+                      }`}
+                      style={{
+                        animationDelay: `${index * 50}ms`,
+                        animation: menuOpen
+                          ? "slideInRight 0.3s ease-out forwards"
+                          : "none",
+                      }}
+                    >
+                      <span className="text-base">{item.name}</span>
+                    </Link>
+                  );
+                })}
 
                 {/* Mobile Login/Logout at bottom */}
                 <div className="pt-6 mt-6 border-t border-gray-200">

@@ -9,6 +9,7 @@ import {
   ArrowRight,
   CheckCircle,
 } from "lucide-react";
+import SearchBox from "@Components/Common/SearchBox";
 
 /**
  * Renders the hero section of the Home page, featuring a clean gradient background,
@@ -59,15 +60,9 @@ export const HomeHeroSection = () => {
     };
   }, []);
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter" && searchTerm.trim() !== "") {
-      navigate(`/results?query=${encodeURIComponent(searchTerm.trim())}`);
-    }
-  };
-
-  const handleSearchClick = () => {
-    if (searchTerm.trim() !== "") {
-      navigate(`/results?query=${encodeURIComponent(searchTerm.trim())}`);
+  const handleSearch = (term: string) => {
+    if (term.trim() !== "") {
+      navigate(`/results?query=${encodeURIComponent(term.trim())}`);
     }
   };
 
@@ -173,37 +168,13 @@ export const HomeHeroSection = () => {
             transition={{ duration: 0.6, ease: "easeInOut", delay: 0.4 }}
             className="relative flex justify-center"
           >
-            <div className="relative w-full max-w-md">
-              <svg
-                aria-hidden="true"
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-teal-600 z-10 w-5 h-5"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd" 
-                  d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                  clipRule="evenodd"
-                />
-              </svg>
-
-              <input
-                type="text"
-                placeholder="ค้นหาสมรรถนะ..."
-                className="w-full pl-12 pr-28 py-4 bg-white/90 backdrop-blur-sm text-gray-900 rounded-2xl border-2 border-teal-200 shadow-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400 transition-all duration-300 hover:border-teal-300"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyDown={handleKeyDown}
-              />
-
-              <button
-                onClick={handleSearchClick}
-                aria-label="Search"
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white px-5 py-2 rounded-xl shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-2 hover:scale-105 active:scale-95"
-              >
-                ค้นหา
-              </button>
-            </div>
+            <SearchBox
+              searchTerm={searchTerm}
+              onSearchTermChange={setSearchTerm}
+              onSearch={handleSearch}
+              placeholder="ค้นหาสมรรถนะ..."
+              variant="hero"
+            />
           </motion.div>
 
           {/* Additional call-to-action */}
@@ -312,7 +283,7 @@ export const HomeHeroSection = () => {
           >
             {features.map((feature, index) => (
               <motion.div
-                key={index}
+                key={feature.title}
                 variants={itemVariants}
                 className="relative group"
               >

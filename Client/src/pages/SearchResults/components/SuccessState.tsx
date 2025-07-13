@@ -70,9 +70,6 @@ const SuccessState: React.FC<SuccessStateProps> = ({
       exit="exit"
     >
       <motion.div variants={itemVariants}>
-        <SearchResultsHeader query={query} />
-      </motion.div>
-      <motion.div variants={itemVariants}>
         <ResultsGrid
           items={items}
           onViewDetails={onViewDetails}

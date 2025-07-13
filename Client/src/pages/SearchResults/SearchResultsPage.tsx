@@ -1,19 +1,13 @@
 import React, { useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { AnimatePresence } from "framer-motion";
 
 // Layout and Component Imports
 import Layout from "@Layouts/Layout";
-import SearchBanner from "./components/SearchBanner";
-import SearchBox from "./components/SearchBox";
 import BackgroundDecor from "./components/BackgroundDecor";
-
-// State Components
-import LoadingState from "./components/LoadingState";
-import ErrorState from "./components/ErrorState";
-import NoQueryState from "./components/NoQueryState";
-import EmptyState from "./components/EmptyState";
-import SuccessState from "./components/SuccessState";
+import SearchHeader from "./components/SearchHeader";
+import SearchContent from "./components/SearchContent";
+import ResultsSummary from "./components/ResultsSummary";
+import FloatingActionButtons from "./components/FloatingActionButtons";
 
 // Hooks
 import { useCompetencyResults } from "./hooks/useCompetencyResults";
@@ -97,10 +91,6 @@ const ResultsPage: React.FC = () => {
    */
   const renderConditions = useMemo(
     () => ({
-      isLoading: loading,
-      hasError: error && !loading,
-      hasNoQuery: !loading && !error && !query,
-      isEmpty: !loading && !error && query && pageItems.length === 0,
       hasResults: !loading && !error && query && pageItems.length > 0,
     }),
     [loading, error, query, pageItems.length]
@@ -154,17 +144,48 @@ const ResultsPage: React.FC = () => {
 
   /**
    * Handles retry functionality for failed searches
-   *
-   * Retry Logic:
-   * 1. Uses current search term if available
-   * 2. Falls back to last successful query
-   * 3. Clears error state and reinitializes search
    */
   const handleRetry = useCallback(() => {
     const retryTerm = searchTerm.trim() || query;
     console.debug(`Retrying search with term: "${retryTerm}"`);
     handleSearch(retryTerm);
   }, [searchTerm, query, handleSearch]);
+
+  /**
+   * Handles suggestion clicks from welcome state
+   * Sets search term and executes search
+   */
+  const handleSuggestionClick = useCallback(
+    (suggestion: string) => {
+      setSearchTerm(suggestion);
+      handleSearch(suggestion);
+    },
+    [setSearchTerm, handleSearch]
+  );
+
+  /**
+   * Handles new search action from empty state
+   * Clears search term and query
+   */
+  const handleNewSearch = useCallback(() => {
+    setSearchTerm("");
+    handleSearch("");
+  }, [setSearchTerm, handleSearch]);
+
+  /**
+   * Handles scroll to top functionality
+   */
+  const handleScrollToTop = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  /**
+   * Handles clear search functionality
+   */
+  const handleClearSearch = useCallback(() => {
+    setSearchTerm("");
+    handleSearch("");
+  }, [setSearchTerm, handleSearch]);
 
   /**
    * Handles search execution with input validation
@@ -186,58 +207,6 @@ const ResultsPage: React.FC = () => {
   );
 
   // ============================================================================
-  // RENDER LOGIC
-  // ============================================================================
-
-  /**
-   * Renders the appropriate component based on current application state
-   * Uses AnimatePresence for smooth transitions between states
-   * Optimized for performance with reduced animation complexity
-   *
-   * State Priority (highest to lowest):
-   * 1. Loading - Shows loading spinner
-   * 2. Error - Shows error message with retry option
-   * 3. No Query - Shows initial state prompt
-   * 4. Empty Results - Shows no results found message
-   * 5. Success - Shows paginated results
-   */
-  const renderContent = () => (
-    <AnimatePresence mode={UI_CONSTANTS.ANIMATION_MODE}>
-      {renderConditions.isLoading && (
-        <LoadingState key="loading" />
-      )}
-
-      {renderConditions.hasError && (
-        <ErrorState 
-          key="error" 
-          error={error} 
-          onRetry={handleRetry} 
-        />
-      )}
-
-      {renderConditions.hasNoQuery && (
-        <NoQueryState key="no-query" />
-      )}
-
-      {renderConditions.isEmpty && (
-        <EmptyState key="empty" query={query} />
-      )}
-
-      {renderConditions.hasResults && (
-        <SuccessState
-          key="success"
-          query={query}
-          items={pageItems}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-          onViewDetails={handleViewDetails}
-        />
-      )}
-    </AnimatePresence>
-  );
-
-  // ============================================================================
   // MAIN RENDER
   // ============================================================================
 
@@ -246,21 +215,53 @@ const ResultsPage: React.FC = () => {
       {/* Background decorative elements */}
       <BackgroundDecor />
 
-      {/* Page header with title */}
-      <SearchBanner title={UI_CONSTANTS.PAGE_TITLE} />
-
-      {/* Main content area with responsive padding and optimized background */}
-      <div className="relative pt-8 pb-16 px-4 md:px-8 lg:px-16 bg-gradient-to-b from-teal-25 via-white to-teal-25/50 min-h-screen">
-        {/* Search input component */}
-        <SearchBox
+      {/* Main content area with enhanced UX/UI */}
+      <div className="relative pt-24 pb-20 px-4 md:px-6 lg:px-8 bg-gradient-to-br from-slate-50 via-white to-blue-50/30 min-h-screen">
+        
+        {/* Enhanced Search Section */}
+        <SearchHeader
           searchTerm={searchTerm}
           onSearchTermChange={setSearchTerm}
           onSearch={handleSearchExecution}
           placeholder={UI_CONSTANTS.SEARCH_PLACEHOLDER}
+          query={query}
         />
 
-        {/* Dynamic content based on application state */}
-        {renderContent()}
+        {/* Enhanced Content Area */}
+        <div className="max-w-6xl mx-auto">
+          {/* Results Summary */}
+          {renderConditions.hasResults && (
+            <ResultsSummary
+              query={query}
+              itemsCount={pageItems.length}
+              currentPage={currentPage}
+              totalPages={totalPages}
+            />
+          )}
+
+          {/* Dynamic content with enhanced container */}
+          <SearchContent
+            loading={loading}
+            error={error}
+            query={query}
+            pageItems={pageItems}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            onViewDetails={handleViewDetails}
+            onRetry={handleRetry}
+            onSuggestionClick={handleSuggestionClick}
+            onNewSearch={handleNewSearch}
+          />
+        </div>
+
+        {/* Enhanced floating action button for quick actions */}
+        {query && (
+          <FloatingActionButtons
+            onClearSearch={handleClearSearch}
+            onScrollToTop={handleScrollToTop}
+          />
+        )}
       </div>
     </Layout>
   );

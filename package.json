@@ -1,0 +1,26 @@
+{
+  "name": "competency-v2",
+  "version": "1.0.0",
+  "description": "Competency Management System",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
+    "dev:client": "cd Client && npm run dev",
+    "dev:server": "cd Server && npm run dev",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "cd Client && npm run build",
+    "build:server": "cd Server && npm run build",
+    "install:all": "npm install && cd Client && npm install && cd ../Server && npm install",
+    "test": "npm run test:client && npm run test:server",
+    "test:client": "cd Client && npm run test",
+    "test:server": "cd Server && npm run test",
+    "test:watch": "concurrently \"npm run test:watch:client\" \"npm run test:watch:server\"",
+    "test:watch:client": "cd Client && npm run test:watch",
+    "test:watch:server": "cd Server && npm run test:watch"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

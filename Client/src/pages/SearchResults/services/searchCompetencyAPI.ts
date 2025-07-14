@@ -9,7 +9,9 @@ export class APIError extends Error {
     message: string,
     public status?: number,
     public response?: Response,
-    public source?: string
+    public source?: string,
+    public errorType?: string,
+    public details?: unknown
   ) {
     super(message);
     this.name = "APIError";
@@ -20,6 +22,29 @@ export class APIError extends Error {
 interface CompetencyItem {
   name: string;
   id: string;
+}
+
+// Helper function to parse error response
+async function parseErrorResponse(res: Response): Promise<{
+  errorMessage: string;
+  errorType: string;
+  details: unknown;
+}> {
+  let errorData: Record<string, unknown> | null = null;
+  try {
+    const contentType = res.headers.get('content-type');
+    if (contentType?.includes('application/json')) {
+      errorData = await res.json();
+    }
+  } catch (parseError) {
+    console.warn('Failed to parse error response as JSON:', parseError);
+  }
+
+  return {
+    errorMessage: (errorData?.message as string) || `HTTP ${res.status}: ${res.statusText}`,
+    errorType: (errorData?.errorType as string) || 'unknown',
+    details: errorData?.details || null
+  };
 }
 
 // Enhanced fetch function with better error handling
@@ -43,12 +68,8 @@ async function fetchFromSource(
     clearTimeout(timeoutId);
 
     if (!res.ok) {
-      throw new APIError(
-        `HTTP ${res.status}: ${res.statusText}`,
-        res.status,
-        res,
-        dbType
-      );
+      const { errorMessage, errorType, details } = await parseErrorResponse(res);
+      throw new APIError(errorMessage, res.status, res, dbType, errorType, details);
     }
 
     const data = await res.json();
@@ -73,7 +94,7 @@ async function fetchFromSource(
     }
 
     if (error instanceof Error && error.name === "AbortError") {
-      throw new APIError(`Request timeout for ${dbType}`, 0, undefined, dbType);
+      throw new APIError(`Request timeout for ${dbType}`, 0, undefined, dbType, "timeout");
     }
 
     if (error instanceof TypeError && error.message.includes("fetch")) {
@@ -81,7 +102,8 @@ async function fetchFromSource(
         `Network error when fetching from ${dbType}`,
         0,
         undefined,
-        dbType
+        dbType,
+        "network"
       );
     }
 
@@ -89,7 +111,8 @@ async function fetchFromSource(
       `Failed to fetch from ${dbType}: ${error instanceof Error ? error.message : 'Unknown error'}`,
       0,
       undefined,
-      dbType
+      dbType,
+      "unknown"
     );
   }
 }
@@ -192,12 +215,8 @@ export async function getAllCompetencies(
     clearTimeout(timeoutId);
 
     if (!res.ok) {
-      throw new APIError(
-        `HTTP ${res.status}: ${res.statusText}`,
-        res.status,
-        res,
-        dbType
-      );
+      const { errorMessage, errorType, details } = await parseErrorResponse(res);
+      throw new APIError(errorMessage, res.status, res, dbType, errorType, details);
     }
 
     const data = await res.json();
@@ -222,7 +241,7 @@ export async function getAllCompetencies(
     }
 
     if (error instanceof Error && error.name === "AbortError") {
-      throw new APIError(`Request timeout for ${dbType}`, 0, undefined, dbType);
+      throw new APIError(`Request timeout for ${dbType}`, 0, undefined, dbType, "timeout");
     }
 
     if (error instanceof TypeError && error.message.includes("fetch")) {
@@ -230,7 +249,8 @@ export async function getAllCompetencies(
         `Network error when fetching from ${dbType}`,
         0,
         undefined,
-        dbType
+        dbType,
+        "network"
       );
     }
 
@@ -238,7 +258,8 @@ export async function getAllCompetencies(
       `Failed to fetch from ${dbType}: ${error instanceof Error ? error.message : 'Unknown error'}`,
       0,
       undefined,
-      dbType
+      dbType,
+      "unknown"
     );
   }
 }

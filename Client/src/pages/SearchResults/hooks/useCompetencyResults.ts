@@ -98,6 +98,69 @@ const getHTTPErrorMessage = (status: number, responseData?: Record<string, unkno
   }
 };
 
+// Helper functions for error handling
+const handleAPIError = (error: { errorType?: string; message: string; status?: number }): string => {
+  if (error.errorType) {
+    return getStructuredErrorMessage(error.errorType, error.message);
+  }
+  if (error.status) {
+    return getHTTPErrorMessage(error.status, { message: error.message });
+  }
+  return error.message;
+};
+
+const handleResponseError = (response: Record<string, unknown>): string | null => {
+  if (response.data && typeof response.data === 'object') {
+    const data = response.data as Record<string, unknown>;
+    if (data.errorType && typeof data.errorType === 'string' && 
+        data.message && typeof data.message === 'string') {
+      return getStructuredErrorMessage(data.errorType, data.message);
+    }
+  }
+  
+  if (typeof response.status === 'number') {
+    return getHTTPErrorMessage(response.status, response.data as Record<string, unknown>);
+  }
+  
+  return null;
+};
+
+const handleCommonErrors = (error: Record<string, unknown>): string | null => {
+  // Handle legacy fetch-related TypeError
+  if (error instanceof TypeError && typeof error.message === 'string' && error.message.includes("fetch")) {
+    return "ไม่สามารถเชื่อมต่อเครือข่ายได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตและลองใหม่อีกครั้ง";
+  }
+  
+  // Handle generic network errors
+  if (error.name === "NetworkError" || error.code === "NETWORK_ERROR") {
+    return "เกิดปัญหาเครือข่าย กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตและลองใหม่อีกครั้ง";
+  }
+  
+  // Handle timeout and abort errors
+  if (error.name === "TimeoutError" || error.name === "AbortError") {
+    return "การเชื่อมต่อหมดเวลา กรุณาลองใหม่อีกครั้ง";
+  }
+  
+  const message = typeof error.message === 'string' ? error.message.toLowerCase() : '';
+  
+  // Check for network-related messages
+  if (message.includes("network") || message.includes("fetch") || message.includes("connection")) {
+    return "ไม่สามารถเชื่อมต่อเครือข่ายได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตและลองใหม่อีกครั้ง";
+  }
+  
+  // Check for timeout messages
+  if (message.includes("timeout")) {
+    return "การเชื่อมต่อหมดเวลา กรุณาลองใหม่อีกครั้ง";
+  }
+  
+  // Check for empty search term
+  if (message.includes("empty") || message.includes("searchterm")) {
+    return "กรุณาใส่คำค้นหา";
+  }
+  
+  return null;
+};
+
 /**
  * @function getErrorMessage
  * @description A robust error message translator that handles both new structured server errors
@@ -114,54 +177,20 @@ const getErrorMessage = (err: unknown): string => {
 
   const error = err as Record<string, unknown>;
 
-  // Handle new structured server error responses
-  if (error.response && typeof error.response === 'object') {
-    const response = error.response as Record<string, unknown>;
-    if (response.data && typeof response.data === 'object') {
-      const data = response.data as Record<string, unknown>;
-      if (data.errorType && typeof data.errorType === 'string' && 
-          data.message && typeof data.message === 'string') {
-        return getStructuredErrorMessage(data.errorType, data.message);
-      }
-    }
+  // Handle APIError from our API service
+  if (error.name === 'APIError' && 'errorType' in error && 'message' in error) {
+    return handleAPIError(error as { errorType?: string; message: string; status?: number });
   }
 
-  // Handle legacy fetch-related TypeError, a common client-side network issue.
-  if (error instanceof TypeError && typeof error.message === 'string' && error.message.includes("fetch")) {
-    return "ไม่สามารถเชื่อมต่อเครือข่ายได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตและลองใหม่อีกครั้ง";
-  }
-  
-  // Handle generic network error names or codes.
-  if (error.name === "NetworkError" || error.code === "NETWORK_ERROR") {
-    return "เกิดปัญหาเครือข่าย กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตและลองใหม่อีกครั้ง";
-  }
-  
-  // Broadly catch messages that imply a network problem.
-  const message = typeof error.message === 'string' ? error.message.toLowerCase() : '';
-  if (message.includes("network") || message.includes("fetch") || message.includes("connection")) {
-    return "ไม่สามารถเชื่อมต่อเครือข่ายได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตและลองใหม่อีกครั้ง";
-  }
-  
-  // Handle errors based on the HTTP response status code
+  // Handle new structured server error responses (legacy format)
   if (error.response && typeof error.response === 'object') {
-    const response = error.response as Record<string, unknown>;
-    if (typeof response.status === 'number') {
-      return getHTTPErrorMessage(response.status, response.data as Record<string, unknown>);
-    }
+    const responseResult = handleResponseError(error.response as Record<string, unknown>);
+    if (responseResult) return responseResult;
   }
-  
-  // Handle specific error types like timeouts or user-aborted requests.
-  if (error.name === "TimeoutError" || message.includes("timeout")) {
-    return "การเชื่อมต่อหมดเวลา กรุณาลองใหม่อีกครั้ง";
-  }
-  if (error.name === "AbortError") {
-    return "การค้นหาถูกยกเลิก กรุณาลองใหม่อีกครั้ง";
-  }
-  
-  // Handle empty search term on client side
-  if (message.includes("empty") || message.includes("searchterm")) {
-    return "กรุณาใส่คำค้นหา";
-  }
+
+  // Handle common error types
+  const commonResult = handleCommonErrors(error);
+  if (commonResult) return commonResult;
   
   // Fallback for errors that have a message property
   if (typeof error.message === 'string' && error.message) {
@@ -239,76 +268,6 @@ export function useCompetencyResults() {
 
   // --- ERROR HANDLING UTILITY ---
 
-  /**
-   * @function getStructuredErrorMessage
-   * @description Handles new structured server error responses
-   */
-  const getStructuredErrorMessage = (errorType: string, message: string): string => {
-    switch (errorType) {
-      case 'validation':
-        if (message?.includes('Search term must be at least')) {
-          return "คำค้นหาต้องมีอย่างน้อย 2 ตัวอักษร";
-        }
-        if (message?.includes('too long')) {
-          return "คำค้นหายาวเกินไป (สูงสุด 100 ตัวอักษร)";
-        }
-        if (message?.includes('searchTerm')) {
-          return "กรุณาใส่คำค้นหาที่ถูกต้อง";
-        }
-        return "ข้อมูลที่ป้อนไม่ถูกต้อง กรุณาตรวจสอบและลองใหม่อีกครั้ง";
-        
-      case 'database_connection':
-        return "ไม่สามารถเชื่อมต่อกับฐานข้อมูลได้ กรุณาลองใหม่อีกครั้งในภายหลัง";
-        
-      case 'database_query':
-        return "เกิดข้อผิดพลาดในการค้นหาข้อมูล กรุณาลองใหม่อีกครั้ง";
-        
-      case 'timeout':
-        return "การค้นหาใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง";
-        
-      default:
-        return "เกิดข้อผิดพลาดในระบบ กรุณาลองใหม่อีกครั้ง";
-    }
-  };
-
-  /**
-   * @function getHTTPErrorMessage
-   * @description Handles HTTP status code errors
-   */
-  const getHTTPErrorMessage = (status: number, responseData?: Record<string, unknown>): string => {
-    switch (status) {
-      case 400: {
-        // Check if it's a specific validation error from server
-        const serverMessage = responseData?.message;
-        if (serverMessage?.includes('Search term must be at least')) {
-          return "คำค้นหาต้องมีอย่างน้อย 2 ตัวอักษร";
-        }
-        if (serverMessage?.includes('too long')) {
-          return "คำค้นหายาวเกินไป กรุณาใช้คำค้นหาที่สั้นกว่า";
-        }
-        return "คำค้นหาไม่ถูกต้อง กรุณาตรวจสอบและลองใหม่อีกครั้ง";
-      }
-      case 401:
-        return "ไม่ได้รับอนุญาตให้เข้าถึงข้อมูล กรุณาเข้าสู่ระบบใหม่";
-      case 403:
-        return "ไม่มีสิทธิ์เข้าถึงข้อมูลนี้";
-      case 404:
-        return "ไม่พบข้อมูลที่ต้องการ";
-      case 408:
-      case 504:
-        return "การเชื่อมต่อหมดเวลา กรุณาลองใหม่อีกครั้ง";
-      case 429:
-        return "ค้นหาบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่อีกครั้ง";
-      case 500:
-        return "เกิดข้อผิดพลาดในระบบเซิร์ฟเวอร์ กรุณาลองใหม่อีกครั้งในภายหลัง";
-      case 502:
-      case 503:
-        return "เซิร์ฟเวอร์ไม่สามารถให้บริการได้ในขณะนี้ กรุณาลองใหม่อีกครั้งในภายหลัง";
-      default:
-        return `เกิดข้อผิดพลาดในการดึงข้อมูล (รหัสข้อผิดพลาด: ${status})`;
-    }
-  };
-
   // --- SIDE EFFECTS ---
 
   /**
@@ -342,12 +301,15 @@ export function useCompetencyResults() {
       try {
         let data: CompetencyResponse[];
         
-        // Check for test error terms (remove in production)
-        const trimmedTerm = safeSearchTerm.trim().toLowerCase();
-        if (trimmedTerm.startsWith('test-error-')) {
-          const errorType = trimmedTerm.replace('test-error-', '') as 'network' | 'validation' | 'server' | 'timeout' | 'structured';
-          console.log(`Testing error type: ${errorType}`);
-          data = await testErrorByType(errorType);
+        // Check for test error commands (for development/testing)
+        if (isErrorTestCommand(safeSearchTerm)) {
+          const errorType = getErrorTypeFromCommand(safeSearchTerm);
+          if (errorType) {
+            logErrorTest(errorType, safeSearchTerm);
+            data = await testErrorByType(errorType as 'network' | 'validation' | 'server' | 'timeout' | 'structured');
+          } else {
+            data = await fetchCompetenciesBySearchTerm(safeSearchTerm.trim());
+          }
         } else {
           // Execute the normal search
           data = await fetchCompetenciesBySearchTerm(safeSearchTerm.trim());

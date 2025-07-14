@@ -1,21 +1,3 @@
-/**
- * CompetencyDetailPage - Optimized for Performance
- * 
- * Performance Optimizations Applied:
- * 1. Memoized animation variants outside component to prevent recreation
- * 2. Replaced heavy framer-motion background animations with CSS animations
- * 3. Reduced particle count from 8 to 4 for better performance
- * 4. Memoized particle positions to avoid recalculation on each render
- * 5. Created reusable ActionButton component with optimized animations
- * 6. Memoized expensive calculations (competencyTitle, quickNavItems)
- * 7. Optimized animation durations and easing functions
- * 8. Added will-change CSS properties for better rendering performance
- * 9. Used LazyMotion with domAnimation features for smaller bundle size
- * 10. Optimized tooltip animations with faster transitions
- * 11. Used nullish coalescing (??) instead of logical OR (||) for safer operations
- * 12. Removed unused imports and variables
- */
-
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence, LazyMotion, domAnimation } from "framer-motion";
@@ -50,7 +32,6 @@ import SfiaSection from "./components/SfiaSection";
 import TpqiSection from "./components/TpqiSection";
 import CacheInfo from "./components/CacheInfo";
 
-// Optimized animation variants (memoized outside component to avoid recreation)
 const containerVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: {

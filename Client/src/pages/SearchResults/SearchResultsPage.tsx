@@ -239,6 +239,9 @@ const ResultsPage: React.FC = () => {
           />
         </div>
       </div>
+      
+      {/* Development Error Testing Helper */}
+      <ErrorTestHelper onTestSearch={handleSearchExecution} />
     </Layout>
   );
 };

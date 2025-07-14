@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { CompetencyResponse } from "../types/CompetencyTypes";
-import { fetchCompetenciesBySearchTerm, testErrorByType } from "../services/searchCompetencyAPI";
+import { fetchCompetenciesBySearchTerm } from "../services/searchCompetencyAPI";
 
 /**
  * @constant DEBOUNCE_DELAY
@@ -299,21 +299,8 @@ export function useCompetencyResults() {
     // Set up the debounced execution using setTimeout.
     const handler = setTimeout(async () => {
       try {
-        let data: CompetencyResponse[];
-        
-        // Check for test error commands (for development/testing)
-        if (isErrorTestCommand(safeSearchTerm)) {
-          const errorType = getErrorTypeFromCommand(safeSearchTerm);
-          if (errorType) {
-            logErrorTest(errorType, safeSearchTerm);
-            data = await testErrorByType(errorType as 'network' | 'validation' | 'server' | 'timeout' | 'structured');
-          } else {
-            data = await fetchCompetenciesBySearchTerm(safeSearchTerm.trim());
-          }
-        } else {
-          // Execute the normal search
-          data = await fetchCompetenciesBySearchTerm(safeSearchTerm.trim());
-        }
+        // Execute the search
+        const data = await fetchCompetenciesBySearchTerm(safeSearchTerm.trim());
         
         // Ensure the API response is an array before setting it to state to prevent crashes.
         setResults(Array.isArray(data) ? data : []);
@@ -407,7 +394,8 @@ export function useCompetencyResults() {
   const handleViewDetails = (itemId: string) => {
     // In a full implementation, this might look like:
     // navigate(`/Competencies/${itemId}`);
-    console.log("View details for", itemId);
+    // placeholder function
+    console.log(`View details for item ID: ${itemId}`);
   };
 
   // --- DATA TRANSFORMATION & PAGINATION ---

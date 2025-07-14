@@ -31,7 +31,6 @@ interface SfiaSectionProps {
 }
 
 const SfiaSection: React.FC<SfiaSectionProps> = ({ competency }) => {
-  console.log("SfiaSection competency:", competency);
   return (
     <>
       <OverviewSection overall={competency?.overall} />

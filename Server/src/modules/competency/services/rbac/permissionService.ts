@@ -1,18 +1,22 @@
 import { PermissionRepository } from "@Competency/repositories/RoleRepository";
+import type { Permission } from "@prisma/client_competency";
+import { BaseService } from "@Utils/BaseService";
 
-export class PermissionService {
-  private permissionModel = new PermissionRepository();
+export class PermissionService extends BaseService<Permission, keyof Permission> {
+  constructor() {
+    super(new PermissionRepository(), ["description"], "id");
+  }
 
-  async createPermission(data: { permission_key: string; description?: string }, actor: string = "system") {
-    const existingPermission = await this.permissionModel.findMany({
-      where: { permission_key: data.permission_key },
+  async createPermission(data: { key: string; description?: string }, actor: string = "system") {
+    const existingPermission = await this.repo.findMany({
+      where: { key: data.key },
     });
     if (existingPermission.length > 0) {
       throw new Error("Permission already exists");
     }
-    return this.permissionModel.create(
+    return this.repo.create(
       {
-        key: data.permission_key,
+        key: data.key,
         description: data.description ?? null,
         createdAt: new Date(),
       },
@@ -21,19 +25,19 @@ export class PermissionService {
   }
 
   async getPermissions() {
-    return this.permissionModel.findMany({});
+    return this.repo.findMany({});
   }
 
   async getPermissionById(permissionId: number) {
-    return this.permissionModel.findUnique(permissionId);
+    return this.repo.findUnique(permissionId);
   }
 
-  async updatePermission(permissionId: number, data: Partial<{ permission_key: string; description: string }>, actor: string = "system") {
-    if (data.permission_key) {
-      const existingPermission = await this.permissionModel.findMany({
+  async updatePermission(permissionId: number, data: Partial<{ key: string; description: string }>, actor: string = "system") {
+    if (data.key) {
+      const existingPermission = await this.repo.findMany({
         where: {
-          permission_key: data.permission_key,
-          AND: [{ permission_id: { not: permissionId } }],
+          key: data.key,
+          AND: [{ id: { not: permissionId } }],
         },
       });
       if (existingPermission.length > 0) {
@@ -42,14 +46,14 @@ export class PermissionService {
     }
 
     const updateData = {
-      ...(data.permission_key !== undefined ? { key: data.permission_key } : {}),
+      ...(data.key !== undefined ? { key: data.key } : {}),
       ...(data.description !== undefined ? { description: data.description } : {}),
     };
 
-    return this.permissionModel.update(permissionId, updateData, actor);
+    return this.repo.update(permissionId, updateData, actor);
   }
 
   async deletePermission(permissionId: number, actor: string = "system") {
-    return this.permissionModel.delete(permissionId, actor);
+    return this.repo.delete(permissionId, actor);
   }
 }

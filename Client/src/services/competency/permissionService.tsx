@@ -1,24 +1,19 @@
 import { AxiosResponse } from "axios";
-import api from "../api";
-import { TableDataResponse, Permission, CreatePermissionPayload, UpdatePermissionPayload } from "@Types/competency/permissionTypes";
+import api from "@Services/api";
+import { Permission, PermissionPageResult, CreatePermissionDto, UpdatePermissionDto } from "@Types/competency/permissionTypes";
+
 export default class PermissionService {
-  // ---- Permissions CRUD ----
-  static async getTableData(): Promise<TableDataResponse> {
-    const res: AxiosResponse<Permission[]> = await api.get("/competency/rbac/permissions");
-    const perms = res.data;
+  static async getAll(search?: string, page?: number, perPage?: number): Promise<PermissionPageResult> {
+    const params = new URLSearchParams();
+    if (page !== undefined) params.append("page", String(page));
+    if (perPage !== undefined) params.append("perPage", String(perPage));
+    if (search) params.append("search", search);
 
-    const tableHead = ["Permission ID", "Key", "Description", "Created At"];
-    const tableRows = perms.map((p) => ({
-      "Permission ID": p.permission_id,
-      Key: p.permission_key,
-      Description: p.description ?? "",
-      "Created At": new Date(p.created_at).toLocaleString(),
-    }));
-
-    return { tableHead, tableRows };
+    const res: AxiosResponse<PermissionPageResult> = await api.get("/competency/rbac/permissions", { params });
+    return res.data;
   }
 
-  static async getAll(): Promise<Permission[]> {
+  static async getAllFlat(): Promise<Permission[]> {
     const res: AxiosResponse<Permission[]> = await api.get("/competency/rbac/permissions");
     return res.data;
   }
@@ -28,12 +23,12 @@ export default class PermissionService {
     return res.data;
   }
 
-  static async create(payload: CreatePermissionPayload): Promise<Permission> {
+  static async create(payload: CreatePermissionDto): Promise<Permission> {
     const res: AxiosResponse<Permission> = await api.post("/competency/rbac/permissions", payload);
     return res.data;
   }
 
-  static async update(id: number, payload: UpdatePermissionPayload): Promise<Permission> {
+  static async update(id: number, payload: UpdatePermissionDto): Promise<Permission> {
     const res: AxiosResponse<Permission> = await api.put(`/competency/rbac/permissions/${id}`, payload);
     return res.data;
   }
@@ -42,13 +37,14 @@ export default class PermissionService {
     await api.delete(`/competency/rbac/permissions/${id}`);
   }
 
-  // ---- Role ↔ Permission Assignment ----
   static async assignToRole(roleId: number, permissionId: number): Promise<void> {
     await api.post("/competency/rbac/assign-permission", { roleId, permissionId });
   }
 
   static async revokeFromRole(roleId: number, permissionId: number): Promise<void> {
-    await api.delete("/competency/rbac/revoke-permission", { data: { roleId, permissionId } });
+    await api.delete("/competency/rbac/revoke-permission", {
+      data: { roleId, permissionId },
+    });
   }
 
   static async getForRole(roleId: number): Promise<Permission[]> {

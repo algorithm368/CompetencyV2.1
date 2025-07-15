@@ -1,63 +1,103 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
 import { RoleService } from "@Competency/services/rbac/roleService";
 
-const roleService = new RoleService();
+const service = new RoleService();
+
 interface AuthenticatedRequest extends Request {
   user?: { userId?: string };
 }
-export const extractMessage = (err: unknown) => (err instanceof Error ? err.message : "An unknown error occurred");
 
-export const createRole = async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const { roleName, description } = req.body;
-    const role = await roleService.createRole({ role_name: roleName, description }, req.user?.userId?.toString());
-    res.status(StatusCodes.CREATED).json(role);
-  } catch (err) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: extractMessage(err) });
-  }
-};
+export const extractMessage = (err: unknown): string => (err instanceof Error ? err.message : "An unknown error occurred");
 
-export const getRoles = async (req: Request, res: Response) => {
-  try {
-    const roles = await roleService.getRoles();
-    res.status(StatusCodes.OK).json(roles);
-  } catch (err) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: extractMessage(err) });
-  }
-};
+export class RoleController {
+  static async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const search = typeof req.query.search === "string" ? req.query.search : undefined;
+      const pageRaw = req.query.page;
+      const perPageRaw = req.query.perPage;
+      const page = pageRaw && !isNaN(+pageRaw) ? parseInt(pageRaw as string, 10) : undefined;
+      const perPage = perPageRaw && !isNaN(+perPageRaw) ? parseInt(perPageRaw as string, 10) : undefined;
 
-export const getRoleById = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const roleId = parseInt(req.params.roleId, 10);
-    const role = await roleService.getRoleById(roleId);
-    if (!role) {
-      res.status(StatusCodes.NOT_FOUND).json({ message: "Role not found" });
-      return;
+      const items = await service.getAll(search, page, perPage);
+      res.json(items);
+    } catch (err) {
+      next(err);
     }
-    res.status(StatusCodes.OK).json(role);
-  } catch (err) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: extractMessage(err) });
   }
-};
 
-export const updateRole = async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const roleId = parseInt(req.params.roleId);
-    const { roleName, description } = req.body;
-    const updatedRole = await roleService.updateRole(roleId, { role_name: roleName, description }, req.user?.userId?.toString());
-    res.status(StatusCodes.OK).json(updatedRole);
-  } catch (err) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: extractMessage(err) });
-  }
-};
+  static async getById(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const id = Number(req.params.roleId);
+      if (isNaN(id)) {
+        res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid role ID" });
+        return;
+      }
 
-export const deleteRole = async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const roleId = parseInt(req.params.roleId);
-    await roleService.deleteRole(roleId, req.user?.userId?.toString());
-    res.status(StatusCodes.NO_CONTENT).send();
-  } catch (err) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: extractMessage(err) });
+      const role = await service.getRoleById(id);
+      if (!role) {
+        res.status(StatusCodes.NOT_FOUND).json({ message: `Role with id ${id} not found` });
+        return;
+      }
+
+      res.status(StatusCodes.OK).json(role);
+    } catch (err) {
+      next(err);
+    }
   }
-};
+
+  static async create(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const actor = req.user?.userId ?? "system";
+      const { roleName, description } = req.body;
+
+      if (!roleName?.trim()) {
+        res.status(StatusCodes.BAD_REQUEST).json({ message: "Role name is required" });
+        return;
+      }
+
+      const newRole = await service.createRole({ name: roleName.trim(), description }, actor);
+
+      res.status(StatusCodes.CREATED).json(newRole);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async update(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const actor = req.user?.userId ?? "system";
+      const id = Number(req.params.roleId);
+
+      if (isNaN(id)) {
+        res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid role ID" });
+        return;
+      }
+
+      const { roleName, description } = req.body;
+
+      const updated = await service.updateRole(id, { name: roleName, description }, actor);
+
+      res.status(StatusCodes.OK).json(updated);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async delete(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const actor = req.user?.userId ?? "system";
+      const id = Number(req.params.roleId);
+
+      if (isNaN(id)) {
+        res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid role ID" });
+        return;
+      }
+
+      await service.deleteRole(id, actor);
+      res.status(StatusCodes.NO_CONTENT).send();
+    } catch (err) {
+      next(err);
+    }
+  }
+}

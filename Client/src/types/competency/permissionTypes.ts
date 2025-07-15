@@ -4,21 +4,13 @@ export interface Permission {
   description?: string | null;
   createdAt: string;
 }
-
-export interface TableDataResponse {
-  tableHead: string[];
-  tableRows: Record<string, string | number | null>[];
+export interface PermissionPageResult {
+  data: Permission[];
+  total?: number;
 }
 
-export interface CreatePermissionPayload {
-  key: string;
-  description?: string;
-}
-
-export interface UpdatePermissionPayload {
-  key?: string;
-  description?: string;
-}
+export type CreatePermissionDto = Omit<Permission, "id" | "createdAt">;
+export type UpdatePermissionDto = Partial<Omit<Permission, "id" | "createdAt">>;
 
 export interface PermissionRow {
   id: number;

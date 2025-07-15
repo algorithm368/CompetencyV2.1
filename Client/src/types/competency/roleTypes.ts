@@ -1,26 +1,32 @@
-export interface TableDataResponse {
-  tableHead: string[];
-  tableRows: Record<string, string | number | boolean | null>[];
-}
-
 export interface RoleEntity {
   id: number;
   name: string;
   description: string | null;
   createdAt: string;
+
   userRoles?: {
     userId: string;
     assignedAt: string;
   }[];
 }
 
-export interface RolePayload {
-  name: string;
-  description?: string;
+export interface RolePageResult {
+  data: RoleEntity[];
+  total?: number;
 }
 
-export interface RoleUpdatePayload extends RolePayload {
+export type CreateRoleDto = {
+  name: string;
+  description?: string | null;
+};
+
+export type UpdateRoleDto = Partial<CreateRoleDto> & {
   id: number;
-}
+};
 
 export type TabKey = "roles" | "permissions" | "assignPermissions" | "assignRoles";
+export interface UserEntity {
+  id: string;
+  username: string;
+  email?: string;
+}

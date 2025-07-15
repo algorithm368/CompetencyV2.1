@@ -7,15 +7,9 @@ import RouteWrapper from "./guards/RouteWrapper";
 import { adminRoutes } from "./admin/adminRoutes";
 import { sfiaRoutes } from "./sfiaRoutes";
 import { tpqiRoutes } from "./tpqiRoutes";
-import { competencyRoutes } from "./competencyRoutes";
+// import { competencyRoutes } from "./competencyRoutes";
 
-import {
-  HomePage,
-  ResultsPage,
-  CompetencyDetailPage,
-  ProfilePage,
-  AboutPage,
-} from "@Pages/ExportPages";
+import { HomePage, ResultsPage, CompetencyDetailPage, ProfilePage, AboutPage } from "@Pages/ExportPages";
 
 const AppRoutes: React.FC = () => (
   // <ErrorBoundary>

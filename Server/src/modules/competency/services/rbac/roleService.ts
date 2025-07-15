@@ -1,18 +1,22 @@
 import { RoleRepository } from "@Competency/repositories/RoleRepository";
+import type { Role } from "@prisma/client_competency";
+import { BaseService } from "@Utils/BaseService";
 
-export class RoleService {
-  private roleModel = new RoleRepository();
+export class RoleService extends BaseService<Role, keyof Role> {
+  constructor() {
+    super(new RoleRepository(), ["name"], "id");
+  }
 
-  async createRole(data: { role_name: string; description?: string }, actor: string = "system") {
-    const existingRole = await this.roleModel.findMany({
-      where: { role_name: data.role_name },
+  async createRole(data: { name: string; description?: string }, actor: string = "system") {
+    const existingRole = await this.repo.findMany({
+      where: { name: data.name },
     });
     if (existingRole.length > 0) {
       throw new Error("Role already exists");
     }
-    return this.roleModel.create(
+    return this.repo.create(
       {
-        name: data.role_name,
+        name: data.name,
         description: data.description ?? null,
         createdAt: new Date(),
       },
@@ -21,21 +25,21 @@ export class RoleService {
   }
 
   async getRoles() {
-    return this.roleModel.findMany({
-      include: { UserRoles: true },
+    return this.repo.findMany({
+      include: { userRoles: true },
     });
   }
 
   async getRoleById(roleId: number) {
-    return this.roleModel.findUnique(roleId);
+    return this.repo.findUnique(roleId);
   }
 
-  async updateRole(roleId: number, data: Partial<{ role_name: string; description: string }>, actor: string = "system") {
-    if (data.role_name) {
-      const existingRole = await this.roleModel.findMany({
+  async updateRole(roleId: number, data: Partial<{ name: string; description: string }>, actor: string = "system") {
+    if (data.name) {
+      const existingRole = await this.repo.findMany({
         where: {
-          role_name: data.role_name,
-          AND: [{ role_id: { not: roleId } }],
+          name: data.name,
+          AND: [{ id: { not: roleId } }],
         },
       });
       if (existingRole.length > 0) {
@@ -44,13 +48,13 @@ export class RoleService {
     }
 
     const updateData = {
-      ...(data.role_name !== undefined ? { role_name: data.role_name } : {}),
+      ...(data.name !== undefined ? { name: data.name } : {}),
       ...(data.description !== undefined ? { description: data.description } : {}),
     };
-    return this.roleModel.update(roleId, updateData, actor);
+    return this.repo.update(roleId, updateData, actor);
   }
 
   async deleteRole(roleId: number, actor: string = "system") {
-    return this.roleModel.delete(roleId, actor);
+    return this.repo.delete(roleId, actor);
   }
 }

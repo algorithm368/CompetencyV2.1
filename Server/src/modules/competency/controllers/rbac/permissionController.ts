@@ -1,62 +1,103 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
 import { PermissionService } from "@Competency/services/rbac/permissionService";
 
-const permissionService = new PermissionService();
+const service = new PermissionService();
+
 interface AuthenticatedRequest extends Request {
   user?: { userId?: string };
 }
-export const extractMessage = (err: unknown) => (err instanceof Error ? err.message : "An unknown error occurred");
-export const createPermission = async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const { permissionKey, description } = req.body;
-    const permission = await permissionService.createPermission({ permission_key: permissionKey, description }, req.user?.userId?.toString());
-    res.status(StatusCodes.CREATED).json(permission);
-  } catch (err) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: extractMessage(err) });
-  }
-};
 
-export const getPermissions = async (req: Request, res: Response) => {
-  try {
-    const permissions = await permissionService.getPermissions();
-    res.status(StatusCodes.OK).json(permissions);
-  } catch (err) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: extractMessage(err) });
-  }
-};
+export const extractMessage = (err: unknown): string => (err instanceof Error ? err.message : "An unknown error occurred");
 
-export const getPermissionById = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const permissionId = parseInt(req.params.permissionId, 10);
-    const permission = await permissionService.getPermissionById(permissionId);
-    if (!permission) {
-      res.status(StatusCodes.NOT_FOUND).json({ message: "Permission not found" });
-      return;
+export class PermissionController {
+  static async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const search = typeof req.query.search === "string" ? req.query.search : undefined;
+      const pageRaw = req.query.page;
+      const perPageRaw = req.query.perPage;
+      const page = pageRaw && !isNaN(+pageRaw) ? parseInt(pageRaw as string, 10) : undefined;
+      const perPage = perPageRaw && !isNaN(+perPageRaw) ? parseInt(perPageRaw as string, 10) : undefined;
+
+      const items = await service.getAll(search, page, perPage);
+      res.json(items);
+    } catch (err) {
+      next(err);
     }
-    res.status(StatusCodes.OK).json(permission);
-  } catch (err) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: extractMessage(err) });
   }
-};
 
-export const updatePermission = async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const permissionId = parseInt(req.params.permissionId);
-    const { permissionKey, description } = req.body;
-    const updatedPermission = await permissionService.updatePermission(permissionId, { permission_key: permissionKey, description }, req.user?.userId?.toString());
-    res.status(StatusCodes.OK).json(updatedPermission);
-  } catch (err) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: extractMessage(err) });
-  }
-};
+  static async getById(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const id = Number(req.params.permissionId);
+      if (isNaN(id)) {
+        res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid permission ID" });
+        return;
+      }
 
-export const deletePermission = async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const permissionId = parseInt(req.params.permissionId);
-    await permissionService.deletePermission(permissionId, req.user?.userId?.toString());
-    res.status(StatusCodes.NO_CONTENT).send();
-  } catch (err) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: extractMessage(err) });
+      const permission = await service.getPermissionById(id);
+      if (!permission) {
+        res.status(StatusCodes.NOT_FOUND).json({ message: `Permission with id ${id} not found` });
+        return;
+      }
+
+      res.status(StatusCodes.OK).json(permission);
+    } catch (err) {
+      next(err);
+    }
   }
-};
+
+  static async create(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const actor = req.user?.userId ?? "system";
+      const { permissionKey, description } = req.body;
+
+      if (!permissionKey?.trim()) {
+        res.status(StatusCodes.BAD_REQUEST).json({ message: "Permission key is required" });
+        return;
+      }
+
+      const newPermission = await service.createPermission({ key: permissionKey.trim(), description }, actor);
+
+      res.status(StatusCodes.CREATED).json(newPermission);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async update(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const actor = req.user?.userId ?? "system";
+      const id = Number(req.params.permissionId);
+
+      if (isNaN(id)) {
+        res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid permission ID" });
+        return;
+      }
+
+      const { permissionKey, description } = req.body;
+
+      const updated = await service.updatePermission(id, { key: permissionKey, description }, actor);
+
+      res.status(StatusCodes.OK).json(updated);
+    } catch (err: any) {
+      next(err);
+    }
+  }
+
+  static async delete(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const actor = req.user?.userId ?? "system";
+      const id = Number(req.params.permissionId);
+
+      if (isNaN(id)) {
+        res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid permission ID" });
+        return;
+      }
+
+      await service.deletePermission(id, actor);
+      res.status(StatusCodes.NO_CONTENT).send();
+    } catch (err: any) {
+      next(err);
+    }
+  }
+}

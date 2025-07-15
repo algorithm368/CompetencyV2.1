@@ -20,7 +20,6 @@ app.use(
 
 app.use(cookieParser());
 
-// JSON parsing with built-in error handling
 app.use(
   express.json({
     verify: (req, res, buf, encoding) => {
@@ -34,33 +33,31 @@ app.use(
   })
 );
 
+app.use((req, res, next) => {
+  // res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+  // res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+  next();
+});
 
+// Swagger
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// API routes
+// Routes
 app.use("/api", routes);
 
 app.use("/", (req, res) => {
   res.send("Hello, world!");
 });
 
-// General error handler
-app.use(
-  (
-    err: any,
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
-    console.error(err);
-    const status = err.status ?? 500;
-    const message = err.message ?? "Internal server error";
-    res.status(status).json({ error: message });
-  }
-);
+// Error handler
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error(err);
+  const status = err.status ?? 500;
+  const message = err.message ?? "Internal server error";
+  res.status(status).json({ error: message });
+});
 
-// Start server
 const PORT: number = Number(process.env.PORT) || 3000;
 httpServer.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);

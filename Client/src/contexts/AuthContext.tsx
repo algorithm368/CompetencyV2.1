@@ -1,10 +1,17 @@
 import React, { createContext, useState, useEffect, ReactNode, useContext, useCallback, useRef } from "react";
-import { GoogleLoginResponse, loginWithGoogle, logout as logoutService, refreshAccessToken as refreshAccessTokenService, getCurrentUser as fetchCurrentUserService } from "@Services/competency/authService";
+
+import {
+  GoogleLoginResponse,
+  loginWithGoogle,
+  logout as logoutService,
+  refreshAccessToken as refreshAccessTokenService,
+  getCurrentUser as fetchCurrentUserService,
+} from "@Services/competency/authService";
 
 interface AuthContextType {
   user: GoogleLoginResponse["user"] | null;
   accessToken: string | null;
-  expiresIn: string | null;
+  expiresIn: number | null;
   login: (idToken: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshAccessToken: () => Promise<void>;
@@ -16,14 +23,17 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthContextType["user"]>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [expiresIn, setExpiresIn] = useState<string | null>(null);
+  const [expiresIn, setExpiresIn] = useState<number | null>(null);
   const retryCounts = useRef<Record<string, number>>({});
 
   const login = useCallback(async (idToken: string) => {
-    const { user, accessToken, expiresIn } = await loginWithGoogle(idToken);
-    setUser(user);
-    setAccessToken(accessToken);
-    setExpiresIn(expiresIn);
+    const response = await loginWithGoogle(idToken);
+    setUser(response.user);
+    setAccessToken(response.accessToken);
+    setExpiresIn(Number(response.expiresIn));
+
+    localStorage.setItem("token", response.accessToken);
+    localStorage.setItem("expiresIn", response.expiresIn);
   }, []);
 
   const logout = useCallback(async () => {
@@ -31,29 +41,39 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     setAccessToken(null);
     setExpiresIn(null);
+
+    localStorage.removeItem("token");
+    localStorage.removeItem("expiresIn");
   }, []);
 
   const refreshAccessToken = useCallback(async () => {
     try {
-      const { accessToken, expiresIn } = await refreshAccessTokenService();
-      setAccessToken(accessToken);
-      setExpiresIn(expiresIn);
+      const response = await refreshAccessTokenService();
+      setAccessToken(response.accessToken);
+      setExpiresIn(response.expiresIn);
+
+      localStorage.setItem("token", response.accessToken);
+      localStorage.setItem("expiresIn", response.expiresIn.toString());
     } catch (err) {
       console.error("Failed to refresh access token:", err);
       setUser(null);
       setAccessToken(null);
       setExpiresIn(null);
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("expiresIn");
     }
   }, []);
 
   const fetchCurrentUser = useCallback(async () => {
     if (!accessToken) return;
     try {
-      const { user } = await fetchCurrentUserService(accessToken);
-      setUser(user);
+      const response = await fetchCurrentUserService(accessToken);
+      setUser(response.user);
+      retryCounts.current = {};
     } catch {
-      const url = user?.profileImage;
-      if (url) {
+      if (user?.profileImage) {
+        const url = user.profileImage;
         const count = retryCounts.current[url] || 0;
         if (count < 3) {
           retryCounts.current[url] = count + 1;
@@ -67,22 +87,48 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [accessToken, user?.profileImage]);
 
-  // Auto-refresh token before expiry
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const expires = localStorage.getItem("expiresIn");
+    if (token && expires) {
+      setAccessToken(token);
+      setExpiresIn(Number(expires));
+      fetchCurrentUser();
+    }
+  }, []);
+
   useEffect(() => {
     if (!expiresIn) return;
-    const timeout = (parseInt(expiresIn, 10) - 60) * 1000; // refresh 1 minute before expiry
+    const timeout = (expiresIn - 60) * 1000;
+    if (timeout <= 0) {
+      refreshAccessToken();
+      return;
+    }
     const id = setTimeout(refreshAccessToken, timeout);
     return () => clearTimeout(id);
   }, [expiresIn, refreshAccessToken]);
 
-  // Fetch profile on sign in or page load if token exists
   useEffect(() => {
     if (accessToken) {
       fetchCurrentUser();
     }
   }, [accessToken, fetchCurrentUser]);
 
-  return <AuthContext.Provider value={{ user, accessToken, expiresIn, login, logout, refreshAccessToken, fetchCurrentUser }}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        accessToken,
+        expiresIn,
+        login,
+        logout,
+        refreshAccessToken,
+        fetchCurrentUser,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = (): AuthContextType => {

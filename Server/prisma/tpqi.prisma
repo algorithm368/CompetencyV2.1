@@ -169,9 +169,6 @@ model UnitSector {
   @@index([sectorId])
 }
 
-
-
-
 model TpqiSummary {
   id                Int           @id @default(autoincrement())
   userEmail         String        @db.VarChar(255)

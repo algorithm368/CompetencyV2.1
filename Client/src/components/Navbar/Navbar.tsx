@@ -39,11 +39,7 @@ const Navbar: React.FC<NavbarProps> = ({ isTop }) => {
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as HTMLElement;
-      if (
-        menuOpen &&
-        !target.closest(".mobile-menu") &&
-        !target.closest(".menu-button")
-      ) {
+      if (menuOpen && !target.closest(".mobile-menu") && !target.closest(".menu-button")) {
         setMenuOpen(false);
       }
     }
@@ -97,9 +93,7 @@ const Navbar: React.FC<NavbarProps> = ({ isTop }) => {
               <div className="w-8 h-8 bg-teal-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-lg">C</span>
               </div>
-              <span className="text-2xl font-bold text-gray-900">
-                ompetency
-              </span>
+              <span className="text-2xl font-bold text-gray-900">Competency</span>
             </Link>
           </div>
 
@@ -165,11 +159,7 @@ const Navbar: React.FC<NavbarProps> = ({ isTop }) => {
               aria-label="Toggle menu"
               aria-expanded={menuOpen}
             >
-              {menuOpen ? (
-                <FaTimes className="h-5 w-5" />
-              ) : (
-                <FaBars className="h-5 w-5" />
-              )}
+              {menuOpen ? <FaTimes className="h-5 w-5" /> : <FaBars className="h-5 w-5" />}
             </button>
           </div>
         </div>
@@ -184,9 +174,7 @@ const Navbar: React.FC<NavbarProps> = ({ isTop }) => {
             <div className="mobile-menu fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl z-50 md:hidden transform transition-transform duration-300 ease-out">
               {/* Menu Header */}
               <div className="flex items-center justify-between p-4 border-b border-gray-200">
-                <span className="text-gray-900 font-semibold text-lg">
-                  Menu
-                </span>
+                <span className="text-gray-900 font-semibold text-lg">Menu</span>
                 <button
                   onClick={() => setMenuOpen(false)}
                   className="flex items-center justify-center w-8 h-8 text-teal-600 hover:text-teal-700 focus:outline-none rounded-lg transition-colors duration-200"
@@ -206,15 +194,11 @@ const Navbar: React.FC<NavbarProps> = ({ isTop }) => {
                       to={item.path}
                       onClick={() => setMenuOpen(false)}
                       className={`flex items-center font-medium py-4 px-4 rounded-xl transition-all duration-200 transform hover:translate-x-1 border-b border-gray-100 last:border-b-0 ${
-                        isActive
-                          ? "text-teal-600 bg-teal-50 border-l-4 border-l-teal-600"
-                          : "text-gray-700 hover:text-teal-600 hover:bg-teal-50"
+                        isActive ? "text-teal-600 bg-teal-50 border-l-4 border-l-teal-600" : "text-gray-700 hover:text-teal-600 hover:bg-teal-50"
                       }`}
                       style={{
                         animationDelay: `${index * 50}ms`,
-                        animation: menuOpen
-                          ? "slideInRight 0.3s ease-out forwards"
-                          : "none",
+                        animation: menuOpen ? "slideInRight 0.3s ease-out forwards" : "none",
                       }}
                     >
                       <span className="text-base">{item.name}</span>

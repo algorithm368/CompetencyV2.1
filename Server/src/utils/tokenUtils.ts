@@ -31,11 +31,9 @@ const getEnvVar = (key: string): string => {
  *   If required environment variables (JWT_REFRESH_SECRET_KEY or JWT_REFRESH_EXPIRATION) are missing or invalid.
  */
 export const generateToken = (payload: AccessTokenPayload): string => {
-  const secret = getEnvVar("JWT_REFRESH_SECRET_KEY");
-  const expiration = parseInt(getEnvVar("JWT_REFRESH_EXPIRATION"), 10);
-
-  const options: SignOptions = { expiresIn: expiration };
-  return jwt.sign(payload, secret as Secret, options);
+  const secret = getEnvVar("JWT_ACCESS_SECRET_KEY");
+  const expiration = parseInt(getEnvVar("JWT_ACCESS_EXPIRATION"), 10);
+  return jwt.sign(payload, secret as Secret, { expiresIn: expiration });
 };
 
 /**
@@ -51,7 +49,7 @@ export const generateToken = (payload: AccessTokenPayload): string => {
  *   If the token is invalid, expired, or the secret is missing.
  */
 export const verifyToken = (token: string): AccessTokenPayload => {
-  const secret = getEnvVar("JWT_REFRESH_SECRET_KEY");
+  const secret = getEnvVar("JWT_ACCESS_SECRET_KEY");
   try {
     return jwt.verify(token, secret as Secret) as AccessTokenPayload;
   } catch {
@@ -74,9 +72,7 @@ export const verifyToken = (token: string): AccessTokenPayload => {
 export const generateRefreshToken = (payload: RefreshTokenPayload): string => {
   const secret = getEnvVar("JWT_REFRESH_SECRET_KEY");
   const expiration = parseInt(getEnvVar("JWT_REFRESH_EXPIRATION"), 10);
-
-  const options: SignOptions = { expiresIn: expiration };
-  return jwt.sign(payload, secret as Secret, options);
+  return jwt.sign(payload, secret as Secret, { expiresIn: expiration });
 };
 
 /**
@@ -95,8 +91,11 @@ export const verifyRefreshToken = (token: string): RefreshTokenPayload => {
   const secret = getEnvVar("JWT_REFRESH_SECRET_KEY");
   try {
     return jwt.verify(token, secret as Secret) as RefreshTokenPayload;
-  } catch (error) {
+  } catch (error: any) {
     console.error("verifyRefreshToken error:", error);
+    if (error.name === "TokenExpiredError") {
+      throw new Error("Refresh token expired");
+    }
     throw new Error("Invalid refresh token");
   }
 };

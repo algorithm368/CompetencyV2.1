@@ -9,6 +9,10 @@ import App from "./App";
 import { AuthProvider } from "./contexts/AuthContext";
 import "./styles/global.css";
 
+import { initApiInterceptors } from "./services/api";
+
+initApiInterceptors();
+
 const rootElement = document.getElementById("root");
 if (!rootElement) throw new Error("Root element not found");
 
@@ -24,17 +28,16 @@ const queryClient = new QueryClient({
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
     <BrowserRouter>
-      {/* <AuthProvider> */}
       <ThemeProvider>
         <QueryClientProvider client={queryClient}>
           <React.Suspense fallback={<Loading />}>
             <AuthProvider>
+              {/* ใน AuthProvider ให้มี logic โหลด token ตอนเริ่ม */}
               <App />
             </AuthProvider>
           </React.Suspense>
         </QueryClientProvider>
       </ThemeProvider>
-      {/* </AuthProvider> */}
     </BrowserRouter>
   </React.StrictMode>
 );

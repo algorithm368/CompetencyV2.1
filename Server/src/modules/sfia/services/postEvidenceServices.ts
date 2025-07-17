@@ -1,5 +1,5 @@
-import { primaSfia } from "../../../db/prismaClients";
-import { InformationApprovalStatus } from "@prima/client_sfia";
+import { prismaSfia } from "../../../db/prismaClients";
+import { InformationApprovalStatus } from "@prisma/client_sfia";
 
 export interface CreateEvidenceRequest {
   userId: string;
@@ -22,7 +22,8 @@ export async function createSubSkillEvidence(
   evidenceData: CreateEvidenceRequest
 ): Promise<EvidenceResponse> {
   // First, check if the subSkill exists
-  const subSkill = await primaSfia.subSkill.findUnique({
+  console.log("Creating evidence for subSkill ID:", evidenceData.subSkillId);
+  const subSkill = await prismaSfia.subSkill.findUnique({
     where: {
       id: evidenceData.subSkillId,
     },
@@ -34,27 +35,25 @@ export async function createSubSkillEvidence(
     );
   }
 
-  let dataCollection = await primaSfia.dataCollection.findFirst({
+  let dataCollection = await prismaSfia.dataCollection.findFirst({
     where: {
       userId: evidenceData.userId,
     },
   });
 
-  if (!dataCollection) {
-    dataCollection = await primaSfia.dataCollection.create({
-      data: {
-        userId: evidenceData.userId,
-      },
-    });
-  }
+  dataCollection ??= await prismaSfia.dataCollection.create({
+    data: {
+      userId: evidenceData.userId,
+    },
+  });
 
-  const evidence = await primaSfia.information.create({
+  const evidence = await prismaSfia.information.create({
     data: {
       text: evidenceData.evidenceText,
       evidenceUrl: evidenceData.evidenceUrl,
       subSkillId: evidenceData.subSkillId,
       dataCollectionId: dataCollection.id,
-      approveStatus: InformationApprovalStatus.NOT_APPROVED,
+      approvalStatus: InformationApprovalStatus.NOT_APPROVED,
     },
   });
 
@@ -62,7 +61,7 @@ export async function createSubSkillEvidence(
     id: evidence.id,
     text: evidence.text,
     evidenceUrl: evidence.evidenceUrl,
-    approved: evidence.approveStatus,
+    approved: evidence.approvalStatus,
     createdAt: evidence.createdAt,
     subSkillId: evidence.subSkillId!,
     dataCollectionId: evidence.dataCollectionId!,
@@ -70,13 +69,15 @@ export async function createSubSkillEvidence(
 }
 
 // test function to verify the service
-createSubSkillEvidence({
-  userId: "test-user-id",
-  subSkillId: 1,
-  evidenceText: "This is a test evidence.",
-  evidenceUrl: "http://example.com/test-evidence",
-}).then(response => {
-  console.log("Evidence created successfully:", response);
-}).catch(error => {
-  console.error("Error creating evidence:", error);
-});
+// createSubSkillEvidence({
+//   userId: "test-user-id",
+//   subSkillId: 1,
+//   evidenceText: "This is a test evidence.",
+//   evidenceUrl: "http://example.com/test-evidence",
+// })
+//   .then((response) => {
+//     console.log("Evidence created successfully:", response);
+//   })
+//   .catch((error) => {
+//     console.error("Error creating evidence:", error);
+//   });

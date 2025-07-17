@@ -38,9 +38,16 @@ export async function getSkillDetailsByCode(
   skill_code: string
 ): Promise<SkillSubSkillsAndLevels | null> {
   try {
-    const skillData = await prismaSfia.skill.findUnique({
+    const skillData = await prismaSfia.skill.findFirst({
       where: {
         code: skill_code,
+        levels: {
+          some: {
+            descriptions: {
+              some: {},
+            },
+          },
+        },
       },
       include: {
         category: {
@@ -50,6 +57,11 @@ export async function getSkillDetailsByCode(
           },
         },
         levels: {
+          where: {
+            descriptions: {
+              some: {},
+            },
+          },
           include: {
             descriptions: {
               include: {
@@ -79,10 +91,12 @@ export async function getSkillDetailsByCode(
       competency_name: skillData.name,
       overall: skillData.overview,
       note: skillData.note,
-      category: skillData.category ? {
-        id: skillData.category.id,
-        category_text: skillData.category.name,
-      } : null,
+      category: skillData.category
+        ? {
+            id: skillData.category.id,
+            category_text: skillData.category.name,
+          }
+        : null,
       levels: skillData.levels.map((level: any) => ({
         id: level.id,
         level_name: level.name,
@@ -99,14 +113,17 @@ export async function getSkillDetailsByCode(
 
     // Calculate totals
     const totalLevels = skillData.levels.length;
-    const totalSubSkills = skillData.levels.reduce((total: number, level: any) => {
-      return (
-        total +
-        level.descriptions.reduce((descTotal: number, desc: any) => {
-          return descTotal + desc.subSkills.length;
-        }, 0)
-      );
-    }, 0);
+    const totalSubSkills = skillData.levels.reduce(
+      (total: number, level: any) => {
+        return (
+          total +
+          level.descriptions.reduce((descTotal: number, desc: any) => {
+            return descTotal + desc.subSkills.length;
+          }, 0)
+        );
+      },
+      0
+    );
 
     return {
       competency: transformedSkill,

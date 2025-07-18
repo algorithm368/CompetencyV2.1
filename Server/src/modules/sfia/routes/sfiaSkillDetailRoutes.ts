@@ -3,13 +3,18 @@ import { getSkillDetailController } from "../controllers/getSkillDetailControlle
 
 const router = Router();
 
+// example route: /api/sfia/skills/details
+router.get("/", (req, res) => {
+  res.send("Hello from SFIA skill detail routes");
+});
+
 /**
- * @route   GET /api/sfia/skill-details/:skillCode
+ * @route   GET /api/sfia/skills/details/:skillCode
  * @desc    Get detailed skill information including subskills and levels for a specific SFIA skill code
  * @params  skillCode: string - The SFIA code for the skill (e.g., "PROG", "DBAD")
  * @access  Public
  * @example
- *   GET /api/sfia/skill-details/PROG
+ *   GET /api/sfia/skills/details/PROG
  *   Response: {
  *     success: true,
  *     data: {

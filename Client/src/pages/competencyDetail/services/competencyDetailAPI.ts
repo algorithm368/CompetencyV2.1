@@ -88,7 +88,7 @@ async function fetchSfiaJobDetail(jobCode: string): Promise<SfiaJobResponse> {
   const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
   try {
-    const url = `${BASE_API}/api/sfia/skill-details/${encodeURIComponent(jobCode)}`;
+    const url = `${BASE_API}/api/sfia/skills/${encodeURIComponent(jobCode)}`;
     
     const res = await fetch(url, {
       method: "GET",

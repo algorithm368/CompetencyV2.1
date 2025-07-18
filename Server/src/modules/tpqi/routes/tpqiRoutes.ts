@@ -1,5 +1,5 @@
 import { Router } from "express";
-  import getUnitcodeDetailRoutes from "./getUnitcodeDetailRoutes";
+import tpqiUnitcode  from "./tpqiUnitcodeRoutes"
 
 const router = Router();
 
@@ -8,6 +8,6 @@ router.get("/", (req, res) => {
   res.send("Hello from tpqi");
 });
 
-router.use("/unit-code-details", getUnitcodeDetailRoutes);
+router.use("/unitcodes", tpqiUnitcode);
 
 export default router;

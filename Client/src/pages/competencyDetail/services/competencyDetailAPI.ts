@@ -159,7 +159,9 @@ async function fetchTpqiUnitDetail(unitCode: string): Promise<TpqiUnitResponse> 
   const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
   try {
-    const url = `${BASE_API}/api/tpqi/unit-code-details/${encodeURIComponent(unitCode)}`;
+    const url = `${BASE_API}/api/tpqi/unitcodes/${encodeURIComponent(
+      unitCode
+    )}`;
     
     const res = await fetch(url, {
       method: "GET",

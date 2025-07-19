@@ -105,7 +105,7 @@ const SfiaSection: React.FC<SfiaSectionProps> = ({ levels }) => {
   const { accessToken } = useAuth();
 
   // API function to submit evidence
-  const BASE_API = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+  const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
   // API function to submit evidence
   const submitEvidence = async (
@@ -115,8 +115,8 @@ const SfiaSection: React.FC<SfiaSectionProps> = ({ levels }) => {
       throw new Error("User is not authenticated");
     }
 
-    // Use correct API endpoint with BASE_API
-    const response = await fetch(`${BASE_API}/api/sfia/evidence`, {
+    // Use correct API endpoint with VITE_API_BASE_URL
+    const response = await fetch(`${VITE_API_BASE_URL}/api/sfia/evidence`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

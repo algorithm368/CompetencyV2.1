@@ -1,7 +1,7 @@
 import type { CompetencyResponse } from "../types/CompetencyTypes";
 
-const BASE_API = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
-const COMPETENCY_API = `${BASE_API}/api/competency/search`;
+const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
+const COMPETENCY_API = `${VITE_API_BASE_URL}/api/competency/search`;
 
 // Enhanced error class for better error handling
 export class APIError extends Error {

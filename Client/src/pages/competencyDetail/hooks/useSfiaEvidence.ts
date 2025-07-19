@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useAuth } from "@Contexts/AuthContext";
-import { SfiaEvidenceService } from "../services/sfiaEvidenceService";
+import { SfiaEvidenceService } from "../services/sfiaEvidenceAPI";
 import { SubmitEvidenceRequest, EvidenceState } from "../types/sfia";
 
 /**

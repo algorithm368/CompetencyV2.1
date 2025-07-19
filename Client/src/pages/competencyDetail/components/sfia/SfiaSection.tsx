@@ -1,6 +1,6 @@
 import React from "react";
 import SfiaSkillLevels from "./SfiaSkillLevels";
-import { OverviewSection, NotesSection } from "./OverviewAndNotes";
+import { OverviewSection, NotesSection } from "../ui/OverviewAndNotes";
 
 // Match the actual API structure
 interface SfiaLevel {

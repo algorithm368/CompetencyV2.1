@@ -1,6 +1,6 @@
 import React from "react";
 import { TpqiSkills, TpqiKnowledge, TpqiOccupational } from "./TpqiSections";
-import { OverviewSection, NotesSection } from "./OverviewAndNotes";
+import { OverviewSection, NotesSection } from "../ui/OverviewAndNotes";
 
 interface TpqiSectionProps {
   competency: {

@@ -10,7 +10,7 @@ export interface SfiaDescription {
 }
 
 export interface SfiaLevel {
-  id: number;
+id: number;
   level_name: string | null;
   descriptions: SfiaDescription[];
 }

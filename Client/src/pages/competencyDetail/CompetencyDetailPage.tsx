@@ -26,16 +26,16 @@ import {
   useTpqiUnitDetail,
 } from "./hooks/useCompetencyDetail";
 import { useCompetencyDetailError } from "./hooks/useCompetencyDetailError";
-import InvalidUrl from "./components/InvalidUrl";
-import ErrorState from "./components/ErrorState";
-import LoadingState from "./components/LoadingState";
-import NoDataState from "./components/NoDataState";
-import BackButton from "./components/BackButton";
-import FrameworkBadge from "./components/FrameworkBadge";
-import StatsCard from "./components/StatsCard";
-import SfiaSection from "./components/SfiaSection";
-import TpqiSection from "./components/TpqiSection";
-import CacheInfo from "./components/CacheInfo";
+import InvalidUrl from "./components/states/InvalidUrl";
+import ErrorState from "./components/states/ErrorState";
+import LoadingState from "./components/states/LoadingState";
+import NoDataState from "./components/states/NoDataState";
+import BackButton from "./components/ui/BackButton";
+import FrameworkBadge from "./components/ui/FrameworkBadge";
+import StatsCard from "./components/ui/StatsCard";
+import SfiaSection from "./components/sfia/SfiaSection";
+import TpqiSection from "./components/tpqi/TpqiSection";
+import CacheInfo from "./components/ui/CacheInfo";
 
 const containerVariants = {
   hidden: { opacity: 0, y: 20 },

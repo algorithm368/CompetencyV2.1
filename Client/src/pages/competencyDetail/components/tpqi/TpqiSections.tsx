@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { FaTools, FaCheckCircle } from "react-icons/fa";
 import { motion } from "framer-motion";
-import UrlInputBox from "./UrlInputBox";
+import UrlInputBox from "../ui/UrlInputBox";
 
 interface TpqiSkillsProps {
   skills: Array<{ id: string; name_skill: string }>;

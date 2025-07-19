@@ -1,7 +1,7 @@
 import React from "react";
 import { FaCheckCircle } from "react-icons/fa";
 import UrlInputBox from "../ui/UrlInputBox";
-import { SfiaSubSkill } from "../types/sfia";
+import { SfiaSubSkill } from "../../types/sfia";
 
 interface SubSkillItemProps {
   /** Sub-skill information including description text. */

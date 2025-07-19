@@ -1,44 +1,60 @@
 import React from "react";
 import SfiaSkillLevels from "./SfiaSkillLevels";
 import { OverviewSection, NotesSection } from "../ui/OverviewAndNotes";
-
-// Match the actual API structure
-interface SfiaLevel {
-  id: number;
-  level_name: string | null;
-  descriptions: Array<{
-    id: number;
-    description_text: string | null;
-    subskills: Array<{
-      id: number;
-      subskill_text: string | null;
-    }>;
-  }>;
-}
+import { SfiaLevel, SfiaCompetency } from "../../types/sfia";
 
 interface SfiaSectionProps {
-  competency: {
-    competency_id: string;
-    competency_name: string | null;
-    overall: string | null;
-    note: string | null;
-    category: {
-      id: number;
-      category_text: string | null;
-    } | null;
-    levels: SfiaLevel[];
-  };
+  competency: SfiaCompetency;
 }
 
+/**
+ * SfiaSection Component
+ * 
+ * Main container for displaying SFIA competency information including:
+ * - Overview section with general description
+ * - Notes section with additional information
+ * - Skill levels with interactive evidence submission
+ */
 const SfiaSection: React.FC<SfiaSectionProps> = ({ competency }) => {
-  return (
-    <>
-      <OverviewSection overall={competency?.overall} />
-      <NotesSection note={competency?.note} />
-      {competency?.levels && competency.levels.length > 0 && <SfiaSkillLevels levels={competency.levels} />}
+  const { overall, note, levels } = competency || {};
+  
+  const hasSkillLevels = levels && levels.length > 0;
 
-    </>
+  return (
+    <div className="sfia-section space-y-6">
+      <CompetencyOverview overall={overall} />
+      <CompetencyNotes note={note} />
+      {hasSkillLevels && <CompetencySkillLevels levels={levels} />}
+    </div>
   );
+};
+
+/**
+ * Competency Overview Component
+ * Displays the general description/overview of the competency
+ */
+const CompetencyOverview: React.FC<{ overall?: string | null }> = ({ overall }) => {
+  if (!overall) return null;
+  
+  return <OverviewSection overall={overall} />;
+};
+
+/**
+ * Competency Notes Component
+ * Displays additional notes about the competency
+ */
+const CompetencyNotes: React.FC<{ note?: string | null }> = ({ note }) => {
+  if (!note) return null;
+  
+  return <NotesSection note={note} />;
+};
+
+/**
+ * Competency Skill Levels Component
+ * Displays the interactive skill levels with evidence submission
+ */
+const CompetencySkillLevels: React.FC<{ levels: SfiaLevel[] }> = ({ levels }) => {
+  return <SfiaSkillLevels levels={levels} />;
 };
 
 export default SfiaSection;

@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { FaGraduationCap, FaCheckCircle } from "react-icons/fa";
 import UrlInputBox from "./UrlInputBox";
+import { useAuth } from "@Contexts/AuthContext";
 
 interface SfiaSubSkill {
   id: number;
@@ -27,18 +28,34 @@ interface SubSkillItemProps {
   subskill: SfiaSubSkill;
   url: string;
   submitted: boolean;
+  loading: boolean;
+  error: string;
   onUrlChange: (value: string) => void;
   onRemove: () => void;
   onSubmit: () => void;
 }
 
-const SubSkillItem: React.FC<SubSkillItemProps> = ({ 
-  subskill, 
-  url, 
-  submitted, 
-  onUrlChange, 
-  onRemove, 
-  onSubmit 
+interface SubmitEvidenceRequest {
+  subSkillId: number;
+  evidenceText: string;
+  evidenceUrl?: string;
+}
+
+interface ApiResponse {
+  success: boolean;
+  message: string;
+  data?: any;
+}
+
+const SubSkillItem: React.FC<SubSkillItemProps> = ({
+  subskill,
+  url,
+  submitted,
+  loading,
+  error,
+  onUrlChange,
+  onRemove,
+  onSubmit,
 }) => (
   <li className="flex flex-col gap-1">
     <div className="flex items-start">
@@ -51,11 +68,28 @@ const SubSkillItem: React.FC<SubSkillItemProps> = ({
         onChange={onUrlChange}
         onRemove={onRemove}
         onSubmit={onSubmit}
-        placeholder="Enter URL to submit evidence for this skill"
+        placeholder="Enter evidence URL or description"
         colorClass="border-blue-300"
+        disabled={loading || submitted}
       />
-      {submitted && (
-        <span className="text-blue-600 text-sm mt-1 block">Submitted!</span>
+
+      {/* Loading indicator */}
+      {loading && (
+        <span className="text-blue-600 text-sm mt-1 block">
+          🔄 Submitting evidence...
+        </span>
+      )}
+
+      {/* Success message */}
+      {submitted && !loading && (
+        <span className="text-green-600 text-sm mt-1 block">
+          ✅ Evidence submitted successfully!
+        </span>
+      )}
+
+      {/* Error message */}
+      {error && !loading && (
+        <span className="text-red-600 text-sm mt-1 block">❌ {error}</span>
       )}
     </div>
   </li>
@@ -64,52 +98,165 @@ const SubSkillItem: React.FC<SubSkillItemProps> = ({
 const SfiaSection: React.FC<SfiaSectionProps> = ({ levels }) => {
   const [urls, setUrls] = useState<{ [id: string]: string }>({});
   const [submitted, setSubmitted] = useState<{ [id: string]: boolean }>({});
+  const [loading, setLoading] = useState<{ [id: string]: boolean }>({});
+  const [errors, setErrors] = useState<{ [id: string]: string }>({});
+
+  // Get authentication context
+  const { accessToken } = useAuth();
+
+  // API function to submit evidence
+  const BASE_API = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+
+  // API function to submit evidence
+  const submitEvidence = async (
+    request: SubmitEvidenceRequest
+  ): Promise<ApiResponse> => {
+    if (!accessToken) {
+      throw new Error("User is not authenticated");
+    }
+
+    // Use correct API endpoint with BASE_API
+    const response = await fetch(`${BASE_API}/api/sfia/evidence`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(request),
+    });
+
+    // Handle response properly
+    let result;
+    try {
+      result = await response.json();
+    } catch (e) {
+      // Handle case where response is empty or not JSON
+      if (response.ok) {
+        result = { success: true, message: "Evidence submitted successfully" };
+      } else {
+        console.error("Error parsing response JSON:", e);
+        result = {
+          success: false,
+          message: `HTTP ${response.status}: ${response.statusText}`,
+        };
+      }
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        result.message || `HTTP ${response.status}: ${response.statusText}`
+      );
+    }
+
+    return result;
+  };
 
   // Helper function to check if a description has meaningful content
   const hasValidContent = (desc: SfiaDescription): boolean => {
     const hasDescriptionText = desc.description_text?.trim();
-    const hasSubSkills = desc.subskills?.some(subskill => subskill.subskill_text?.trim());
+    const hasSubSkills = desc.subskills?.some((subskill) =>
+      subskill.subskill_text?.trim()
+    );
     return !!(hasDescriptionText || hasSubSkills);
   };
 
   // Filter out levels that have no meaningful content
   const filteredLevels = useMemo(() => {
-    return levels.filter(level => {
-      // Must have descriptions array
+    return levels.filter((level) => {
       if (!level.descriptions?.length) {
         return false;
       }
-      
-      // Check if any description has meaningful content
       const hasValidDescriptions = level.descriptions.some(hasValidContent);
-      
-      // Only show levels that have valid descriptions
       return hasValidDescriptions;
     });
   }, [levels]);
+
+  const handleUrlChange = (id: number, value: string) => {
+    setUrls((prev) => ({ ...prev, [id.toString()]: value }));
+    // Clear any previous error when user starts typing
+    if (errors[id.toString()]) {
+      setErrors((prev) => ({ ...prev, [id.toString()]: "" }));
+    }
+  };
+
+  const handleRemove = (id: number) => {
+    setUrls((prev) => ({ ...prev, [id.toString()]: "" }));
+    setSubmitted((prev) => ({ ...prev, [id.toString()]: false }));
+    setErrors((prev) => ({ ...prev, [id.toString()]: "" }));
+  };
+
+  const handleSubmit = async (id: number) => {
+    const idStr = id.toString();
+    const evidenceUrl = urls[idStr];
+    // Basic validation
+    if (!evidenceUrl || evidenceUrl.trim() === "") {
+      setErrors((prev) => ({
+        ...prev,
+        [idStr]: "Please enter evidence URL or description.",
+      }));
+      return;
+    }
+
+    // Check if user is authenticated
+    if (!accessToken) {
+      setErrors((prev) => ({
+        ...prev,
+        [idStr]: "Please log in to submit evidence",
+      }));
+      return;
+    }
+
+    // Set loading state
+    setLoading((prev) => ({ ...prev, [idStr]: true }));
+    setErrors((prev) => ({ ...prev, [idStr]: "" }));
+
+    try {
+      // Fix URL validation logic
+      const isValidUrl =
+        evidenceUrl.startsWith("http://") || evidenceUrl.startsWith("https://");
+
+      // Prepare evidence data
+      const evidenceRequest: SubmitEvidenceRequest = {
+        subSkillId: id,
+        evidenceText: evidenceUrl, // Using URL as evidence text for now
+        evidenceUrl: isValidUrl ? evidenceUrl : undefined,
+      };
+
+      // Submit evidence
+      const response = await submitEvidence(evidenceRequest);
+
+      if (response.success) {
+        setSubmitted((prev) => ({
+          ...prev,
+          [idStr]: true,
+        }));
+        console.log("Evidence submitted successfully:", response.data);
+      } else {
+        setErrors((prev) => ({
+          ...prev,
+          [idStr]: response.message || "Failed to submit evidence.",
+        }));
+      }
+    } catch (error: any) {
+      console.error("Error submitting evidence:", error);
+      setErrors((prev) => ({
+        ...prev,
+        [idStr]:
+          error.message || "Failed to submit evidence. Please try again.",
+      }));
+    } finally {
+      setLoading((prev) => ({ ...prev, [idStr]: false }));
+    }
+  };
 
   // Create callback functions to avoid deep nesting
   const createSubSkillCallbacks = useMemo(() => {
     return (subSkillId: number) => ({
       onUrlChange: (value: string) => handleUrlChange(subSkillId, value),
       onRemove: () => handleRemove(subSkillId),
-      onSubmit: () => handleSubmit(subSkillId)
+      onSubmit: () => handleSubmit(subSkillId),
     });
-  }, []);
-
-  const handleUrlChange = (id: number, value: string) => {
-    setUrls((prev) => ({ ...prev, [id.toString()]: value }));
-  };
-  
-  const handleRemove = (id: number) => {
-    setUrls((prev) => ({ ...prev, [id.toString()]: "" }));
-    setSubmitted((prev) => ({ ...prev, [id.toString()]: false }));
-  };
-  
-  const handleSubmit = (id: number) => {
-    setSubmitted((prev) => ({ ...prev, [id.toString()]: true }));
-    // You can add API call here
-  };
+  }, [accessToken]);
 
   // Don't render the section if no levels have content
   if (filteredLevels.length === 0) {
@@ -120,7 +267,9 @@ const SfiaSection: React.FC<SfiaSectionProps> = ({ levels }) => {
           Skill Levels
         </h2>
         <div className="text-center py-8">
-          <p className="text-gray-500 text-lg">No skill level information available for this competency.</p>
+          <p className="text-gray-500 text-lg">
+            No skill level information available for this competency.
+          </p>
         </div>
       </section>
     );
@@ -138,7 +287,8 @@ const SfiaSection: React.FC<SfiaSectionProps> = ({ levels }) => {
       <div className="flex flex-col gap-6">
         {filteredLevels.map((level, index) => {
           // Filter descriptions that have content
-          const filteredDescriptions = level.descriptions.filter(hasValidContent);
+          const filteredDescriptions =
+            level.descriptions.filter(hasValidContent);
 
           // Don't render the level if no valid descriptions remain after filtering
           if (filteredDescriptions.length === 0) {
@@ -147,7 +297,12 @@ const SfiaSection: React.FC<SfiaSectionProps> = ({ levels }) => {
 
           // Count total subskills for this level
           const totalSubskills = filteredDescriptions.reduce((count, desc) => {
-            return count + (desc.subskills?.filter(subskill => subskill.subskill_text?.trim()).length || 0);
+            return (
+              count +
+              (desc.subskills?.filter((subskill) =>
+                subskill.subskill_text?.trim()
+              ).length || 0)
+            );
           }, 0);
 
           return (
@@ -156,35 +311,50 @@ const SfiaSection: React.FC<SfiaSectionProps> = ({ levels }) => {
                 {/* Decorative dot */}
                 <div className="absolute top-2 right-4 w-2 h-2 bg-blue-400 rounded-full opacity-20"></div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-3 flex items-center justify-between">
-                  <span>{level.level_name ? `Level ${level.level_name}` : `Level ${index + 1}`}</span>
+                  <span>
+                    {level.level_name
+                      ? `Level ${level.level_name}`
+                      : `Level ${index + 1}`}
+                  </span>
                   {totalSubskills > 0 && (
                     <span className="text-sm font-normal text-blue-600 bg-blue-100 px-3 py-1 rounded-full">
-                      {totalSubskills} subskill{totalSubskills !== 1 ? 's' : ''}
+                      {totalSubskills} subskill{totalSubskills !== 1 ? "s" : ""}
                     </span>
                   )}
                 </h3>
                 {filteredDescriptions.map((desc) => (
                   <div key={desc.id} className="mb-4">
                     {desc.description_text?.trim() && (
-                      <p className="text-gray-700 mb-3">{desc.description_text}</p>
+                      <p className="text-gray-700 mb-3">
+                        {desc.description_text}
+                      </p>
                     )}
                     {desc.subskills && desc.subskills.length > 0 && (
                       <div>
-                        <h4 className="font-medium text-gray-800 mb-2">SubSkills:</h4>
+                        <h4 className="font-medium text-gray-800 mb-2">
+                          SubSkills:
+                        </h4>
                         <ul className="space-y-4">
                           {desc.subskills
-                            .filter(subskill => subskill.subskill_text?.trim())
+                            .filter((subskill) =>
+                              subskill.subskill_text?.trim()
+                            )
                             .map((subskill) => {
-                              const callbacks = createSubSkillCallbacks(subskill.id);
+                              const idStr = subskill.id.toString();
+
                               return (
-                                <SubSkillItem 
+                                <SubSkillItem
                                   key={subskill.id}
                                   subskill={subskill}
-                                  url={urls[subskill.id.toString()] || ''}
-                                  submitted={submitted[subskill.id.toString()] || false}
-                                  onUrlChange={callbacks.onUrlChange}
-                                  onRemove={callbacks.onRemove}
-                                  onSubmit={callbacks.onSubmit}
+                                  url={urls[idStr] || ""}
+                                  submitted={submitted[idStr] || false}
+                                  loading={loading[idStr] || false}
+                                  error={errors[idStr] || ""}
+                                  onUrlChange={(value: string) =>
+                                    handleUrlChange(subskill.id, value)
+                                  }
+                                  onRemove={() => handleRemove(subskill.id)}
+                                  onSubmit={() => handleSubmit(subskill.id)}
                                 />
                               );
                             })}

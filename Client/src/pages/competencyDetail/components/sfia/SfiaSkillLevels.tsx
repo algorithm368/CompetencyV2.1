@@ -78,7 +78,7 @@ const DecorativeBackground = () => (
 // Skills levels list component
 interface SkillLevelsListProps {
   filteredLevels: SfiaLevel[];
-  evidenceState: any;
+  evidenceState: unknown;
   onUrlChange: (id: number, value: string) => void;
   onRemove: (id: number) => void;
   onSubmit: (id: number) => void;
@@ -110,7 +110,7 @@ const SkillLevelsList: React.FC<SkillLevelsListProps> = ({
 interface SkillLevelProps {
   level: SfiaLevel;
   index: number;
-  evidenceState: any;
+  evidenceState: unknown;
   onUrlChange: (id: number, value: string) => void;
   onRemove: (id: number) => void;
   onSubmit: (id: number) => void;
@@ -177,8 +177,8 @@ const SkillLevelHeader: React.FC<SkillLevelHeaderProps> = ({
 
 // Descriptions list component
 interface DescriptionsListProps {
-  descriptions: any[];
-  evidenceState: any;
+  descriptions: unknown[];
+  evidenceState: unknown;
   onUrlChange: (id: number, value: string) => void;
   onRemove: (id: number) => void;
   onSubmit: (id: number) => void;
@@ -216,8 +216,8 @@ const DescriptionsList: React.FC<DescriptionsListProps> = ({
 
 // Subskills section
 interface SubSkillsSectionProps {
-  subskills: any[];
-  evidenceState: any;
+  subskills: unknown[];
+  evidenceState: unknown;
   onUrlChange: (id: number, value: string) => void;
   onRemove: (id: number) => void;
   onSubmit: (id: number) => void;

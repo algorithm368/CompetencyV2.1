@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { getSkillDetailController } from "../controllers/getSkillDetailController";
+import { RequestHandler } from "express";
 
 const router = Router();
 
@@ -9,7 +10,7 @@ router.get("/", (req, res) => {
 });
 
 // example route: /api/sfia/skills/PROG
-router.use("/:skillCode", getSkillDetailController);
+router.get("/:skillCode", getSkillDetailController as RequestHandler);
 // New routes with updated names
 
 export default router;

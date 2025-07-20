@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { FaGraduationCap, FaCheckCircle } from "react-icons/fa";
-import UrlInputBox from "./UrlInputBox";
+import UrlInputBox from "../ui/UrlInputBox";
 import { useAuth } from "@Contexts/AuthContext";
 
 interface SfiaSubSkill {

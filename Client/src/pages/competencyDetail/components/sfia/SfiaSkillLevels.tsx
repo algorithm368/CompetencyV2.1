@@ -13,10 +13,18 @@ interface SfiaSkillLevelsProps {
   levels: SfiaLevel[];
 }
 
+/**
+ * ## Props
+ * @param {SfiaLevel[]} levels - Array of SFIA skill levels to display.
+ * ## Usage
+ * <SfiaSkillLevels levels={skillLevels} />
+ */
 const SfiaSkillLevels: React.FC<SfiaSkillLevelsProps> = ({ levels }) => {
+  // Use custom hook to manage evidence state for sub-skills
   const { evidenceState, handleUrlChange, handleRemove, handleSubmit } =
     useSfiaEvidence();
 
+  // Filter out levels that do not have valid descriptions or subskills
   const filteredLevels = useMemo(() => filterValidLevels(levels), [levels]);
 
   // Early return for empty state

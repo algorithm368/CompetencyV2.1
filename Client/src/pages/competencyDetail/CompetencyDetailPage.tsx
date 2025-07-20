@@ -242,6 +242,7 @@ const CompetencyDetailPage: React.FC = () => {
    *   - retryCount: Incremented on retry attempts to refetch data
    *   - sfiaHook: The SFIA data fetching hook
    *   - tpqiHook: The TPQI data fetching hook
+   * @memoized Recalculates only when dependencies change
    */
   useEffect(() => {
     if (source && id) {
@@ -251,9 +252,17 @@ const CompetencyDetailPage: React.FC = () => {
         tpqiHook.fetchUnitDetail(id);
       }
     }
-  }, [source, id, retryCount, sfiaHook, tpqiHook]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [source, id, retryCount]);
 
-  // Error tracking
+  /**
+   * Effect hook to handle errors by adding them to the error state
+   * This ensures that any errors encountered during data fetching are logged
+   * and can be displayed to the user.
+   *
+   * @param {Error | string} error - The error object or message to log
+   * @param {string} source - The source of the competency ('sfia' or 'tpqi')
+   */
   useEffect(() => {
     if (error) {
       addError({
@@ -264,6 +273,30 @@ const CompetencyDetailPage: React.FC = () => {
     }
   }, [error, addError, source]);
 
+  /**
+   * Handles retry functionality for failed competency data fetching operations.
+   *
+   * This callback function is triggered when the user attempts to retry a failed data fetch operation.
+   * It performs a complete reset of the component state and attemps to refetch the competency data
+   * based on the current source type.
+   * 
+   * @async
+   * @function handleRetry
+   * 
+   * @description
+   * The retry process follow these steps:
+   * 1. Validates that both `source` and `id` are defined.
+   * 2. Increments the `retryCount` state to trigger a refetch.
+   * 3. Clears any existing errors to reset the error state.
+   * 4. Resets the component state to its initial values.
+   * 5. Attempts to refetch the competency data using the appropriate hook based on the `source`.
+   * 6. Logs any errors encountered during the retry attempt.
+   * 
+   * @param { void } - This function does not take any parameters.
+   * @returns { Promise<void> } - A promise that resolves when the retry operation is successful.
+   *
+   * @throws { Error } - If the retry operation fails, an error is logged to the console.
+   */
   const handleRetry = useCallback(async () => {
     if (!source || !id) return;
 

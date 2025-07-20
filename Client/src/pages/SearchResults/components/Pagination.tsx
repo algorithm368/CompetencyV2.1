@@ -38,7 +38,7 @@ const Pagination: React.FC<PaginationProps> = ({
             px-3 py-1 rounded-full transition
             ${
               page === currentPage
-                ? "bg-blue-500 text-white shadow-lg"
+                ? "bg-teal-500 text-white shadow-lg"
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"
             }
           `}

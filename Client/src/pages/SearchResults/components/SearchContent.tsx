@@ -19,9 +19,6 @@ interface SearchContentProps {
   error: string | null;
   query: string;
   pageItems: CompetencyItem[];
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
   onViewDetails: (itemId: string) => void;
   onRetry: () => void;
   onSuggestionClick: (suggestion: string) => void;
@@ -39,9 +36,6 @@ const SearchContent: React.FC<SearchContentProps> = ({
   error,
   query,
   pageItems,
-  currentPage,
-  totalPages,
-  onPageChange,
   onViewDetails,
   onRetry,
   onSuggestionClick,
@@ -78,9 +72,6 @@ const SearchContent: React.FC<SearchContentProps> = ({
             key="success"
             query={query}
             items={pageItems}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={onPageChange}
             onViewDetails={onViewDetails}
           />
         )}

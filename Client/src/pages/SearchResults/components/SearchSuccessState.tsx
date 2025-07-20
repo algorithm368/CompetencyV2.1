@@ -1,11 +1,10 @@
+// Update Client/src/pages/SearchResults/components/SearchSuccessState.tsx
 import React from "react";
 import { motion } from "framer-motion";
-import SearchResultsHeader from "./SearchResultsHeader";
-import ResultsGrid from "./ResultsGrid";
-import Pagination from "./Pagination";
+import SearchResultsWithLazyLoad from "./SearchResultsWithLazyLoad";
 
 interface ItemType {
-  id: number;
+  id: string; // Changed from number to string
   name: string;
   framework: string;
 }
@@ -16,10 +15,9 @@ interface SuccessStateProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
-  onViewDetails: (id: number) => void;
+  onViewDetails: (id: string) => void; // Changed from number to string
 }
 
-// Optimized animation variants (defined outside component)
 const containerVariants = {
   hidden: { opacity: 0, y: 15 },
   visible: {
@@ -28,7 +26,6 @@ const containerVariants = {
     transition: {
       duration: 0.4,
       ease: "easeOut",
-      staggerChildren: 0.08,
     },
   },
   exit: {
@@ -41,24 +38,9 @@ const containerVariants = {
   },
 };
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 15 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { 
-      duration: 0.3,
-      ease: "easeOut"
-    },
-  },
-};
-
 const SuccessState: React.FC<SuccessStateProps> = ({
   query,
   items,
-  currentPage,
-  totalPages,
-  onPageChange,
   onViewDetails,
 }) => {
   return (
@@ -69,19 +51,11 @@ const SuccessState: React.FC<SuccessStateProps> = ({
       animate="visible"
       exit="exit"
     >
-      <motion.div variants={itemVariants}>
-        <ResultsGrid
-          items={items}
-          onViewDetails={onViewDetails}
-        />
-      </motion.div>
-      <motion.div variants={itemVariants}>
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={onPageChange}
-        />
-      </motion.div>
+      <SearchResultsWithLazyLoad
+        items={items}
+        onViewDetails={onViewDetails}
+        query={query}
+      />
     </motion.div>
   );
 };

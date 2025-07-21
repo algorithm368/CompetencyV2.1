@@ -2,6 +2,10 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+* {
+  -webkit-text-size-adjust: none;
+}
+
 /* 1) พื้นหลังไล่สีเคลื่อนไหวช้า ๆ */
 @keyframes backgroundShift {
   0% {

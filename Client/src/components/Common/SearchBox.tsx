@@ -50,7 +50,7 @@ const SearchBox: React.FC<SearchBoxProps> = React.memo(
     const isHeroVariant = variant === "hero";
 
     const containerClasses = isHeroVariant
-      ? "relative w-full max-w-md"
+      ? "relative w-full max-w-2xl"
       : "relative w-full max-w-xl";
 
     const inputClasses = isHeroVariant

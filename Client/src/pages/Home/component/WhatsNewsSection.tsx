@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import {
   RefreshCw,
   Database,
@@ -26,6 +27,7 @@ import {
 
 export const WhatsNewsSection = () => {
   const [inView, setInView] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -94,18 +96,21 @@ export const WhatsNewsSection = () => {
     },
   ];
 
-  const scrollToHero = () => {
-    document
-      .getElementById("home-hero")
-      ?.scrollIntoView({ behavior: "smooth" });
+  const navigateToResults = () => {
+    navigate("/results");
   };
 
   return (
     <section
       id="version-2-features"
-      className="relative py-20 bg-gradient-to-b from-teal-25 via-teal-50 to-white overflow-hidden"
+      className="relative z-30 py-20 bg-gradient-to-b from-white via-teal-50 to-teal-100 overflow-hidden"
+      style={{
+        marginTop: "-2px", // This removes any gap between sections
+        background:
+          "linear-gradient(to bottom, rgb(255 255 255), rgb(240 253 250), rgb(204 251 241))",
+      }}
     >
-      <div className="relative z-10 max-w-6xl mx-auto px-6">
+      <div className="relative z-40 max-w-6xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
@@ -201,7 +206,7 @@ export const WhatsNewsSection = () => {
               className="bg-gradient-to-r from-teal-600 to-teal-700 text-white px-8 py-3 rounded-xl font-medium hover:from-teal-700 hover:to-teal-800 transition-all duration-300 shadow-lg hover:shadow-xl"
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.95 }}
-              onClick={scrollToHero}
+              onClick={navigateToResults}
             >
               Start Exploring Now
             </motion.button>

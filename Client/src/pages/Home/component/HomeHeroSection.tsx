@@ -93,9 +93,9 @@ export const HomeHeroSection = () => {
   return (
     <section
       id="home-hero"
-      className="relative min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-teal-50 via-white to-teal-25 pt-20 overflow-hidden"
+      className="relative min-h-screen flex flex-col items-center justify-center pt-20 pb-16 overflow-hidden"
     >
-      <div className="relative z-10 text-center px-6 max-w-6xl mx-auto">
+      <div className="relative z-10 text-center px-6 max-w-6xl mx-auto flex-1 flex flex-col justify-center">
         <motion.h1
           variants={fadeInUp}
           initial="initial"

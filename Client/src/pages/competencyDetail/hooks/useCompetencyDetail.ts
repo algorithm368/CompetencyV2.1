@@ -214,11 +214,7 @@ export function useCompetencyDetail(options: UseCompetencyDetailOptions = {}) {
       let lastError: APIError;
 
       // Try initial call + retries
-      for (
-        let attempt = 0;
-        attempt <= opts.maxRetries;
-        attempt++
-      ) {
+      for (let attempt = 0; attempt <= opts.maxRetries; attempt++) {
         try {
           const data = await fetchSfiaSkillDetailByCode(skillCode);
 
@@ -245,10 +241,7 @@ export function useCompetencyDetail(options: UseCompetencyDetailOptions = {}) {
           retryAttemptsRef.current.set(cacheKey, attempt + 1);
 
           // Check if we should retry (if this wasn't the last allowed attempt)
-          if (
-            attempt < opts.maxRetries &&
-            shouldRetry(lastError, attempt)
-          ) {
+          if (attempt < opts.maxRetries && shouldRetry(lastError, attempt)) {
             const delay = opts.retryDelay * Math.pow(2, attempt); // Exponential backoff
             await sleep(delay);
             continue;
@@ -301,11 +294,7 @@ export function useCompetencyDetail(options: UseCompetencyDetailOptions = {}) {
       let lastError: APIError;
 
       // Try initial call + retries
-      for (
-        let attempt = 0;
-        attempt <= opts.maxRetries;
-        attempt++
-      ) {
+      for (let attempt = 0; attempt <= opts.maxRetries; attempt++) {
         try {
           const data = await fetchTpqiUnitDetailByCode(unitCode);
 
@@ -332,10 +321,7 @@ export function useCompetencyDetail(options: UseCompetencyDetailOptions = {}) {
           retryAttemptsRef.current.set(cacheKey, attempt + 1);
 
           // Check if we should retry (if this wasn't the last allowed attempt)
-          if (
-            attempt < opts.maxRetries &&
-            shouldRetry(lastError, attempt)
-          ) {
+          if (attempt < opts.maxRetries && shouldRetry(lastError, attempt)) {
             const delay = opts.retryDelay * Math.pow(2, attempt); // Exponential backoff
             await sleep(delay);
             continue;

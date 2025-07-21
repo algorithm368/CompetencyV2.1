@@ -1,15 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import {
-  ChevronDown,
-  BookOpen,
-  Award,
-  Layers,
-  Target,
-  Zap,
-  Globe,
-} from "lucide-react";
+import { ChevronDown, Award, Layers, Globe } from "lucide-react";
 import SearchBox from "@Components/Common/SearchBox";
 
 /**

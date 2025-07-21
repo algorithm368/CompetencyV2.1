@@ -116,8 +116,6 @@ const CompetencyDetailPage: React.FC = () => {
     autoRetryOnNetworkError: true,
   });
 
-  console.log(sfiaHook);
-
   /**
    * TPQI competency data fetching hooks with caching and retry logic
    * Configuration:
@@ -249,7 +247,7 @@ const CompetencyDetailPage: React.FC = () => {
   useEffect(() => {
     if (source && id) {
       if (source === "sfia") {
-        sfiaHook.skillDetail(id);
+        sfiaHook.fetchSkillDetail(id);
       } else if (source === "tpqi") {
         tpqiHook.fetchUnitDetail(id);
       }
@@ -307,7 +305,7 @@ const CompetencyDetailPage: React.FC = () => {
     resetState();
     try {
       if (source === "sfia") {
-        await sfiaHook.skillDetail(id);
+        await sfiaHook.fetchSkillDetail(id);
       } else {
         await tpqiHook.fetchUnitDetail(id);
       }
@@ -405,7 +403,7 @@ const CompetencyDetailPage: React.FC = () => {
                 </motion.div>
               )}
 
-              {!loading && !error && !competencyData && (
+              {!loading && !error && !competencyData && lastFetched && (
                 <NoDataState
                   source={source}
                   id={id}

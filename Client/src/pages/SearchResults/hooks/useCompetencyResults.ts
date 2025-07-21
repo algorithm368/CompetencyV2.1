@@ -327,7 +327,7 @@ export function useLazyCompetencyResults() {
     results,
     loading,
     error,
-    allItems, // All items for lazy loading (no pagination)
+    allItems,
     isEmptySearch,
     handleSearch,
     handleClearSearch,

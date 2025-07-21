@@ -24,7 +24,7 @@ import {
 } from "framer-motion";
 import Layout from "@Layouts/Layout";
 import {
-  useSfiaJobDetail,
+  useSfiaSkillDetail,
   useTpqiUnitDetail,
 } from "./hooks/useCompetencyDetail";
 import { useCompetencyDetailError } from "./hooks/useCompetencyDetailError";
@@ -63,7 +63,7 @@ import OptimizedBackgroundDecor from "./components/layouts/OptimizedBackgroundDe
  * @throws {Error} When source parameter is not 'sfia' or 'tpqi'
  * @throws {Error} When id parameter is missing or invalid
  *
- * @see {@link useSfiaJobDetail} For SFIA data fetching
+ * @see {@link useSfiaSkillDetail} For SFIA data fetching
  * @see {@link useTpqiUnitDetail} For TPQI data fetching
  * @see {@link useCompetencyActions} For interactive actions
  *
@@ -108,13 +108,15 @@ const CompetencyDetailPage: React.FC = () => {
    * - maxRetries: 3 attempts
    * - autoRetryOnNetworkError: enabled
    *
-   * @see {@link useSfiaJobDetail}
+   * @see {@link useSfiaSkillDetail}
    */
-  const sfiaHook = useSfiaJobDetail({
+  const sfiaHook = useSfiaSkillDetail({
     cacheDuration: 5 * 60 * 1000,
     maxRetries: 3,
     autoRetryOnNetworkError: true,
   });
+
+  console.log(sfiaHook);
 
   /**
    * TPQI competency data fetching hooks with caching and retry logic
@@ -159,16 +161,16 @@ const CompetencyDetailPage: React.FC = () => {
    * - TPQI: Contains unit-code details with competency information
    *
    * @return { object | null } The competency data object or null if not available
-   * @memoized Recalculates only when `source`, `sfiaHook.jobDetail`, or `tpqiHook.unitDetail` change
+   * @memoized Recalculates only when `source`, `sfiaHook.skillDetail`, or `tpqiHook.unitDetail` change
    */
   const competencyData = useMemo(() => {
     if (source === "sfia") {
-      return sfiaHook.jobDetail;
+      return sfiaHook.skillDetail;
     } else if (source === "tpqi") {
       return tpqiHook.unitDetail;
     }
     return null;
-  }, [source, sfiaHook.jobDetail, tpqiHook.unitDetail]);
+  }, [source, sfiaHook.skillDetail, tpqiHook.unitDetail]);
 
   /**
    * Memoized competency title based on the framework source
@@ -247,12 +249,12 @@ const CompetencyDetailPage: React.FC = () => {
   useEffect(() => {
     if (source && id) {
       if (source === "sfia") {
-        sfiaHook.fetchJobDetail(id);
+        sfiaHook.skillDetail(id);
       } else if (source === "tpqi") {
         tpqiHook.fetchUnitDetail(id);
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source, id, retryCount]);
 
   /**
@@ -279,10 +281,10 @@ const CompetencyDetailPage: React.FC = () => {
    * This callback function is triggered when the user attempts to retry a failed data fetch operation.
    * It performs a complete reset of the component state and attemps to refetch the competency data
    * based on the current source type.
-   * 
+   *
    * @async
    * @function handleRetry
-   * 
+   *
    * @description
    * The retry process follow these steps:
    * 1. Validates that both `source` and `id` are defined.
@@ -291,7 +293,7 @@ const CompetencyDetailPage: React.FC = () => {
    * 4. Resets the component state to its initial values.
    * 5. Attempts to refetch the competency data using the appropriate hook based on the `source`.
    * 6. Logs any errors encountered during the retry attempt.
-   * 
+   *
    * @param { void } - This function does not take any parameters.
    * @returns { Promise<void> } - A promise that resolves when the retry operation is successful.
    *
@@ -305,7 +307,7 @@ const CompetencyDetailPage: React.FC = () => {
     resetState();
     try {
       if (source === "sfia") {
-        await sfiaHook.fetchJobDetail(id);
+        await sfiaHook.skillDetail(id);
       } else {
         await tpqiHook.fetchUnitDetail(id);
       }

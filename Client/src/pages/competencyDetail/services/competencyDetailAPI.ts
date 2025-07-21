@@ -1,4 +1,4 @@
-const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // Enhanced error class for better error handling
 class APIError extends Error {
@@ -14,7 +14,7 @@ class APIError extends Error {
 }
 
 // Type definitions based on server responses
-export interface SfiaJobDetail {
+export interface SfiaSkillDetail {
   competency_id: string;
   competency_name: string | null;
   overall: string | null;
@@ -37,8 +37,8 @@ export interface SfiaJobDetail {
   }>;
 }
 
-export interface SfiaJobResponse {
-  competency: SfiaJobDetail | null;
+export interface SfiaSkillResponse {
+  competency: SfiaSkillDetail | null;
   totalLevels: number;
   totalSkills: number;
 }
@@ -81,15 +81,19 @@ export interface ApiResponse<T> {
 }
 
 /**
- * Enhanced fetch function with better error handling for SFIA job details
+ * Enhanced fetch function with better error handling for SFIA skill details
  */
-async function fetchSfiaJobDetail(jobCode: string): Promise<SfiaJobResponse> {
+async function fetchSfiaSkillDetail(
+  skillCode: string
+): Promise<SfiaSkillResponse> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
   try {
-    const url = `${VITE_API_BASE_URL}/api/sfia/skills/${encodeURIComponent(jobCode)}`;
-    
+    const url = `${VITE_API_BASE_URL}/api/sfia/skills/${encodeURIComponent(
+      skillCode
+    )}`;
+
     const res = await fetch(url, {
       method: "GET",
       headers: {
@@ -109,11 +113,11 @@ async function fetchSfiaJobDetail(jobCode: string): Promise<SfiaJobResponse> {
       );
     }
 
-    const apiResponse: ApiResponse<SfiaJobResponse> = await res.json();
-    
+    const apiResponse: ApiResponse<SfiaSkillResponse> = await res.json();
+
     if (!apiResponse.success || !apiResponse.data) {
       throw new APIError(
-        apiResponse.message || "Failed to get job details",
+        apiResponse.message || "Failed to get skill details",
         res.status,
         res,
         "sfia"
@@ -130,12 +134,17 @@ async function fetchSfiaJobDetail(jobCode: string): Promise<SfiaJobResponse> {
     }
 
     if ((error as { name?: string }).name === "AbortError") {
-      throw new APIError(`Request timeout for SFIA job ${jobCode}`, 0, undefined, "sfia");
+      throw new APIError(
+        `Request timeout for SFIA skill ${skillCode}`,
+        0,
+        undefined,
+        "sfia"
+      );
     }
 
     if (error instanceof TypeError && error.message.includes("fetch")) {
       throw new APIError(
-        `Network error when fetching SFIA job ${jobCode}`,
+        `Network error when fetching SFIA skill ${skillCode}`,
         0,
         undefined,
         "sfia"
@@ -143,7 +152,9 @@ async function fetchSfiaJobDetail(jobCode: string): Promise<SfiaJobResponse> {
     }
 
     throw new APIError(
-      `Failed to fetch SFIA job ${jobCode}: ${(error as { message?: string }).message || 'Unknown error'}`,
+      `Failed to fetch SFIA skill ${skillCode}: ${
+        (error as { message?: string }).message || "Unknown error"
+      }`,
       0,
       undefined,
       "sfia"
@@ -154,7 +165,9 @@ async function fetchSfiaJobDetail(jobCode: string): Promise<SfiaJobResponse> {
 /**
  * Enhanced fetch function with better error handling for TPQI unit details
  */
-async function fetchTpqiUnitDetail(unitCode: string): Promise<TpqiUnitResponse> {
+async function fetchTpqiUnitDetail(
+  unitCode: string
+): Promise<TpqiUnitResponse> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
@@ -162,7 +175,7 @@ async function fetchTpqiUnitDetail(unitCode: string): Promise<TpqiUnitResponse> 
     const url = `${VITE_API_BASE_URL}/api/tpqi/unitcodes/${encodeURIComponent(
       unitCode
     )}`;
-    
+
     const res = await fetch(url, {
       method: "GET",
       headers: {
@@ -183,7 +196,7 @@ async function fetchTpqiUnitDetail(unitCode: string): Promise<TpqiUnitResponse> 
     }
 
     const apiResponse: ApiResponse<TpqiUnitResponse> = await res.json();
-    
+
     if (!apiResponse.success || !apiResponse.data) {
       throw new APIError(
         apiResponse.message || "Failed to get unit code details",
@@ -203,7 +216,12 @@ async function fetchTpqiUnitDetail(unitCode: string): Promise<TpqiUnitResponse> 
     }
 
     if ((error as { name?: string }).name === "AbortError") {
-      throw new APIError(`Request timeout for TPQI unit ${unitCode}`, 0, undefined, "tpqi");
+      throw new APIError(
+        `Request timeout for TPQI unit ${unitCode}`,
+        0,
+        undefined,
+        "tpqi"
+      );
     }
 
     if (error instanceof TypeError && error.message.includes("fetch")) {
@@ -216,7 +234,9 @@ async function fetchTpqiUnitDetail(unitCode: string): Promise<TpqiUnitResponse> 
     }
 
     throw new APIError(
-      `Failed to fetch TPQI unit ${unitCode}: ${(error as { message?: string }).message || 'Unknown error'}`,
+      `Failed to fetch TPQI unit ${unitCode}: ${
+        (error as { message?: string }).message || "Unknown error"
+      }`,
       0,
       undefined,
       "tpqi"
@@ -225,19 +245,24 @@ async function fetchTpqiUnitDetail(unitCode: string): Promise<TpqiUnitResponse> 
 }
 
 /**
- * Fetch SFIA job details by job code
- * @param jobCode - The SFIA job code (e.g., "PROG", "DBAD")
- * @returns Promise<SfiaJobResponse>
+ * Fetch SFIA skill details by skill code
+ * @param skillCode - The SFIA skill code (e.g., "PROG", "DBAD")
+ * @returns Promise<SfiaSkillResponse>
  */
-export async function fetchSfiaJobDetailByCode(jobCode: string): Promise<SfiaJobResponse> {
-  if (!jobCode.trim()) {
-    throw new APIError("Job code cannot be empty");
+export async function fetchSfiaSkillDetailByCode(
+  skillCode: string
+): Promise<SfiaSkillResponse> {
+  if (!skillCode.trim()) {
+    throw new APIError("Skill code cannot be empty");
   }
 
   try {
-    return await fetchSfiaJobDetail(jobCode);
+    return await fetchSfiaSkillDetail(skillCode);
   } catch (error) {
-    console.error(`[SFIA Job Detail] Failed to fetch job ${jobCode}:`, error);
+    console.error(
+      `[SFIA Skill Detail] Failed to fetch skill ${skillCode}:`,
+      error
+    );
     throw error;
   }
 }
@@ -247,7 +272,9 @@ export async function fetchSfiaJobDetailByCode(jobCode: string): Promise<SfiaJob
  * @param unitCode - The TPQI unit code (e.g., "ICT-LIGW-404B", "UNIT-123")
  * @returns Promise<TpqiUnitResponse>
  */
-export async function fetchTpqiUnitDetailByCode(unitCode: string): Promise<TpqiUnitResponse> {
+export async function fetchTpqiUnitDetailByCode(
+  unitCode: string
+): Promise<TpqiUnitResponse> {
   if (!unitCode.trim()) {
     throw new APIError("Unit code cannot be empty");
   }
@@ -255,7 +282,10 @@ export async function fetchTpqiUnitDetailByCode(unitCode: string): Promise<TpqiU
   try {
     return await fetchTpqiUnitDetail(unitCode);
   } catch (error) {
-    console.error(`[TPQI Unit Detail] Failed to fetch unit ${unitCode}:`, error);
+    console.error(
+      `[TPQI Unit Detail] Failed to fetch unit ${unitCode}:`,
+      error
+    );
     throw error;
   }
 }
@@ -264,22 +294,24 @@ export async function fetchTpqiUnitDetailByCode(unitCode: string): Promise<TpqiU
  * Generic function to fetch competency details based on source and code
  * @param source - Either "sfia" or "tpqi"
  * @param code - The competency code
- * @returns Promise<SfiaJobResponse | TpqiUnitResponse>
+ * @returns Promise<SfiaSkillResponse | TpqiUnitResponse>
  */
 export async function fetchCompetencyDetailByCode(
   source: "sfia" | "tpqi",
   code: string
-): Promise<SfiaJobResponse | TpqiUnitResponse> {
+): Promise<SfiaSkillResponse | TpqiUnitResponse> {
   if (!code.trim()) {
     throw new APIError("Competency code cannot be empty");
   }
 
   if (source === "sfia") {
-    return await fetchSfiaJobDetailByCode(code);
+    return await fetchSfiaSkillDetailByCode(code);
   } else if (source === "tpqi") {
     return await fetchTpqiUnitDetailByCode(code);
   } else {
-    throw new APIError(`Invalid source: ${source}. Must be either 'sfia' or 'tpqi'`);
+    throw new APIError(
+      `Invalid source: ${source}. Must be either 'sfia' or 'tpqi'`
+    );
   }
 }
 
@@ -290,21 +322,27 @@ export async function fetchCompetencyDetailByCode(
  */
 export async function fetchMultipleCompetencyDetails(
   requests: Array<{ source: "sfia" | "tpqi"; code: string }>
-): Promise<Array<{
-  source: "sfia" | "tpqi";
-  code: string;
-  data?: SfiaJobResponse | TpqiUnitResponse;
-  error?: APIError;
-}>> {
+): Promise<
+  Array<{
+    source: "sfia" | "tpqi";
+    code: string;
+    data?: SfiaSkillResponse | TpqiUnitResponse;
+    error?: APIError;
+  }>
+> {
   const promises = requests.map(async ({ source, code }) => {
     try {
       const data = await fetchCompetencyDetailByCode(source, code);
       return { source, code, data };
     } catch (error) {
-      const apiError = error instanceof APIError 
-        ? error 
-        : new APIError(`Unknown error for ${source} ${code}`);
-      console.error(`[${source.toUpperCase()}] Failed to fetch ${code}:`, error);
+      const apiError =
+        error instanceof APIError
+          ? error
+          : new APIError(`Unknown error for ${source} ${code}`);
+      console.error(
+        `[${source.toUpperCase()}] Failed to fetch ${code}:`,
+        error
+      );
       return { source, code, error: apiError };
     }
   });
@@ -321,8 +359,12 @@ export function isNetworkError(error: unknown): boolean {
     (error instanceof TypeError && error.message.includes("fetch")) ||
     (error as { name?: string }).name === "NetworkError" ||
     (error as { code?: string }).code === "NETWORK_ERROR" ||
-    !!(error as { message?: string }).message?.toLowerCase().includes("network") ||
-    !!(error as { message?: string }).message?.toLowerCase().includes("connection")
+    !!(error as { message?: string }).message
+      ?.toLowerCase()
+      .includes("network") ||
+    !!(error as { message?: string }).message
+      ?.toLowerCase()
+      .includes("connection")
   );
 }
 
@@ -343,9 +385,7 @@ export function isNotFoundError(error: unknown): boolean {
   if (!error) {
     return false;
   }
-  return (
-    error instanceof APIError && error.status === 404
-  );
+  return error instanceof APIError && error.status === 404;
 }
 
 // Export the APIError class for use in other modules

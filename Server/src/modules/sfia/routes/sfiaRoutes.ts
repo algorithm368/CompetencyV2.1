@@ -9,9 +9,11 @@ router.get("/", (req, res) => {
 });
 
 // example route: /api/sfia/skills
+// permission: public
 router.use("/skills", sfiaSkill);
 
 // example route: /api/sfia/evidence
+// permission: public
 router.use("/evidence", sfiaEvidence);
 
 export default router;

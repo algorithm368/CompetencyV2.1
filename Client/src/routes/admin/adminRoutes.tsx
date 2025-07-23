@@ -11,5 +11,7 @@ export const adminRoutes = (
     <Route path="/sfia/level" element={<ExportPages.LevelPage />} />
     <Route path="/sfia/subcategory" element={<ExportPages.SubcategoryPage />} />
     <Route path="/sfia/description" element={<ExportPages.DescriptionPage />} />
+
+    <Route path="/tpqi/career" element={<ExportPages.CareerPage />} />
   </>
 );

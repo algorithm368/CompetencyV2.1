@@ -136,8 +136,7 @@ const SkillLevel: React.FC<SkillLevelProps> = ({
   return (
     <div className="mb-8">
       <div className="flex flex-col p-6 bg-white/80 backdrop-blur-md rounded-2xl border border-blue-200 gap-2 shadow-md hover:shadow-xl transition-all duration-300 relative overflow-hidden">
-        <div className="absolute top-2 right-4 w-2 h-2 bg-blue-400 rounded-full opacity-20" />
-
+      
         <SkillLevelHeader
           levelName={levelName}
           totalSubskills={totalSubskills}

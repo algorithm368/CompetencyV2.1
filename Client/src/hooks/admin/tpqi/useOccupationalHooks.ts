@@ -11,6 +11,7 @@ import {
     UpdateOccupationalDto,
     OccupationalPageResult,
 } from "@Types/tpqi/OccupationalTypes";
+import { q } from "framer-motion/client";
 
 type ToastCallback = (
     message: string,
@@ -85,7 +86,7 @@ export function useOccupationalManager(
     const error =
         prefetchQueries.find((q) => q.isError)?.error || currentPageQuery.error;
 
-    const occupationalQuery = useQuery<Occupational | undefined, Error>({
+    const occupationalQuery = useQuery<Occupational, Error>({
         queryKey: ["occupational", id],
         queryFn: () => {
             if (id === null) throw new Error("Occupational id is null");
@@ -95,42 +96,37 @@ export function useOccupationalManager(
         staleTime: 5 * 60 * 1000,
     });
 
-    const createOccupational = useMutation({
-        mutationFn: (data: CreateOccupationalDto) => OccupationalService.create(data),
-        onSuccess: (data) => {
+    const createOccupational = useMutation<Occupational, Error, CreateOccupationalDto>({
+        mutationFn: (dto) => OccupationalService.create(dto),
+        onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["occupationals"] });
             onToast?.("Occupational created successfully", "success");
         },
-        onError: (error) => {
-            onToast?.(`Failed to create occupational: ${error.message}`, "error");
+        onError: () => {
+            onToast?.(`Failed to create occupational`, "error");
         },
     });
 
-    const updateOccupational = useMutation({
-        mutationFn: (data: UpdateOccupationalDto) => {
-            if (id === null) throw new Error("Occupational id is null");
-            return OccupationalService.update(id, data);
-        },
-        onSuccess: (data) => {
+    const updateOccupational = useMutation<Occupational, Error, { id: number; data: UpdateOccupationalDto }>({
+        mutationFn: ({ id, data }) => OccupationalService.update(id, data),
+        onSuccess: (updated) => {
             queryClient.invalidateQueries({ queryKey: ["occupationals"] });
+            queryClient.invalidateQueries({ queryKey: ["occupational", updated.id] });
             onToast?.("Occupational updated successfully", "success");
         },
-        onError: (error) => {
-            onToast?.(`Failed to update occupational: ${error.message}`, "error");
+        onError: () => {
+            onToast?.(`Failed to update occupational`, "error");
         },
     });
 
-    const deleteOccupational = useMutation({
-        mutationFn: () => {
-            if (id === null) throw new Error("Occupational id is null");
-            return OccupationalService.delete(id);
-        },
+    const deleteOccupational = useMutation<void, Error, number>({
+        mutationFn: (delId) => OccupationalService.delete(delId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["occupationals"] });
             onToast?.("Occupational deleted successfully", "success");
         },
-        onError: (error) => {
-            onToast?.(`Failed to delete occupational: ${error.message}`, "error");
+        onError: () => {
+            onToast?.(`Failed to delete occupational`, "error");
         },
     });
 

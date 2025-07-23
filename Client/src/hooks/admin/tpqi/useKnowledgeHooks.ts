@@ -85,53 +85,52 @@ export function useKnowledgeManager(
 
     const error =
         prefetchQueries.find((q) => q.isError)?.error || currentPageQuery.error;
-    
+
     const knowledgeQuery = useQuery<Knowledge | undefined, Error>({
         queryKey: ["knowledge", id],
         queryFn: () => {
             if (id === null) throw new Error("knowledge id is null");
             return KnowledgeService.getById(id);
-        }, enabled: !!id,
-        staleTime: 5 * 60 * 1000,
+        },
+        enabled: !!id,
     });
 
-    const  createKnowledge = useMutation<Knowledge, Error, CreateKnowledgeDto>({
-        mutationFn: async (data) => {
-            const newKnowledge = await KnowledgeService.create(data);
+    const createKnowledge = useMutation<Knowledge, Error, CreateKnowledgeDto>({
+        mutationFn: async (dto) => KnowledgeService.create(dto),
+        onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["knowledges"] });
             onToast?.("Knowledge created successfully", "success");
-            return newKnowledge;
         },
-        onError: (error) => {
-            onToast?.(`Error creating knowledge: ${error.message}`, "error");
+        onError: () => {
+            onToast?.(`Error creating knowledge`, "error");
         },
     });
 
     const updateKnowledge = useMutation<Knowledge, Error, { id: number; data: UpdateKnowledgeDto }>({
-        mutationFn: async ({ id, data }) => {
-            const updatedKnowledge = await KnowledgeService.update(id, data);
+        mutationFn: async ({ id, data }) => KnowledgeService.update(id, data),
+        onSuccess: (updated) => {
             queryClient.invalidateQueries({ queryKey: ["knowledges"] });
+            queryClient.invalidateQueries({ queryKey: ["knowledge", updated.id] });
             onToast?.("Knowledge updated successfully", "success");
-            return updatedKnowledge;
         },
-        onError: (error) => {
-            onToast?.(`Error updating knowledge: ${error.message}`, "error");
+        onError: () => {
+            onToast?.(`Error updating knowledge`, "error");
         },
     });
 
     const deleteKnowledge = useMutation<void, Error, number>({
-        mutationFn: async (id) => {
-            await KnowledgeService.delete(id);
+        mutationFn: async (delId) => KnowledgeService.delete(delId),
+        onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["knowledges"] });
             onToast?.("Knowledge deleted successfully", "success");
         },
-        onError: (error) => {
-            onToast?.(`Error deleting knowledge: ${error.message}`, "error");
+        onError: () => {
+            onToast?.(`Error deleting knowledge`, "error");
         },
     });
 
     return {
-        knowledgesQuery:{
+        knowledgesQuery: {
             data: mergedData,
             isLoading,
             isError,

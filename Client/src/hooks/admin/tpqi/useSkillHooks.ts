@@ -71,8 +71,8 @@ export function useSkillManager(
         enabled: id !== null,
     });
 
-    const createSkill = useMutation({
-        mutationFn: (dto: CreateSkillDto) => SkillService.create(dto),
+    const createSkill = useMutation<Skill, Error, CreateSkillDto>({
+        mutationFn: (dto) => SkillService.create(dto),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["skills"] });
             onToast?.("Skill created successfully", "success");
@@ -82,12 +82,11 @@ export function useSkillManager(
         },
     });
 
-    const updateSkill = useMutation({
-        mutationFn: ({ id, data }: {
-            id: number; data: UpdateSkillDto
-        }) => SkillService.update(id, data),
-        onSuccess: () => {
+    const updateSkill = useMutation<Skill, Error, { id: number; data: UpdateSkillDto }>({
+        mutationFn: ({ id, data }) => SkillService.update(id, data),
+        onSuccess: (updated) => {
             queryClient.invalidateQueries({ queryKey: ["skills"] });
+            queryClient.invalidateQueries({ queryKey: ["skill", updated.id] });
             onToast?.("Skill updated successfully", "success");
         },
         onError: (error) => {
@@ -95,8 +94,8 @@ export function useSkillManager(
         },
     });
 
-    const deleteSkill = useMutation({
-        mutationFn: (id: number) => SkillService.delete(id),
+    const deleteSkill = useMutation<void, Error, number>({
+        mutationFn: (delId) => SkillService.delete(delId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["skills"] });
             onToast?.("Skill deleted successfully", "success");

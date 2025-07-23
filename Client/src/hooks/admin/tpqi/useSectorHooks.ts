@@ -97,8 +97,8 @@ export function useSectorManager(
     enabled: id !== null,
   });
 
-  const createSector = useMutation({
-    mutationFn: (dto: CreateSectorDto) => SectorService.create(dto),
+  const createSector = useMutation<Sector, Error, CreateSectorDto>({
+    mutationFn: (dto) => SectorService.create(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sectors"] });
       onToast?.("Sector created successfully", "success");
@@ -108,11 +108,11 @@ export function useSectorManager(
     },
   });
 
-  const updateSector = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateSectorDto }) =>
-      SectorService.update(id, data),
-    onSuccess: () => {
+  const updateSector = useMutation<Sector, Error, { id: number; data: UpdateSectorDto }>({
+    mutationFn: ({ id, data }) => SectorService.update(id, data),
+    onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: ["sectors"] });
+      queryClient.invalidateQueries({ queryKey: ["sector", updated.id] });
       onToast?.("Sector updated successfully", "success");
     },
     onError: (error) => {
@@ -120,8 +120,8 @@ export function useSectorManager(
     },
   });
 
-  const deleteSector = useMutation({
-    mutationFn: (id: number) => SectorService.delete(id),
+  const deleteSector = useMutation<void, Error, number>({
+    mutationFn: (delId) => SectorService.delete(delId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sectors"] });
       onToast?.("Sector deleted successfully", "success");

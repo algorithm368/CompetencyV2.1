@@ -98,11 +98,11 @@ export function useLevelManager(
 
     const createLevel = useMutation<Level, Error, CreateLevelDto>({
         mutationFn: (data) => LevelService.create(data),
-        onSuccess: (data) => {
+        onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["levels"] });
             onToast?.("Level created successfully", "success");
         },
-        onError: (error) => {
+        onError: () => {
             onToast?.("Failed to create career", "error");
         },
     });

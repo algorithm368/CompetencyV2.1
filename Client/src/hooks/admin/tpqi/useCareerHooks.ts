@@ -90,8 +90,8 @@ export function useCareerManager(
         queryFn: () => {
             if (id === null) throw new Error("Subcategory id is null");
             return CareerService.getById(id);
-        }, enabled: !!id,
-        staleTime: 5 * 60 * 1000,
+        },
+        enabled: id !== null,
     });
 
     const createCareer = useMutation<Career, Error, CreateCareerDto>({
@@ -107,8 +107,9 @@ export function useCareerManager(
 
     const updateCareer = useMutation<Career, Error, { id: number; data: UpdateCareerDto }>({
         mutationFn: ({ id, data }) => CareerService.update(id, data),
-        onSuccess: () => {
+        onSuccess: (updated) => {
             queryClient.invalidateQueries({ queryKey: ["careers"] });
+            queryClient.invalidateQueries({ queryKey: ["career", updated.id] });
             onToast?.("Career updated successfully", "success");
         },
         onError: () => {
@@ -117,7 +118,7 @@ export function useCareerManager(
     });
 
     const deleteCareer = useMutation<void, Error, number>({
-        mutationFn: (id) => CareerService.delete(id),
+        mutationFn: (delId) => CareerService.delete(delId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["careers"] });
             onToast?.("Career deleted successfully", "success");

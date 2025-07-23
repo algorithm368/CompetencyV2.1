@@ -4,7 +4,7 @@ import {
     UnitCodePageResult,
     UpdateUnitCodeDto,
     CreateUnitCodeDto,
-} from "@Types/tpqi/unitcodeTypes";
+} from "@Types/tpqi/unitCodeTypes";
 
 const BASE_URL = "/admin/tpqi/unitcode";
 

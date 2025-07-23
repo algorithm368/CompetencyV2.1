@@ -1,11 +1,11 @@
 export interface Career {
-  id_career: number;
-  name_career?: string | null;
+  id: number;
+  name?: string | null;
 }
 
 export interface CareerPageResult {
-    data: Career[];
-    total?: number;
+  data: Career[];
+  total?: number;
 }
 
 export type CreateCareerDto = Omit<Career, "id_career">;

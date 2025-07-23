@@ -1,11 +1,11 @@
 export interface Occupational {
   id: number;
-    name?: string | null;
+  name?: string | null;
 }
 
 export interface OccupationalPageResult {
-    data: Occupational[];
-    total?: number;
+  data: Occupational[];
+  total?: number;
 }
 
 export type CreateOccupationalDto = Omit<Occupational, "id">;

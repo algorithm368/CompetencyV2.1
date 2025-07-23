@@ -14,6 +14,7 @@ router.use("/skills", sfiaSkill);
 
 // example route: /api/sfia/evidence
 // permission: public
+// body: { "skillCode": "string", "userId": "string" }
 router.use("/evidence", sfiaEvidence);
 
 export default router;

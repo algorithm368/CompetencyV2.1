@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { postEvidenceController } from "../controllers/postEvidenceController";
+import { getEvidenceController } from "../controllers/getEvidenceController";
 import { authenticate } from "@/middlewares/authMiddleware";
 
 const router = Router();
@@ -13,5 +14,9 @@ router.get("/", (req, res) => {
 // example route: /api/sfia/evidence
 // permission: protected
 router.post("/", authenticate, postEvidenceController);
+
+// example route: /api/sfia/evidence/get
+// permission: protected
+router.post("/get", authenticate, getEvidenceController);
 
 export default router;

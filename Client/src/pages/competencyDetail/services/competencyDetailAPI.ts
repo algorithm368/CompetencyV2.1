@@ -244,6 +244,8 @@ async function fetchTpqiUnitDetail(
   }
 }
 
+
+
 /**
  * Fetch SFIA skill details by skill code
  * @param skillCode - The SFIA skill code (e.g., "PROG", "DBAD")

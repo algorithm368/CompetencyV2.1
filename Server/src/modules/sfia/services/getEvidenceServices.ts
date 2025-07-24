@@ -10,6 +10,7 @@ import { prismaSfia } from "@/db/prismaClients";
 export interface EvidenceInfo {
   id: number;
   evidenceUrl: string | null;
+  approvalStatus?: string;
 }
 
 /**
@@ -145,6 +146,7 @@ export async function getEvidenceBySkillAndUser(
           take: 1,
           select: {
             evidenceUrl: true,
+            approvalStatus: true,
           },
         },
       },
@@ -154,7 +156,10 @@ export async function getEvidenceBySkillAndUser(
     const evidences: EvidenceInfo[] = evidenceList.map((subSkill) => ({
       id: subSkill.id,
       evidenceUrl: subSkill.informations[0]?.evidenceUrl || null,
+      approvalStatus: subSkill.informations[0]?.approvalStatus || null,
     }));
+
+    console.log(evidences);
 
     return {
       skillCode,

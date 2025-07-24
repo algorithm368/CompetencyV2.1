@@ -10,7 +10,7 @@ export interface SfiaDescription {
 }
 
 export interface SfiaLevel {
-id: number;
+  id: number;
   level_name: string | null;
   descriptions: SfiaDescription[];
 }
@@ -28,8 +28,13 @@ export interface ApiResponse {
 }
 
 export interface EvidenceState {
-  urls: { [id: string]: string };
-  submitted: { [id: string]: boolean };
-  loading: { [id: string]: boolean };
-  errors: { [id: string]: string };
+  urls: {
+    [subSkillId: string]: {
+      evidenceUrl: string;
+      approvalStatus: string | null;
+    };
+  };
+  submitted: { [subSkillId: string]: boolean };
+  loading: { [subSkillId: string]: boolean };
+  errors: { [subSkillId: string]: string };
 }

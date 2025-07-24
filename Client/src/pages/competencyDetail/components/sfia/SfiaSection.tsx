@@ -16,16 +16,17 @@ interface SfiaSectionProps {
  * - Skill levels with interactive evidence submission
  */
 const SfiaSection: React.FC<SfiaSectionProps> = ({ competency }) => {
-  const { overall, note, levels } = competency || {};
-
-  const hasSkillLevels = levels && levels.length > 0;
-
   return (
-    <div className="sfia-section space-y-6">
-      <CompetencyOverview overall={overall} />
-      <CompetencyNotes note={note} />
-      {hasSkillLevels && <CompetencySkillLevels levels={levels} />}
-    </div>
+    <>
+      <OverviewSection overall={competency?.overall} />
+      <NotesSection note={competency?.note} />
+      {competency?.levels && competency.levels.length > 0 && (
+        <SfiaSkillLevels
+          levels={competency.levels}
+          skillCode={competency.competency_id} 
+        />
+      )}
+    </>
   );
 };
 

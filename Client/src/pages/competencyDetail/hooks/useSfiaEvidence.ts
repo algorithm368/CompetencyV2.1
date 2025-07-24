@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useAuth } from "@Contexts/AuthContext";
 import { SfiaEvidenceService } from "../services/sfiaEvidenceAPI";
 import { SubmitEvidenceRequest, EvidenceState } from "../types/sfia";
@@ -58,6 +58,38 @@ export const useSfiaEvidence = () => {
     loading: {}, // API call loading states
     errors: {}, // Validation and submission errors
   });
+
+const initializeEvidenceUrls = useCallback(
+  (evidenceData: {
+    [subSkillId: number]: { url: string; approvalStatus: string | null };
+  }) => {
+    setEvidenceState((prev) => ({
+      ...prev,
+      urls: {
+        ...prev.urls,
+        ...Object.fromEntries(
+          Object.entries(evidenceData).map(([key, value]) => [
+            key.toString(),
+            {
+              url: value.url, // Changed from evidenceUrl to url
+              approvalStatus: value.approvalStatus,
+            },
+          ])
+        ),
+      },
+      submitted: {
+        ...prev.submitted,
+        ...Object.fromEntries(
+          Object.entries(evidenceData).map(([key, value]) => [
+            key.toString(),
+            !!value.url, // Changed from evidenceUrl to url
+          ])
+        ),
+      },
+    }));
+  },
+  []
+);
 
   // Get authentication token from context
   const { accessToken } = useAuth();
@@ -233,5 +265,6 @@ export const useSfiaEvidence = () => {
     handleUrlChange,
     handleRemove,
     handleSubmit,
+    initializeEvidenceUrls,
   };
 };

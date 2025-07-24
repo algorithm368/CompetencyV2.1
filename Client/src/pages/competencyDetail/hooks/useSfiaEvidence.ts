@@ -128,14 +128,35 @@ export const useSfiaEvidence = () => {
    */
   const handleSubmit = async (id: number) => {
     const idStr = id.toString();
+
+    // Clear old status for this sub-skill before starting submission
+    setEvidenceState((prev) => ({
+      ...prev,
+      errors: { ...prev.errors, [idStr]: "" },
+      submitted: { ...prev.submitted, [idStr]: false },
+      loading: { ...prev.loading, [idStr]: false },
+    }));
+
     const evidenceUrl = evidenceState.urls[idStr];
 
     // Step 1: Validate evidence input
-    const validation = evidenceService.validateEvidenceUrl(evidenceUrl);
-    if (!validation.isValid) {
+    if (
+      !evidenceUrl ||
+      typeof evidenceUrl !== "string" ||
+      evidenceUrl.trim() === ""
+    ) {
       setEvidenceState((prev) => ({
         ...prev,
-        errors: { ...prev.errors, [idStr]: validation.error || "" },
+        errors: { ...prev.errors, [idStr]: "Evidence URL cannot be empty." },
+      }));
+      return;
+    }
+
+    const isValidUrl = evidenceService.isValidUrl(evidenceUrl);
+    if (!isValidUrl) {
+      setEvidenceState((prev) => ({
+        ...prev,
+        errors: { ...prev.errors, [idStr]: "Please provide a valid URL." },
       }));
       return;
     }
@@ -144,7 +165,10 @@ export const useSfiaEvidence = () => {
     if (!accessToken) {
       setEvidenceState((prev) => ({
         ...prev,
-        errors: { ...prev.errors, [idStr]: "Please log in to submit evidence" },
+        errors: {
+          ...prev.errors,
+          [idStr]: "Please log in to submit evidence.",
+        },
       }));
       return;
     }
@@ -157,17 +181,14 @@ export const useSfiaEvidence = () => {
     }));
 
     try {
-      // Step 4: Check if input is a valid URL
-      const isValidUrl = evidenceService.isValidUrl(evidenceUrl);
-
-      // Step 5: Prepare API request
+      // Step 4: Prepare API request
       const evidenceRequest: SubmitEvidenceRequest = {
         subSkillId: id,
         evidenceText: evidenceUrl, // Always include as text
-        evidenceUrl: isValidUrl ? evidenceUrl : undefined, // Only include URL if valid
+        evidenceUrl, // Include URL since it's valid
       };
 
-      // Step 6: Submit to API
+      // Step 5: Submit to API
       const response = await evidenceService.submitEvidence(evidenceRequest);
 
       if (response.success) {
@@ -187,7 +208,7 @@ export const useSfiaEvidence = () => {
           },
         }));
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Network or other errors
       console.error("Error submitting evidence:", error);
       setEvidenceState((prev) => ({
@@ -199,7 +220,7 @@ export const useSfiaEvidence = () => {
         },
       }));
     } finally {
-      // Step 7: Always clear loading state
+      // Step 6: Always clear loading state
       setEvidenceState((prev) => ({
         ...prev,
         loading: { ...prev.loading, [idStr]: false },

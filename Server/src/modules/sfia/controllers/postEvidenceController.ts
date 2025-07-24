@@ -1,4 +1,5 @@
 import { Response, NextFunction } from "express";
+import axios from "axios";
 import {
   createSubSkillEvidence,
   CreateEvidenceRequest,
@@ -16,6 +17,37 @@ const isValidUrl = (url: string): boolean => {
     return ["http:", "https:"].includes(urlObj.protocol);
   } catch {
     return false;
+  }
+};
+
+/**
+ * Checks if a URL is accessible by making a HEAD request
+ * @param url - The URL to check
+ * @returns Promise<boolean> - True if accessible, false otherwise
+ */
+const isUrlAccessible = async (url: string): Promise<boolean> => {
+  try {
+    await axios.head(url, {
+      timeout: 10000,
+      maxRedirects: 5,
+      validateStatus: (status) => status < 400,
+    });
+    return true;
+  } catch {
+    // Do not log error for HEAD failure
+
+    try {
+      await axios.get(url, {
+        timeout: 10000,
+        maxRedirects: 5,
+        validateStatus: (status) => status < 400,
+        maxContentLength: 1024,
+      });
+      return true;
+    } catch {
+      // Do not log error for GET failure
+      return false;
+    }
   }
 };
 
@@ -102,6 +134,17 @@ export const postEvidenceController = async (
         res.status(400).json({
           success: false,
           message: "Evidence URL must be a valid HTTP or HTTPS URL.",
+        });
+        return;
+      }
+
+      // Check if URL is accessible
+      const isAccessible = await isUrlAccessible(trimmedUrl);
+      if (!isAccessible) {
+        res.status(400).json({
+          success: false,
+          message:
+            "Evidence URL is not accessible. Please provide a valid, accessible URL.",
         });
         return;
       }

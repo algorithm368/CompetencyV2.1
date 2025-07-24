@@ -23,10 +23,7 @@ import {
   domAnimation,
 } from "framer-motion";
 import Layout from "@Layouts/Layout";
-import {
-  useSfiaSkillDetail,
-  useTpqiUnitDetail,
-} from "./hooks/useCompetencyDetail";
+import { useSfiaSkillDetail, useTpqiUnitDetail } from "./hooks";
 import { useCompetencyDetailError } from "./hooks/useCompetencyDetailError";
 import { useAnimationVariants } from "./hooks/useAnimationVariants";
 import { useCompetencyActions } from "./hooks/useCompetencyActions";

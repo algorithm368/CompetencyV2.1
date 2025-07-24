@@ -1,3 +1,10 @@
 {
-  "cSpell.words": ["sfia", "tpqi", "Datacollection"]
+  "cSpell.words": [
+    "sfia",
+    "tpqi",
+    "Datacollection"
+  ],
+  "background.windowBackgrounds": [`
+    "https://images3.alphacoders.com/134/1341840.jpeg"`
+  ]
 }

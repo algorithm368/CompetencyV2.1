@@ -1,14 +1,14 @@
 import { Request, Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
-import { RolePermissionService } from "@Competency/services/rbac/rolePermissionService";
+import { AssetPermissionService } from "@Competency/services/rbac/assetPermissionService";
 
-const service = new RolePermissionService();
+const service = new AssetPermissionService();
 
 interface AuthenticatedRequest extends Request {
   user?: { userId?: string };
 }
 
-export class RolePermissionController {
+export class AssetPermissionController {
   static async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const search = typeof req.query.search === "string" ? req.query.search : undefined;
@@ -26,15 +26,15 @@ export class RolePermissionController {
   static async assignPermission(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const actor = req.user?.userId ?? "system";
-      const roleId = Number(req.params.roleId);
+      const assetId = Number(req.params.assetId);
       const permissionId = Number(req.body.permissionId);
 
-      if (isNaN(roleId) || isNaN(permissionId)) {
-        res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid roleId or permissionId" });
+      if (isNaN(assetId) || isNaN(permissionId)) {
+        res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid assetId or permissionId" });
         return;
       }
 
-      const result = await service.assignPermissionToRole(roleId, permissionId, actor);
+      const result = await service.assignPermissionToAsset(assetId, permissionId, actor);
       res.status(StatusCodes.CREATED).json(result);
     } catch (err) {
       next(err);
@@ -44,15 +44,15 @@ export class RolePermissionController {
   static async revokePermission(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const actor = req.user?.userId ?? "system";
-      const roleId = Number(req.params.roleId);
+      const assetId = Number(req.params.assetId);
       const permissionId = Number(req.body.permissionId);
 
-      if (isNaN(roleId) || isNaN(permissionId)) {
-        res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid roleId or permissionId" });
+      if (isNaN(assetId) || isNaN(permissionId)) {
+        res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid assetId or permissionId" });
         return;
       }
 
-      await service.revokePermissionFromRole(roleId, permissionId, actor);
+      await service.revokePermissionFromAsset(assetId, permissionId, actor);
       res.status(StatusCodes.NO_CONTENT).send();
     } catch (err) {
       next(err);
@@ -61,12 +61,12 @@ export class RolePermissionController {
 
   static async getPermissions(req: Request, res: Response, next: NextFunction) {
     try {
-      const roleId = Number(req.params.roleId);
-      if (isNaN(roleId)) {
-        res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid role ID" });
+      const assetId = Number(req.params.assetId);
+      if (isNaN(assetId)) {
+        res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid asset ID" });
         return;
       }
-      const permissions = await service.getPermissionsForRole(roleId);
+      const permissions = await service.getPermissionsForAsset(assetId);
       res.json(permissions);
     } catch (err) {
       next(err);

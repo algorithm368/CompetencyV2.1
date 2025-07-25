@@ -5,7 +5,7 @@ export const adminRoutes = (
   <>
     <Route path="/dashboard" element={<ExportPages.DashboardPage />} />
     <Route path="/users" element={<ExportPages.UserPage />} />
-    <Route path="/permissions" element={<ExportPages.ManageRolePage />} />
+    <Route path="/permissions" element={<ExportPages.AdminRbacPage />} />
 
     <Route path="/sfia/category" element={<ExportPages.CategoryPage />} />
     <Route path="/sfia/level" element={<ExportPages.LevelPage />} />

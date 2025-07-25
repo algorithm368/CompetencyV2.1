@@ -1,14 +1,14 @@
 import { Request, Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
-import { RoleService } from "@Competency/services/rbac/roleService";
+import { AssetService } from "@Competency/services/rbac/assetService";
 
-const service = new RoleService();
+const service = new AssetService();
 
 interface AuthenticatedRequest extends Request {
   user?: { userId?: string };
 }
 
-export class RoleController {
+export class AssetController {
   static async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const search = typeof req.query.search === "string" ? req.query.search : undefined;
@@ -26,17 +26,17 @@ export class RoleController {
 
   static async getById(req: Request, res: Response, next: NextFunction) {
     try {
-      const id = Number(req.params.roleId);
+      const id = Number(req.params.assetId);
       if (isNaN(id)) {
-        res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid role ID" });
+        res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid asset ID" });
         return;
       }
-      const role = await service.getById(id);
-      if (!role) {
-        res.status(StatusCodes.NOT_FOUND).json({ message: `Role with id ${id} not found` });
+      const asset = await service.getById(id);
+      if (!asset) {
+        res.status(StatusCodes.NOT_FOUND).json({ message: `Asset with id ${id} not found` });
         return;
       }
-      res.json(role);
+      res.json(asset);
     } catch (err) {
       next(err);
     }
@@ -45,13 +45,13 @@ export class RoleController {
   static async create(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const actor = req.user?.userId ?? "system";
-      const { name, description } = req.body;
-      if (!name?.trim()) {
-        res.status(StatusCodes.BAD_REQUEST).json({ message: "Role name is required" });
+      const { tableName, description } = req.body;
+      if (!tableName?.trim()) {
+        res.status(StatusCodes.BAD_REQUEST).json({ message: "tableName is required" });
         return;
       }
-      const newRole = await service.createRole(name.trim(), description, actor);
-      res.status(StatusCodes.CREATED).json(newRole);
+      const newAsset = await service.createAsset(tableName.trim(), description, actor);
+      res.status(StatusCodes.CREATED).json(newAsset);
     } catch (err) {
       next(err);
     }
@@ -60,13 +60,13 @@ export class RoleController {
   static async update(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const actor = req.user?.userId ?? "system";
-      const id = Number(req.params.roleId);
+      const id = Number(req.params.assetId);
       if (isNaN(id)) {
-        res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid role ID" });
+        res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid asset ID" });
         return;
       }
-      const { name, description } = req.body;
-      const updated = await service.update(id, { name, description }, actor);
+      const { tableName, description } = req.body;
+      const updated = await service.update(id, { tableName, description }, actor);
       res.json(updated);
     } catch (err) {
       next(err);
@@ -76,9 +76,9 @@ export class RoleController {
   static async delete(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const actor = req.user?.userId ?? "system";
-      const id = Number(req.params.roleId);
+      const id = Number(req.params.assetId);
       if (isNaN(id)) {
-        res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid role ID" });
+        res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid asset ID" });
         return;
       }
       await service.delete(id, actor);

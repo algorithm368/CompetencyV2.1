@@ -8,33 +8,47 @@ interface AuthenticatedRequest extends Request {
   user?: { userId?: string };
 }
 
-export const extractMessage = (err: unknown) => (err instanceof Error ? err.message : "An unknown error occurred");
-
 export class UserRoleController {
-  static async assign(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+  static async getAll(req: Request, res: Response, next: NextFunction) {
+    try {
+      const search = typeof req.query.search === "string" ? req.query.search : undefined;
+      const pageRaw = req.query.page;
+      const perPageRaw = req.query.perPage;
+      const page = pageRaw && !isNaN(+pageRaw) ? parseInt(pageRaw as string, 10) : undefined;
+      const perPage = perPageRaw && !isNaN(+perPageRaw) ? parseInt(perPageRaw as string, 10) : undefined;
+
+      const items = await service.getAll(search, page, perPage);
+      res.json(items);
+    } catch (err) {
+      next(err);
+    }
+  }
+  static async assignRole(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const actor = req.user?.userId ?? "system";
-      const { userId, roleId } = req.body;
+      const userId = req.params.userId;
+      const roleId = Number(req.body.roleId);
 
-      if (!userId || !roleId) {
-        res.status(StatusCodes.BAD_REQUEST).json({ message: "Missing userId or roleId" });
+      if (!userId || isNaN(roleId)) {
+        res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid userId or roleId" });
         return;
       }
 
-      const assigned = await service.assignRoleToUser(userId, roleId, actor);
-      res.status(StatusCodes.CREATED).json(assigned);
+      const result = await service.assignRoleToUser(userId, roleId, actor);
+      res.status(StatusCodes.CREATED).json(result);
     } catch (err) {
       next(err);
     }
   }
 
-  static async revoke(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+  static async revokeRole(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const actor = req.user?.userId ?? "system";
-      const { userId, roleId } = req.body;
+      const userId = req.params.userId;
+      const roleId = Number(req.body.roleId);
 
-      if (!userId || !roleId) {
-        res.status(StatusCodes.BAD_REQUEST).json({ message: "Missing userId or roleId" });
+      if (!userId || isNaN(roleId)) {
+        res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid userId or roleId" });
         return;
       }
 
@@ -45,35 +59,15 @@ export class UserRoleController {
     }
   }
 
-  static async getByUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+  static async getRoles(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.params.userId;
       if (!userId) {
-        res.status(StatusCodes.BAD_REQUEST).json({ message: "Missing userId parameter" });
+        res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid userId" });
         return;
       }
-
       const roles = await service.getRolesForUser(userId);
-
-      res.status(StatusCodes.OK).json(roles);
-    } catch (err) {
-      next(err);
-    }
-  }
-
-  static async getAllUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const users = await service.getAllUsers();
-      res.status(StatusCodes.OK).json({ data: users, total: users.length });
-    } catch (err) {
-      next(err);
-    }
-  }
-
-  static async getAllRoles(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const roles = await service.getAllRoles();
-      res.status(StatusCodes.OK).json({ data: roles, total: roles.length });
+      res.json(roles);
     } catch (err) {
       next(err);
     }

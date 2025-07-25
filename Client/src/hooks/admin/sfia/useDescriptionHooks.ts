@@ -1,4 +1,3 @@
-// src/hooks/admin/sfia/useDescriptionHooks.ts
 import { useQuery, useQueries, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DescriptionService } from "@Services/admin/sfia/descriptionServices";
 import { Description, CreateDescriptionDto, UpdateDescriptionDto, DescriptionPageResult } from "@Types/sfia/descriptionTypes";

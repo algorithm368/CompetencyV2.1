@@ -8,11 +8,11 @@ export class RolePermissionService extends BaseService<RolePermission, keyof Rol
   }
 
   /**
-   * Assigns a permission to a role if not already assigned.
+   * Assign a permission to a role if not already assigned.
    */
   async assignPermissionToRole(roleId: number, permissionId: number, actor: string = "system") {
     const existing = await this.repo.findFirst({
-      where: { roleId: roleId, permissionId: permissionId },
+      where: { roleId, permissionId },
     });
     if (existing) {
       throw new Error("Permission already assigned to role");
@@ -21,7 +21,7 @@ export class RolePermissionService extends BaseService<RolePermission, keyof Rol
   }
 
   /**
-   * Revokes a permission from a role if it exists.
+   * Revoke a permission from a role if it exists.
    */
   async revokePermissionFromRole(roleId: number, permissionId: number, actor: string = "system") {
     const existing = await this.repo.findFirst({
@@ -34,12 +34,12 @@ export class RolePermissionService extends BaseService<RolePermission, keyof Rol
   }
 
   /**
-   * Retrieves all permissions assigned to a given role.
+   * Retrieve all permissions assigned to a given role.
    */
   async getPermissionsForRole(roleId: number) {
     return this.repo.findMany({
       where: { roleId },
-      include: { permission: true }, // relation field (not Permissions)
+      include: { permission: true }, // include related permission entity
     });
   }
 }

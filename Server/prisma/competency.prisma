@@ -88,11 +88,12 @@ model UserRole {
 
 model Permission {
   id              Int               @id @default(autoincrement())
-  key             String            @unique @db.VarChar(100)
+  key             String            @unique @db.VarChar(100) // เช่น: view, edit, delete
   description     String?           @db.Text
   createdAt       DateTime          @default(now())
 
   rolePermissions RolePermission[]
+  assetPermissions AssetPermission[]
 }
 
 model RolePermission {
@@ -108,9 +109,28 @@ model RolePermission {
   @@index([permissionId], map: "idx_roleperms_permission")
 }
 
+model Asset {
+  id          Int               @id @default(autoincrement())
+  tableName   String            @unique @db.VarChar(100)
+  description String?           @db.Text
+
+  assetPermissions AssetPermission[]
+}
+
+model AssetPermission {
+  id           Int         @id @default(autoincrement())
+  permissionId Int
+  assetId      Int
+
+  permission   Permission  @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  asset        Asset       @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@unique([permissionId, assetId], map: "uix_permission_asset")
+}
+
 model Log {
   id            Int       @id @default(autoincrement())
-  action        String    @db.VarChar(10)
+  action        String    @db.VarChar(10)  
   databaseName  String    @db.VarChar(100)
   tableName     String    @db.VarChar(50)
   recordId      Int?

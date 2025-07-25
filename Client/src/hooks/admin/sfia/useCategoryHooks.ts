@@ -17,11 +17,9 @@ export function useCategoryManager(
   const { id = null, search = "", page = 1, perPage = 10, initialPrefetchPages = 3 } = options || {};
   const queryClient = useQueryClient();
 
-  // ฟังก์ชัน fetchPage ที่ใช้เรียก API
   const fetchPage = async (pageIndex: number, pageSize: number): Promise<{ data: Category[]; total: number }> => {
     const pageNumber = pageIndex + 1;
     const result = await CategoryService.getAll(search, pageNumber, pageSize);
-    console.log(result.data);
 
     return {
       data: result.data ?? [],

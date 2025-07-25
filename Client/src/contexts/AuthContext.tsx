@@ -1,5 +1,12 @@
-import React, { createContext, useState, useEffect, ReactNode, useContext, useCallback, useRef } from "react";
-
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useContext,
+  useCallback,
+  useRef,
+} from "react";
 import {
   GoogleLoginResponse,
   loginWithGoogle,
@@ -26,14 +33,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [expiresIn, setExpiresIn] = useState<number | null>(null);
   const retryCounts = useRef<Record<string, number>>({});
 
-  const login = useCallback(async (idToken: string) => {
-    const response = await loginWithGoogle(idToken);
-    setUser(response.user);
-    setAccessToken(response.accessToken);
-    setExpiresIn(Number(response.expiresIn));
+  useEffect(() => {
+    // Restore token from localStorage on mount
+    const storedToken = localStorage.getItem("accessToken");
+    const storedExpiresIn = localStorage.getItem("expiresIn");
+    if (storedToken) {
+      setAccessToken(storedToken);
+      setExpiresIn(storedExpiresIn);
+    }
+  }, []);
 
-    localStorage.setItem("token", response.accessToken);
-    localStorage.setItem("expiresIn", response.expiresIn);
+  const login = useCallback(async (idToken: string) => {
+    const { user, accessToken, expiresIn } = await loginWithGoogle(idToken);
+    setUser(user);
+    setAccessToken(accessToken);
+    setExpiresIn(expiresIn);
   }, []);
 
   const logout = useCallback(async () => {
@@ -41,8 +55,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     setAccessToken(null);
     setExpiresIn(null);
-
-    localStorage.removeItem("token");
+    localStorage.removeItem("accessToken");
     localStorage.removeItem("expiresIn");
   }, []);
 
@@ -114,20 +127,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [accessToken, fetchCurrentUser]);
 
+  const contextValue = React.useMemo(
+    () => ({
+      user,
+      accessToken,
+      expiresIn,
+      login,
+      logout,
+      refreshAccessToken,
+      fetchCurrentUser,
+    }),
+    [
+      user,
+      accessToken,
+      expiresIn,
+      login,
+      logout,
+      refreshAccessToken,
+      fetchCurrentUser,
+    ]
+  );
+
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        accessToken,
-        expiresIn,
-        login,
-        logout,
-        refreshAccessToken,
-        fetchCurrentUser,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 };
 
@@ -139,4 +161,4 @@ export const useAuth = (): AuthContextType => {
   return context;
 };
 
-export default AuthContext;
+export { AuthContext };

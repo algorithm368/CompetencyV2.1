@@ -9,7 +9,7 @@ import { Link, useLocation } from "react-router-dom";
 import { FaSignInAlt, FaBars, FaTimes } from "react-icons/fa";
 import ProfileDisplay from "./ProfileDisplay";
 import Login from "./Login";
-import AuthContext from "@Contexts/AuthContext";
+import { AuthContext } from "@Contexts/AuthContext";
 
 const Navbar: React.FC<{ isTop: boolean }> = ({ isTop }) => {
   const auth = useContext(AuthContext);
@@ -169,19 +169,18 @@ const Navbar: React.FC<{ isTop: boolean }> = ({ isTop }) => {
         {menuOpen && (
           <>
             <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden" />
-            <div
+            <dialog
+              open
               className="mobile-menu fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl z-50 md:hidden transform transition-transform duration-300 ease-out"
-              tabIndex={-1}
               aria-modal="true"
-              role="dialog"
-              onKeyDown={(e) => {
-                if (e.key === "Escape") closeMenu();
-              }}
             >
               <div className="flex items-center justify-between p-4 border-b border-gray-200">
                 <span className="text-gray-900 font-semibold text-lg">Menu</span>
                 <button
                   onClick={closeMenu}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") closeMenu();
+                  }}
                   className="flex items-center justify-center w-8 h-8 text-teal-600 hover:text-teal-700 focus:outline-none rounded-lg transition-colors duration-200"
                   aria-label="Close menu"
                 >
@@ -234,7 +233,7 @@ const Navbar: React.FC<{ isTop: boolean }> = ({ isTop }) => {
                   )}
                 </div>
               </div>
-            </div>
+            </dialog>
           </>
         )}
       </nav>

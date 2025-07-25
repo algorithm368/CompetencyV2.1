@@ -10,13 +10,13 @@ interface EvidenceData {
 }
 
 export function useEvidenceFetcher(skillCode: string) {
-  const { user, accessToken } = useAuth();
+  const { accessToken } = useAuth();
   const [evidenceData, setEvidenceData] = useState<EvidenceData>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchEvidence = useCallback(async () => {
-    if (!user?.userId || !accessToken || !skillCode) return;
+    if (!accessToken || !skillCode) return;
 
     setLoading(true);
     setError(null);
@@ -27,7 +27,6 @@ export function useEvidenceFetcher(skillCode: string) {
 
       const response = await evidenceService.getEvidence({
         skillCode,
-        userId: user.userId,
       });
 
       if (response.success && response.data?.evidences) {
@@ -48,7 +47,7 @@ export function useEvidenceFetcher(skillCode: string) {
     } finally {
       setLoading(false);
     }
-  }, [user?.userId, accessToken, skillCode]);
+  }, [accessToken, skillCode]);
 
   useEffect(() => {
     fetchEvidence();

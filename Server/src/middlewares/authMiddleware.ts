@@ -13,10 +13,16 @@ export interface AuthenticatedRequest extends Request {
   };
 }
 
-export const authenticate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const authenticate = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;
-    const token = authHeader?.startsWith("Bearer ") ? authHeader.split(" ")[1] : req.cookies?.token;
+    const token = authHeader?.startsWith("Bearer ")
+      ? authHeader.split(" ")[1]
+      : req.cookies?.token;
 
     if (!token) {
       res.status(401).json({ message: "Unauthorized: No token provided" });
@@ -48,7 +54,9 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     }
 
     // ดึง permissions keys
-    const permissions = user.userRoles.flatMap((ur) => ur.role?.rolePermissions?.map((rp) => rp.permission.key) || []);
+    const permissions = user.userRoles.flatMap(
+      (ur) => ur.role?.rolePermissions?.map((rp) => rp.permission.key) || []
+    );
 
     const role = user.userRoles[0]?.role?.name || null;
 
@@ -104,14 +112,20 @@ type PermissionKey = string;
  * });
  */
 export function authorizeRole(allowedRoles: string | string[]) {
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+  return (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): void => {
     if (!req.user) {
       res.status(401).json({ message: "Unauthorized" });
       return;
     }
 
     const userRole = req.user.role;
-    const rolesToCheck = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
+    const rolesToCheck = Array.isArray(allowedRoles)
+      ? allowedRoles
+      : [allowedRoles];
 
     if (!userRole || !rolesToCheck.includes(userRole)) {
       res.status(403).json({ message: "Forbidden: insufficient role" });
@@ -139,8 +153,14 @@ export function authorizeRole(allowedRoles: string | string[]) {
  *   res.send("You can create or edit posts");
  * });
  */
-export function authorizePermission(requiredPermissions: PermissionKey | PermissionKey[]) {
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+export function authorizePermission(
+  requiredPermissions: PermissionKey | PermissionKey[]
+) {
+  return (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): void => {
     const user = req.user;
 
     if (!user) {
@@ -155,8 +175,12 @@ export function authorizePermission(requiredPermissions: PermissionKey | Permiss
       return;
     }
 
-    const required = Array.isArray(requiredPermissions) ? requiredPermissions : [requiredPermissions];
-    const hasPermission = required.some((perm) => userPermissions.includes(perm));
+    const required = Array.isArray(requiredPermissions)
+      ? requiredPermissions
+      : [requiredPermissions];
+    const hasPermission = required.some((perm) =>
+      userPermissions.includes(perm)
+    );
 
     if (!hasPermission) {
       res.status(403).json({ message: "Forbidden: insufficient permissions" });

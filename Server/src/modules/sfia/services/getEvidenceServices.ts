@@ -143,7 +143,6 @@ export async function getEvidenceBySkillAndUser(
           orderBy: {
             createdAt: "desc",
           },
-          take: 1,
           select: {
             evidenceUrl: true,
             approvalStatus: true,
@@ -153,13 +152,13 @@ export async function getEvidenceBySkillAndUser(
     });
 
     // Transform the raw database result to match our interface
-    const evidences: EvidenceInfo[] = evidenceList.map((subSkill) => ({
-      id: subSkill.id,
-      evidenceUrl: subSkill.informations[0]?.evidenceUrl || null,
-      approvalStatus: subSkill.informations[0]?.approvalStatus || null,
-    }));
-
-    console.log(evidences);
+    const evidences: EvidenceInfo[] = evidenceList.flatMap((subSkill) =>
+      subSkill.informations.map((info) => ({
+        id: subSkill.id,
+        evidenceUrl: info.evidenceUrl || null,
+        approvalStatus: info.approvalStatus || null,
+      }))
+    );
 
     return {
       skillCode,

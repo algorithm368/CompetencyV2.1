@@ -69,12 +69,12 @@ const useEvidenceFetcher = (
   onUrlChange: (value: string) => void,
   onEvidenceLoaded?: (evidence: string) => void
 ) => {
-  const { user, accessToken } = useAuth();
+  const { accessToken } = useAuth();
   const [evidenceLoading, setEvidenceLoading] = useState(false);
   const [evidenceLoaded, setEvidenceLoaded] = useState(false);
 
   const fetchExistingEvidence = useCallback(async () => {
-    if (!user?.id || !accessToken || !skillCode || evidenceLoaded) return;
+    if (!accessToken || !skillCode || evidenceLoaded) return;
 
     setEvidenceLoading(true);
     try {
@@ -83,12 +83,11 @@ const useEvidenceFetcher = (
 
       const response = await evidenceService.getEvidence({
         skillCode,
-        userId: user.id,
       });
 
       if (response.success && response.data) {
         const subSkillEvidence = response.data.evidences?.find(
-          (evidence: any) => evidence.id === subskillId
+          (evidence: unknown) => evidence.id === subskillId
         );
 
         if (subSkillEvidence?.url) {
@@ -104,7 +103,6 @@ const useEvidenceFetcher = (
       setEvidenceLoading(false);
     }
   }, [
-    user?.id,
     accessToken,
     skillCode,
     subskillId,
@@ -139,7 +137,7 @@ const getEvidenceStatus = (
         return EvidenceStatus.APPROVED;
       case ApprovalStatus.REJECTED:
         return EvidenceStatus.REJECTED;
-      case ApprovalStatus.NOT_APPROVED: // Fixed the typo here!
+      case ApprovalStatus.NOT_APPROVED:
         return EvidenceStatus.PENDING;
       default:
         return EvidenceStatus.SUBMITTED;
@@ -252,13 +250,12 @@ const StatusIcon: React.FC<{ status: EvidenceStatus }> = ({ status }) => {
 const StatusBadge: React.FC<{ status: EvidenceStatus }> = ({ status }) => {
   const config = getStatusConfig(status);
   return (
-    <div
+    <output
       className={`px-2 py-1 rounded-full text-xs font-medium ${config.badgeClass}`}
-      role="status"
       aria-live="polite"
     >
       {config.label}
-    </div>
+    </output>
   );
 };
 
@@ -275,25 +272,23 @@ const StatusMessages: React.FC<{
     <div className="mt-2 space-y-1">
       {/* Loading states */}
       {evidenceLoading && (
-        <div
+        <output
           className="flex items-center gap-2 text-blue-600 text-sm"
-          role="status"
           aria-live="polite"
         >
           <FaSpinner className="w-3 h-3 animate-spin" />
           <span>Loading your existing evidence...</span>
-        </div>
+        </output>
       )}
 
       {loading && (
-        <div
+        <output
           className="flex items-center gap-2 text-blue-600 text-sm"
-          role="status"
           aria-live="polite"
         >
           <FaSpinner className="w-3 h-3 animate-spin" />
           <span>Submitting your evidence...</span>
-        </div>
+        </output>
       )}
 
       {/* Error state */}
@@ -374,7 +369,6 @@ const SubSkillItem: React.FC<SubSkillItemProps> = ({
   return (
     <li
       className="flex flex-col gap-3"
-      role="listitem"
       aria-labelledby={`subskill-${subskill.id}`}
     >
       {/* Sub-skill header with status indicator */}

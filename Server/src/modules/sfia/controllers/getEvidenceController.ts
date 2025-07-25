@@ -10,22 +10,6 @@ export const getEvidenceController = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { skillCode, userId } = req.body;
-
-  if (!skillCode || !userId) {
-    res.status(400).json({
-      success: false,
-      message: "Skill code and user ID are required in the request body",
-    });
-    return;
-  }
-
-  try {
-    const evidenceData = await getEvidenceServices(skillCode, userId);
-
-    if (!evidenceData) {
-      res.status(404).json({
-): Promise<void> => {
   try {
     // Validate user authentication
     if (!req.user?.userId) {
@@ -74,10 +58,8 @@ export const getEvidenceController = async (
       success: true,
       data: evidenceData,
     });
-  } catch (error) {
-    // Consider using a logger instead of console.error in production
-    console.error("Error fetching evidence data:", error);
   } catch (error: any) {
+    // Consider using a logger instead of console.error in production
     console.error("Error in getEvidenceController:", error);
 
     // Handle specific service errors

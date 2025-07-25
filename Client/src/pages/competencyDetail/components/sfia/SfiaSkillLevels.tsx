@@ -56,18 +56,8 @@ interface SubSkillsSectionProps {
   handlers: EvidenceHandlers;
 }
 
-/**
- * SFIA Skill Levels Component
- *
- * Displays SFIA skill levels with evidence submission functionality.
- * Optimized for performance with React.memo and proper TypeScript types.
- *
- * @param levels - Array of SFIA skill levels to display
- * @param skillCode - The SFIA skill code to fetch evidence for
- */
 const SfiaSkillLevels: React.FC<SfiaSkillLevelsProps> = memo(
   ({ levels, skillCode }) => {
-    // Hooks
     const {
       evidenceState,
       handleUrlChange,
@@ -82,27 +72,25 @@ const SfiaSkillLevels: React.FC<SfiaSkillLevelsProps> = memo(
       error: evidenceError,
     } = useEvidenceFetcher(skillCode);
 
-    // Initialize evidence URLs when evidenceData is loaded
     useEffect(() => {
       if (evidenceData && Object.keys(evidenceData).length > 0) {
         initializeEvidenceUrls(evidenceData);
       }
     }, [evidenceData, initializeEvidenceUrls]);
 
-    // Memoized computed values
     const filteredLevels = useMemo(() => filterValidLevels(levels), [levels]);
 
-    // Memoized handlers to prevent unnecessary re-renders
     const handlers = useMemo<EvidenceHandlers>(
       () => ({
         onUrlChange: handleUrlChange,
         onRemove: handleRemove,
-        onSubmit: handleSubmit,
+        onSubmit: (id: number) => {
+          void handleSubmit(id);
+        },
       }),
       [handleUrlChange, handleRemove, handleSubmit]
     );
 
-    // Early return for empty state
     if (filteredLevels.length === 0) {
       return <EmptySkillLevelsSection />;
     }
@@ -110,7 +98,6 @@ const SfiaSkillLevels: React.FC<SfiaSkillLevelsProps> = memo(
     return (
       <section
         className="relative bg-gradient-to-b from-blue-50 via-white to-blue-25 backdrop-blur-xl rounded-3xl p-8 border border-blue-100 shadow-lg overflow-hidden"
-        role="region"
         aria-labelledby="skill-levels-heading"
       >
         <DecorativeBackground />
@@ -136,18 +123,16 @@ const SfiaSkillLevels: React.FC<SfiaSkillLevelsProps> = memo(
 
 SfiaSkillLevels.displayName = "SfiaSkillLevels";
 
-// Loading and Error States Component
 const LoadingStates: React.FC<{
   evidenceLoading: boolean;
   evidenceError: string | null;
 }> = memo(({ evidenceLoading, evidenceError }) => (
   <>
     {evidenceLoading && (
-      <div className="text-center py-4" role="status" aria-live="polite">
+      <output className="text-center py-4" aria-live="polite">
         <span className="text-blue-600">🔄 Loading existing evidence...</span>
-      </div>
+      </output>
     )}
-
     {evidenceError && (
       <div className="text-center py-4" role="alert" aria-live="assertive">
         <span className="text-red-600">
@@ -157,10 +142,8 @@ const LoadingStates: React.FC<{
     )}
   </>
 ));
-
 LoadingStates.displayName = "LoadingStates";
 
-// Simple Error Boundary for better error handling
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
   { hasError: boolean }
@@ -169,15 +152,12 @@ class ErrorBoundary extends React.Component<
     super(props);
     this.state = { hasError: false };
   }
-
   static getDerivedStateFromError(): { hasError: boolean } {
     return { hasError: true };
   }
-
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error("SfiaSkillLevels Error:", error, errorInfo);
   }
-
   render() {
     if (this.state.hasError) {
       return (
@@ -188,16 +168,13 @@ class ErrorBoundary extends React.Component<
         </div>
       );
     }
-
     return this.props.children;
   }
 }
 
-// Empty state component
 const EmptySkillLevelsSection: React.FC = memo(() => (
   <section
     className="relative bg-gradient-to-b from-blue-50 via-white to-blue-25 backdrop-blur-xl rounded-3xl p-8 border border-blue-100 shadow-lg overflow-hidden"
-    role="region"
     aria-labelledby="skill-levels-heading"
   >
     <SectionHeader />
@@ -208,10 +185,8 @@ const EmptySkillLevelsSection: React.FC = memo(() => (
     </div>
   </section>
 ));
-
 EmptySkillLevelsSection.displayName = "EmptySkillLevelsSection";
 
-// Section header component
 const SectionHeader: React.FC = memo(() => (
   <h2
     id="skill-levels-heading"
@@ -224,10 +199,8 @@ const SectionHeader: React.FC = memo(() => (
     Skill Levels
   </h2>
 ));
-
 SectionHeader.displayName = "SectionHeader";
 
-// Decorative background elements
 const DecorativeBackground: React.FC = memo(() => (
   <>
     <div
@@ -240,13 +213,11 @@ const DecorativeBackground: React.FC = memo(() => (
     />
   </>
 ));
-
 DecorativeBackground.displayName = "DecorativeBackground";
 
-// Skills levels list component
 const SkillLevelsList: React.FC<SkillLevelsListProps> = memo(
   ({ filteredLevels, skillCode, evidenceState, handlers }) => (
-    <div className="flex flex-col gap-6" role="list">
+    <ul className="flex flex-col gap-6">
       {filteredLevels.map((level, index) => (
         <SkillLevel
           key={level.id}
@@ -257,41 +228,34 @@ const SkillLevelsList: React.FC<SkillLevelsListProps> = memo(
           handlers={handlers}
         />
       ))}
-    </div>
+    </ul>
   )
 );
-
 SkillLevelsList.displayName = "SkillLevelsList";
 
-// Individual skill level component
 const SkillLevel: React.FC<SkillLevelProps> = memo(
   ({ level, index, skillCode, evidenceState, handlers }) => {
     const filteredDescriptions = useMemo(
       () => level.descriptions.filter(hasValidContent),
       [level.descriptions]
     );
-
     const totalSubskills = useMemo(
       () => countSubskills(filteredDescriptions),
       [filteredDescriptions]
     );
-
     const levelName = useMemo(
       () =>
         level.level_name ? `Level ${level.level_name}` : `Level ${index + 1}`,
       [level.level_name, index]
     );
-
     if (filteredDescriptions.length === 0) return null;
-
     return (
-      <div className="mb-8" role="listitem">
+      <li className="mb-8">
         <div className="flex flex-col p-6 bg-white/80 backdrop-blur-md rounded-2xl border border-blue-200 gap-2 shadow-md hover:shadow-xl transition-all duration-300 relative overflow-hidden">
           <SkillLevelHeader
             levelName={levelName}
             totalSubskills={totalSubskills}
           />
-
           <DescriptionsList
             descriptions={filteredDescriptions}
             skillCode={skillCode}
@@ -299,14 +263,12 @@ const SkillLevel: React.FC<SkillLevelProps> = memo(
             handlers={handlers}
           />
         </div>
-      </div>
+      </li>
     );
   }
 );
-
 SkillLevel.displayName = "SkillLevel";
 
-// Skill level header
 const SkillLevelHeader: React.FC<{
   levelName: string;
   totalSubskills: number;
@@ -325,10 +287,8 @@ const SkillLevelHeader: React.FC<{
     )}
   </h3>
 ));
-
 SkillLevelHeader.displayName = "SkillLevelHeader";
 
-// Descriptions list component
 const DescriptionsList: React.FC<DescriptionsListProps> = memo(
   ({ descriptions, skillCode, evidenceState, handlers }) => (
     <>
@@ -339,7 +299,6 @@ const DescriptionsList: React.FC<DescriptionsListProps> = memo(
               {desc.description_text}
             </p>
           )}
-
           {desc.subskills && desc.subskills.length > 0 && (
             <SubSkillsSection
               subskills={desc.subskills}
@@ -353,41 +312,34 @@ const DescriptionsList: React.FC<DescriptionsListProps> = memo(
     </>
   )
 );
-
 DescriptionsList.displayName = "DescriptionsList";
 
-// Subskills section
 const SubSkillsSection: React.FC<SubSkillsSectionProps> = memo(
   ({ subskills, skillCode, evidenceState, handlers }) => {
     const validSubskills = useMemo(
       () => subskills.filter((subskill) => subskill.subskill_text?.trim()),
       [subskills]
     );
-
     const handleUrlChange = useCallback(
       (subskillId: number) => (value: string) =>
         handlers.onUrlChange(subskillId, value),
-      [handlers.onUrlChange]
+      [handlers]
     );
-
     const handleRemove = useCallback(
       (subskillId: number) => () => handlers.onRemove(subskillId),
-      [handlers.onRemove]
+      [handlers]
     );
-
     const handleSubmit = useCallback(
       (subskillId: number) => () => handlers.onSubmit(subskillId),
-      [handlers.onSubmit]
+      [handlers]
     );
-
     return (
       <div>
         <h4 className="font-medium text-gray-800 mb-2">SubSkills:</h4>
-        <ul className="space-y-4" role="list">
+        <ul className="space-y-4">
           {validSubskills.map((subskill) => {
             const idStr = subskill.id.toString();
             const evidenceUrl = evidenceState.urls[idStr];
-
             return (
               <SubSkillItem
                 key={subskill.id}
@@ -398,11 +350,7 @@ const SubSkillsSection: React.FC<SubSkillsSectionProps> = memo(
                     ? evidenceUrl
                     : evidenceUrl?.url || ""
                 }
-                approvalStatus={
-                  typeof evidenceUrl === "object"
-                    ? evidenceUrl?.approvalStatus
-                    : null
-                }
+                approvalStatus={evidenceUrl?.approvalStatus || "NOT_APPROVED"}
                 submitted={evidenceState.submitted[idStr] || false}
                 loading={evidenceState.loading[idStr] || false}
                 error={evidenceState.errors[idStr] || ""}
@@ -417,7 +365,6 @@ const SubSkillsSection: React.FC<SubSkillsSectionProps> = memo(
     );
   }
 );
-
 SubSkillsSection.displayName = "SubSkillsSection";
 
 export default SfiaSkillLevels;

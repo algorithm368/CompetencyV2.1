@@ -37,4 +37,5 @@ export interface EvidenceState {
   submitted: { [subSkillId: string]: boolean };
   loading: { [subSkillId: string]: boolean };
   errors: { [subSkillId: string]: string };
+  approvalStatus: { [subSkillId: string]: string | null };
 }

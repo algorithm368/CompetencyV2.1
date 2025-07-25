@@ -57,6 +57,7 @@ export const useSfiaEvidence = () => {
     submitted: {}, // Submission completion status
     loading: {}, // API call loading states
     errors: {}, // Validation and submission errors
+    approvalStatus: {}, // Approval status for each sub-skill
   });
 
 const initializeEvidenceUrls = useCallback(
@@ -228,8 +229,8 @@ const initializeEvidenceUrls = useCallback(
         setEvidenceState((prev) => ({
           ...prev,
           submitted: { ...prev.submitted, [idStr]: true },
+          approvalStatus: { ...prev.approvalStatus, [idStr]: "NOT_APPROVED" },
         }));
-        console.log("Evidence submitted successfully:", response.data);
       } else {
         // API returned error
         setEvidenceState((prev) => ({

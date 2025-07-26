@@ -9,15 +9,13 @@ import { Link, useLocation } from "react-router-dom";
 import { FaSignInAlt, FaBars, FaTimes } from "react-icons/fa";
 import ProfileDisplay from "./ProfileDisplay";
 import Login from "./Login";
-import { AuthContext } from "@Contexts/AuthContext";
+import AuthContext from "@Contexts/AuthContext";
 
 const Navbar: React.FC<{ isTop: boolean }> = ({ isTop }) => {
   const auth = useContext(AuthContext);
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
-
-  console.log(auth)
 
   const NAV_ITEMS = useMemo(
     () => [

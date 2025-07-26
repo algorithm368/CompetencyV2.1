@@ -7,6 +7,7 @@ import React, {
   useCallback,
   useRef,
 } from "react";
+
 import {
   GoogleLoginResponse,
   loginWithGoogle,
@@ -33,21 +34,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [expiresIn, setExpiresIn] = useState<number | null>(null);
   const retryCounts = useRef<Record<string, number>>({});
 
-  useEffect(() => {
-    // Restore token from localStorage on mount
-    const storedToken = localStorage.getItem("accessToken");
-    const storedExpiresIn = localStorage.getItem("expiresIn");
-    if (storedToken) {
-      setAccessToken(storedToken);
-      setExpiresIn(storedExpiresIn);
-    }
-  }, []);
-
   const login = useCallback(async (idToken: string) => {
     const { user, accessToken, expiresIn } = await loginWithGoogle(idToken);
     setUser(user);
     setAccessToken(accessToken);
     setExpiresIn(expiresIn);
+    localStorage.setItem("accessToken", accessToken);
+    localStorage.setItem("expiresIn", expiresIn);
   }, []);
 
   const logout = useCallback(async () => {
@@ -55,7 +48,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     setAccessToken(null);
     setExpiresIn(null);
-    localStorage.removeItem("accessToken");
+
+    localStorage.removeItem("token");
     localStorage.removeItem("expiresIn");
   }, []);
 
@@ -100,16 +94,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [accessToken, user?.profileImage]);
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    const expires = localStorage.getItem("expiresIn");
-    if (token && expires) {
-      setAccessToken(token);
-      setExpiresIn(Number(expires));
-      fetchCurrentUser();
-    }
-  }, []);
-
+  // Auto-refresh token before expiry
   useEffect(() => {
     if (!expiresIn) return;
     const timeout = (expiresIn - 60) * 1000;
@@ -161,4 +146,4 @@ export const useAuth = (): AuthContextType => {
   return context;
 };
 
-export { AuthContext };
+export default AuthContext;

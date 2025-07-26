@@ -151,3 +151,4 @@ tests/
 
 # Ignore tests inside __tests__ folders
 __tests__/
+.unlighthouse/

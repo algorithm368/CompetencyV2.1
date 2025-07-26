@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 // Layout and Component Imports
 import Layout from "@Layouts/Layout";
-import BackgroundDecor from "./components/BackgroundDecor";
+import { WhiteTealBackground } from "@Components/Common/Background/WhiteTealBackground";
 import SearchHeader from "./components/SearchHeader";
 import SearchContent from "./components/SearchContent";
 
@@ -113,30 +113,30 @@ const ResultsPage: React.FC = () => {
 
   return (
     <Layout>
-      <BackgroundDecor />
-
-      <div className="relative pt-24 pb-20 px-4 md:px-6 lg:px-8 bg-gradient-to-br from-slate-50 via-white to-blue-50/30 min-h-screen">
-        <SearchHeader
-          searchTerm={searchTerm}
-          onSearchTermChange={setSearchTerm}
-          onSearch={handleSearchExecution}
-          placeholder={UI_CONSTANTS.SEARCH_PLACEHOLDER}
-          query={query}
-        />
-
-        <div className="max-w-6xl mx-auto">
-          <SearchContent
-            loading={loading}
-            error={error}
+      <WhiteTealBackground>
+        <div className="relative pt-24 pb-20 px-4 md:px-6 lg:px-8 min-h-screen">
+          <SearchHeader
+            searchTerm={searchTerm}
+            onSearchTermChange={setSearchTerm}
+            onSearch={handleSearchExecution}
+            placeholder={UI_CONSTANTS.SEARCH_PLACEHOLDER}
             query={query}
-            pageItems={allItems}
-            onViewDetails={handleViewDetails}
-            onRetry={handleRetry}
-            onSuggestionClick={handleSuggestionClick}
-            onNewSearch={handleNewSearch}
           />
+
+          <div className="max-w-6xl mx-auto">
+            <SearchContent
+              loading={loading}
+              error={error}
+              query={query}
+              pageItems={allItems}
+              onViewDetails={handleViewDetails}
+              onRetry={handleRetry}
+              onSuggestionClick={handleSuggestionClick}
+              onNewSearch={handleNewSearch}
+            />
+          </div>
         </div>
-      </div>
+      </WhiteTealBackground>
     </Layout>
   );
 };

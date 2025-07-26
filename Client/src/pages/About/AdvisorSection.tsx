@@ -40,29 +40,8 @@ const AdvisorSection = () => {
   return (
     <section
       id="advisor-section"
-      className="relative min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-white via-teal-50 to-white w-full py-20 overflow-hidden"
+      className="relative min-h-screen flex flex-col items-center justify-center w-full py-20 overflow-hidden"
     >
-      {/* Decorative elements with subtle animation */}
-      <div className="absolute inset-0">
-        <div className="absolute -top-40 -left-40 w-80 h-80 bg-teal-300 rounded-full mix-blend-multiply filter blur-xl opacity-25 animate-pulse"></div>
-        <div
-          className="absolute -bottom-40 -left-40 w-80 h-80 bg-teal-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"
-          style={{ animationDelay: "1s" }}
-        ></div>
-        <div
-          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-60 h-60 bg-teal-100 rounded-full mix-blend-multiply filter blur-xl opacity-40 animate-pulse"
-          style={{ animationDelay: "2s" }}
-        ></div>
-        <div
-          className="absolute top-20 right-20 w-40 h-40 bg-teal-200 rounded-full mix-blend-multiply filter blur-xl opacity-25 animate-pulse"
-          style={{ animationDelay: "0.5s" }}
-        ></div>
-        <div
-          className="absolute bottom-20 right-20 w-40 h-40 bg-teal-300 rounded-full mix-blend-multiply filter blur-xl opacity-25 animate-pulse"
-          style={{ animationDelay: "1.5s" }}
-        ></div>
-      </div>
-
       <div className="relative z-10 w-full max-w-4xl mx-auto px-6">
         {/* Header */}
         <div
@@ -87,7 +66,7 @@ const AdvisorSection = () => {
         {/* Advisor Card */}
         <div
           ref={cardRef}
-          className={`bg-white/90 backdrop-blur-sm border border-teal-200 rounded-2xl p-8 hover:shadow-xl hover:border-teal-300 hover:bg-teal-50 transition-all duration-700 group transform ${
+          className={`border border-teal-200 rounded-2xl p-8 hover:shadow-xl hover:border-teal-300 transition-all duration-700 group transform ${
             cardInView
               ? "translate-y-0 opacity-100 scale-100"
               : "translate-y-8 opacity-0 scale-95"

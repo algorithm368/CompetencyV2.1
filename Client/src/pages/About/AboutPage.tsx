@@ -2,15 +2,16 @@ import Layout from "@Layouts/Layout";
 import AboutSection from "./AboutSection";
 import TeamMember from "./TeamSection";
 import AdvisorSection from "./AdvisorSection";
+import { WhiteTealBackground } from "@Components/Common/Background/WhiteTealBackground";
 
 const AboutPage: React.FC = () => {
   return (
     <Layout>
-      <div className="min-h-screen bg-white">
+      <WhiteTealBackground>
         <AboutSection />
         <TeamMember />
         <AdvisorSection />
-      </div>
+      </WhiteTealBackground>
     </Layout>
   );
 };

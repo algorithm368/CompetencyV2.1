@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 
-import PhatnarinIMG from "../../assets/AboutPage/Phatnarin.png"
-import SukanyaIMG from "../../assets/AboutPage/Sukanya.png"
-import TanabodeeIMG from "../../assets/AboutPage/Tanabodee.png"
-import KornkanokIMG from "../../assets/AboutPage/Kornkanok.png"
+import PhatnarinIMG from "../../assets/AboutPage/Phatnarin.png";
+import SukanyaIMG from "../../assets/AboutPage/Sukanya.png";
+import TanabodeeIMG from "../../assets/AboutPage/Tanabodee.png";
+import KornkanokIMG from "../../assets/AboutPage/Kornkanok.png";
 import PhannitaIMG from "../../assets/AboutPage/Phannita.png";
 import NatthapatIMG from "../../assets/AboutPage/Natthapat.png";
 import SiriwatIMG from "../../assets/AboutPage/Siriwat.jpeg";
@@ -11,8 +11,6 @@ import JeerapatIMG from "../../assets/AboutPage/Jeerapat.png";
 
 const TEMP_IMAGE_URL =
   "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=facearea&w=256&h=256&facepad=2&q=80";
-
-
 
 interface MemberProps {
   name: string;
@@ -299,34 +297,35 @@ const AnimatedDivider: React.FC<{ delay?: number }> = ({ delay = 0 }) => {
   );
 };
 
-const TeamMember: React.FC = () => {
-  const [headerRef, headerInView] = useInView(0.1);
+const TeamMembers: React.FC = () => {
+  const headerRef = useRef<HTMLDivElement>(null);
+  const [headerInView, setHeaderInView] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setHeaderInView(entry.isIntersecting);
+      },
+      { threshold: 0.2 }
+    );
+
+    if (headerRef.current) {
+      observer.observe(headerRef.current);
+    }
+
+    return () => {
+      if (headerRef.current) {
+        observer.unobserve(headerRef.current);
+      }
+    };
+  }, []);
 
   return (
     <section
       id="team-section"
-      className="relative min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-white via-teal-50 to-white w-full py-20 overflow-hidden"
+      className="relative min-h-screen flex flex-col items-center justify-center w-full py-20 overflow-hidden"
     >
-      {/* Decorative elements with subtle animation */}
-      <div className="absolute inset-0">
-        <div className="absolute -top-40 -left-40 w-80 h-80 bg-teal-300 rounded-full mix-blend-multiply filter blur-xl opacity-25 animate-pulse"></div>
-        <div
-          className="absolute -bottom-40 -left-40 w-80 h-80 bg-teal-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"
-          style={{ animationDelay: "1s" }}
-        ></div>
-        <div
-          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-60 h-60 bg-teal-100 rounded-full mix-blend-multiply filter blur-xl opacity-40 animate-pulse"
-          style={{ animationDelay: "2s" }}
-        ></div>
-        <div
-          className="absolute top-20 right-20 w-40 h-40 bg-teal-200 rounded-full mix-blend-multiply filter blur-xl opacity-25 animate-pulse"
-          style={{ animationDelay: "0.5s" }}
-        ></div>
-        <div
-          className="absolute bottom-20 right-20 w-40 h-40 bg-teal-300 rounded-full mix-blend-multiply filter blur-xl opacity-25 animate-pulse"
-          style={{ animationDelay: "1.5s" }}
-        ></div>
-      </div>
+      {/* Decorative background removed */}
 
       <div className="relative z-10 w-full max-w-6xl mx-auto px-6">
         <div
@@ -406,4 +405,4 @@ const TeamMember: React.FC = () => {
   );
 };
 
-export default TeamMember;
+export default TeamMembers;

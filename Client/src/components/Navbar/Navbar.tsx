@@ -17,6 +17,8 @@ const Navbar: React.FC<{ isTop: boolean }> = ({ isTop }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
 
+  console.log(auth)
+
   const NAV_ITEMS = useMemo(
     () => [
       { name: "Home", path: "/home" },

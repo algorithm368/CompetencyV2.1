@@ -54,15 +54,8 @@ const AboutSection = () => {
   return (
     <section
       id="about-section"
-      className="relative min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-white via-teal-50 to-white w-full pt-20 overflow-hidden mt-10"
+      className="relative min-h-screen flex flex-col items-center justify-center w-full pt-20 overflow-hidden mt-10"
     >
-      {/* Decorative elements matching Home theme */}
-      <div className="absolute inset-0">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-teal-200 rounded-full mix-blend-multiply filter blur-xl opacity-30"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-teal-300 rounded-full mix-blend-multiply filter blur-xl opacity-30"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-60 h-60 bg-teal-100 rounded-full mix-blend-multiply filter blur-xl opacity-40"></div>
-      </div>
-
       <div className="relative z-10 w-full max-w-4xl mx-auto px-6">
         {/* Header */}
         <div

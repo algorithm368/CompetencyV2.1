@@ -16,7 +16,7 @@ routes.use("/tpqi", tpqiRoutes);
 
 routes.get("/test-token", (req, res) => {
   const testPayload = {
-    userId: "c17b3cf5-f54a-46a1-945d-565d59978363",
+    userId: "b1530e81-2b96-4c2c-9b0d-73a7ff9c3b34",
     email: "siriwat.chr@gmail.com",
     role: "USER",
   };

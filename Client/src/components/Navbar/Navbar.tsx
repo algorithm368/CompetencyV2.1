@@ -22,10 +22,6 @@ const Navbar: React.FC<{ isTop: boolean }> = ({ isTop }) => {
       { name: "Home", path: "/home" },
       { name: "Search", path: "/results" },
       { name: "About", path: "/about" },
-      { name: "Features", path: "/features" },
-      { name: "Comparison", path: "/comparison" },
-      { name: "Team", path: "/team" },
-      { name: "Contact", path: "/contact" },
     ],
     []
   );
@@ -106,21 +102,23 @@ const Navbar: React.FC<{ isTop: boolean }> = ({ isTop }) => {
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex space-x-6 lg:space-x-8 flex-1 justify-center px-5">
-            {NAV_ITEMS.map((item) => (
-              <Link
-                key={item.name}
-                to={item.path}
-                className={`relative font-medium transition-all duration-300 hover:scale-105 text-sm lg:text-base ${
-                  isActiveNavItem(item.path)
-                    ? "text-teal-600 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-teal-600 after:transition-all after:duration-300"
-                    : "text-gray-600 hover:text-teal-600 after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-teal-600 hover:after:w-full after:transition-all after:duration-300"
-                }`}
-              >
-                {item.name}
-              </Link>
-            ))}
+          {/* Desktop Navigation - Centered */}
+          <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2">
+            <div className="flex items-center space-x-6 lg:space-x-8">
+              {NAV_ITEMS.map((item) => (
+                <Link
+                  key={item.name}
+                  to={item.path}
+                  className={`relative font-medium transition-all duration-300 hover:scale-105 text-sm lg:text-base ${
+                    isActiveNavItem(item.path)
+                      ? "text-teal-600 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-teal-600 after:transition-all after:duration-300"
+                      : "text-gray-600 hover:text-teal-600 after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-teal-600 hover:after:w-full after:transition-all after:duration-300"
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </div>
           </div>
 
           {/* Desktop Login/Profile */}

@@ -14,6 +14,7 @@ import {
   AssetPageResult,
   CreateAssetDto,
   UpdateAssetDto,
+  RolePermission,
 } from "@Types/competency/rbacTypes";
 
 export default class RbacService {
@@ -157,5 +158,10 @@ export default class RbacService {
 
   static async revokePermissionFromAsset(assetId: number, permissionId: number): Promise<void> {
     await api.delete(`/competency/rbac/assets/${assetId}/permissions`, { data: { permissionId } });
+  }
+
+  static async getRolePermissionsForAsset(assetId: number): Promise<RolePermission[]> {
+    const res: AxiosResponse<RolePermission[]> = await api.get(`/competency/rbac/assets/${assetId}/role-permissions`);
+    return res.data;
   }
 }

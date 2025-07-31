@@ -55,7 +55,7 @@ export interface UserRoleAssignmentDto {
 // --- Asset ---
 export interface Asset {
   id: number;
-  name: string;
+  tableName: string;
   description?: string;
   createdAt: string;
   updatedAt: string;
@@ -74,4 +74,27 @@ export interface CreateAssetDto {
 export interface UpdateAssetDto {
   name?: string;
   description?: string;
+}
+
+export interface AssetPermissionPagePageProps {
+  initialSelectedAssetId?: number | null;
+}
+
+export interface RolePermission {
+  id: number;
+  roleId: number;
+  permissionId: number;
+  grantedAt: string;
+
+  role?: {
+    id: number;
+    name: string;
+    description?: string | null;
+  };
+
+  permission?: {
+    id: number;
+    key: string;
+    description?: string | null;
+  };
 }

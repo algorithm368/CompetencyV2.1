@@ -1,8 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import RbacService from "@Services/competency/rbacService";
-import { Permission } from "@Types/competency/rbacTypes";
+import { Permission, RolePermission } from "@Types/competency/rbacTypes";
 
 type ToastCallback = (message: string, type?: "success" | "error" | "info") => void;
+
 export function useAssetPermissionManager(assetId: number | null, onToast?: ToastCallback) {
   const queryClient = useQueryClient();
 
@@ -15,10 +16,20 @@ export function useAssetPermissionManager(assetId: number | null, onToast?: Toas
     enabled: assetId !== null,
   });
 
+  const rolePermissionsQuery = useQuery<RolePermission[], Error>({
+    queryKey: ["assetRolePermissions", assetId],
+    queryFn: () => {
+      if (assetId === null) return Promise.resolve([]);
+      return RbacService.getRolePermissionsForAsset(assetId);
+    },
+    enabled: assetId !== null,
+  });
+
   const assignPermissionToAsset = useMutation<void, Error, { assetId: number; permissionId: number }>({
     mutationFn: ({ assetId, permissionId }: { assetId: number; permissionId: number }) => RbacService.assignPermissionToAsset(assetId, permissionId),
-    onSuccess: ({ assetId }: { assetId: number; permissionId: number }) => {
+    onSuccess: ({ assetId }: { assetId: number }) => {
       queryClient.invalidateQueries({ queryKey: ["assetPermissions", assetId] });
+      queryClient.invalidateQueries({ queryKey: ["assetRolePermissions", assetId] });
       onToast?.("Permission assigned to asset successfully", "success");
     },
     onError: () => {
@@ -28,8 +39,9 @@ export function useAssetPermissionManager(assetId: number | null, onToast?: Toas
 
   const revokePermissionFromAsset = useMutation<void, Error, { assetId: number; permissionId: number }>({
     mutationFn: ({ assetId, permissionId }: { assetId: number; permissionId: number }) => RbacService.revokePermissionFromAsset(assetId, permissionId),
-    onSuccess: () => {
+    onSuccess: ({ assetId }: { assetId: number }) => {
       queryClient.invalidateQueries({ queryKey: ["assetPermissions", assetId] });
+      queryClient.invalidateQueries({ queryKey: ["assetRolePermissions", assetId] });
       onToast?.("Permission revoked from asset successfully", "success");
     },
     onError: () => {
@@ -39,6 +51,7 @@ export function useAssetPermissionManager(assetId: number | null, onToast?: Toas
 
   return {
     assetPermissionsQuery,
+    rolePermissionsQuery,
     assignPermissionToAsset,
     revokePermissionFromAsset,
   };

@@ -23,6 +23,7 @@ export class AssetPermissionController {
       next(err);
     }
   }
+
   static async assignPermission(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const actor = req.user?.userId ?? "system";
@@ -34,7 +35,7 @@ export class AssetPermissionController {
         return;
       }
 
-      const result = await service.assignPermissionToAsset(assetId, permissionId, actor);
+      const result = await service.assignPermissionToAsset(permissionId, assetId, actor);
       res.status(StatusCodes.CREATED).json(result);
     } catch (err) {
       next(err);
@@ -52,7 +53,7 @@ export class AssetPermissionController {
         return;
       }
 
-      await service.revokePermissionFromAsset(assetId, permissionId, actor);
+      await service.revokePermissionFromAsset(permissionId, assetId, actor);
       res.status(StatusCodes.NO_CONTENT).send();
     } catch (err) {
       next(err);
@@ -68,6 +69,20 @@ export class AssetPermissionController {
       }
       const permissions = await service.getPermissionsForAsset(assetId);
       res.json(permissions);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async getRolePermissionsForAsset(req: Request, res: Response, next: NextFunction) {
+    try {
+      const assetId = Number(req.params.assetId);
+      if (isNaN(assetId)) {
+        res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid asset ID" });
+        return;
+      }
+      const rolePermissions = await service.getRolePermissionsForAsset(assetId);
+      res.json(rolePermissions);
     } catch (err) {
       next(err);
     }

@@ -33,4 +33,21 @@ export class AssetPermissionService extends BaseService<AssetPermission, keyof A
       include: { permission: true },
     });
   }
+
+  async getRolePermissionsForAsset(assetId: number) {
+    const permissionsForAsset = await this.getPermissionsForAsset(assetId);
+    const permissionIds = permissionsForAsset.map((ap: AssetPermission) => ap.permissionId);
+
+    return this.repo.prisma.rolePermission.findMany({
+      where: {
+        permissionId: {
+          in: permissionIds,
+        },
+      },
+      include: {
+        role: true,
+        permission: true,
+      },
+    });
+  }
 }

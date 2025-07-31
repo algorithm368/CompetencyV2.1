@@ -104,23 +104,23 @@ model UnitCode {
 model UserKnowledge {
   id              Int            @id @default(autoincrement())
   knowledgeId     Int
-  userEmail       String         @db.VarChar(255)
+  userId                 String         @db.VarChar(255)
   evidenceUrl     String?        @db.VarChar(1000)
   approvalStatus  ApprovalStatus @default(NOT_APPROVED)
   knowledge       Knowledge      @relation(fields: [knowledgeId], references: [id])
 
-  @@index([userEmail])
+  @@index([userId])
 }
 
 model UserSkill {
   id              Int            @id @default(autoincrement())
   skillId         Int
-  userEmail       String         @db.VarChar(255)
+  userId                 String         @db.VarChar(255)
   evidenceUrl     String?        @db.VarChar(1000)
   approvalStatus  ApprovalStatus @default(NOT_APPROVED)
   skill           Skill          @relation(fields: [skillId], references: [id])
 
-  @@index([userEmail])
+  @@index([userId])
 }
 
 model UserUnitKnowledge {

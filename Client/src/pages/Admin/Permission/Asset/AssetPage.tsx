@@ -89,7 +89,7 @@ export default function AssetPage() {
   const columns = useMemo(
     () => [
       { accessorKey: "id", header: "ID" },
-      { accessorKey: "name", header: "Asset Name" },
+      { accessorKey: "tableName", header: "Asset Name" },
       { accessorKey: "description", header: "Description" },
       {
         id: "actions",

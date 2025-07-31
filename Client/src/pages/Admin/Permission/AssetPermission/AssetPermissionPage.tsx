@@ -1,111 +1,139 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import { DataTable, Spinner, Toast, Checkbox, Select } from "@Components/Common/ExportComponent";
 import { useAssetManager } from "@Hooks/competency/rbac/useAssetManager";
-import { useAssetPermissionManager } from "@Hooks/competency/rbac/useAssetPermissionManager";
 import { usePermissionManager } from "@Hooks/competency/rbac/usePermissionManager";
-import { Permission, AssetPermissionPagePageProps } from "@Types/competency/rbacTypes";
-import { Spinner, Toast, Checkbox } from "@Components/Common/ExportComponent";
+import { useRoleManager } from "@Hooks/competency/rbac/useRoleManager";
+import RbacService from "@Services/competency/rbacService";
+import type { Permission, Role } from "@Types/competency/rbacTypes";
 
-export const AssetPermissionPage: React.FC<AssetPermissionPagePageProps> = ({ initialSelectedAssetId = null }) => {
+interface Asset {
+  id: number;
+  tableName: string;
+}
+
+export const AssetPermissionPage: React.FC = () => {
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
-  const [selectedAssetId, setSelectedAssetId] = useState<number | null>(initialSelectedAssetId);
-  const [togglingPermissionId, setTogglingPermissionId] = useState<number | null>(null);
+  const handleToast = (message: string, type: "success" | "error" | "info" = "info") => setToast({ message, type });
 
-  const handleToast = (message: string, type: "success" | "error" | "info" = "info") => {
-    setToast({ message, type });
-  };
+  // Load roles
+  const { rolesQuery } = useRoleManager({ page: 1, perPage: 1000 }, handleToast);
+  const roles: Role[] = rolesQuery.data?.data || [];
 
-  const { assetQuery } = useAssetManager({ id: selectedAssetId }, handleToast);
-  const { assetPermissionsQuery, assignPermissionToAsset, revokePermissionFromAsset } = useAssetPermissionManager(selectedAssetId, handleToast);
+  // Selected Role
+  const [selectedRoleId, setSelectedRoleId] = useState<number | null>(null);
+
+  // Load assets and permissions
+  const perPage = 1000;
+  const { assetsQuery } = useAssetManager({ page: 1, perPage }, handleToast);
+  const assets: Asset[] = assetsQuery.data?.data || [];
 
   const {
-    permissionsQuery: { data: allPermissions = [], isLoading: isLoadingAllPermissions, isError: isErrorAllPermissions },
-  } = usePermissionManager({ page: 1, perPage: 100 });
+    permissionsQuery: { data: allPermissionsPageResult, isLoading: isLoadingAllPermissions, isError: isErrorAllPermissions },
+  } = usePermissionManager({ page: 1, perPage: 1000 });
+  const allPermissions: Permission[] = allPermissionsPageResult?.data || [];
 
-  const assetPermissions = assetPermissionsQuery.data || [];
-  const isLoadingAssetPermissions = assetPermissionsQuery.isLoading;
-  const isErrorAssetPermissions = assetPermissionsQuery.isError;
-
-  useEffect(() => {
-    if (assignPermissionToAsset.isSuccess || revokePermissionFromAsset.isSuccess) {
-      assetPermissionsQuery.refetch();
-      setTogglingPermissionId(null);
-    }
-    if (assignPermissionToAsset.isError || revokePermissionFromAsset.isError) {
-      setTogglingPermissionId(null);
-    }
-  }, [assignPermissionToAsset.isSuccess, revokePermissionFromAsset.isSuccess, assignPermissionToAsset.isError, revokePermissionFromAsset.isError, assetPermissionsQuery]);
+  // Permissions assigned to selected role per asset
+  const [roleAssetPermissions, setRoleAssetPermissions] = useState<Record<number, Permission[]>>({});
 
   useEffect(() => {
-    setSelectedAssetId(initialSelectedAssetId);
-  }, [initialSelectedAssetId]);
+    async function loadPermissionsForRole() {
+      if (!selectedRoleId || !assets.length) {
+        setRoleAssetPermissions({});
+        return;
+      }
 
-  const handleTogglePermission = (permission: Permission, checked: boolean) => {
-    if (!selectedAssetId) {
-      handleToast("Please select an asset first.", "info");
-      return;
+      try {
+        const results = await Promise.all(
+          assets.map(async (asset) => {
+            try {
+              const rolePermissions = await RbacService.getRolePermissionsForAsset(selectedRoleId, asset.id);
+              // แปลง RolePermission[] เป็น Permission[]
+              const permissions = rolePermissions.map((rp) => rp.permission);
+              return { assetId: asset.id, permissions };
+            } catch {
+              return { assetId: asset.id, permissions: [] };
+            }
+          })
+        );
+
+        const map: Record<number, Permission[]> = {};
+        results.forEach(({ assetId, permissions }) => {
+          map[assetId] = permissions;
+        });
+        setRoleAssetPermissions(map);
+      } catch (err) {
+        setRoleAssetPermissions({});
+        handleToast("Failed to load role permissions per asset", "error");
+      }
     }
 
-    setTogglingPermissionId(permission.id);
+    loadPermissionsForRole();
+  }, [selectedRoleId, assets]);
 
-    const mutationOptions = {
-      onSuccess: () => {},
-      onError: (error: any) => {
-        handleToast(`Failed to ${checked ? "assign" : "revoke"} permission: ${error.message || "Unknown error"}`, "error");
-        setTogglingPermissionId(null);
+  // Columns for DataTable
+  const columns = useMemo(() => {
+    const permissionColumns = allPermissions.map((perm) => ({
+      id: perm.key,
+      header: perm.key.charAt(0).toUpperCase() + perm.key.slice(1),
+      cell: ({ row }: { row: { original: Asset } }) => {
+        const asset = row.original;
+        const permsForAsset = roleAssetPermissions[asset.id] || [];
+        const isAssigned = permsForAsset.some((p) => p.id === perm.id);
+        return <Checkbox checked={isAssigned} disabled onCheckedChange={() => {}} />;
       },
-    };
+      size: 80,
+      meta: { align: "center" as const },
+    }));
 
-    if (checked) {
-      assignPermissionToAsset.mutate({ assetId: selectedAssetId, permissionId: permission.id }, mutationOptions);
-    } else {
-      revokePermissionFromAsset.mutate({ assetId: selectedAssetId, permissionId: permission.id }, mutationOptions);
-    }
-  };
+    return [
+      {
+        accessorKey: "tableName",
+        header: "Asset Name",
+        size: 250,
+      },
+      ...permissionColumns,
+    ];
+  }, [allPermissions, roleAssetPermissions]);
+
+  if (assetsQuery.isLoading || isLoadingAllPermissions || rolesQuery.isLoading) return <Spinner />;
+  if (assetsQuery.isError) return <p className="text-red-500">Error loading assets.</p>;
+  if (isErrorAllPermissions) return <p className="text-red-500">Error loading permissions.</p>;
+  if (rolesQuery.isError) return <p className="text-red-500">Error loading roles.</p>;
 
   return (
-    <div className="p-4 max-w-4xl mx-auto">
-      <section>
-        {selectedAssetId === null ? (
-          <p className="text-gray-500 italic">Select an asset to manage permissions.</p>
-        ) : (
-          <>
-            <h2 className="text-lg font-semibold mb-2">
-              Manage Permissions for Asset: <span className="font-mono">{assetQuery.isLoading ? "Loading..." : assetQuery.data?.name || "N/A"}</span>
-            </h2>
+    <div className="p-4 mx-auto">
+      <h1 className="text-2xl font-bold mb-6">Asset Permissions by Role</h1>
 
-            {/* Combined loading and error handling for permissions */}
-            {isLoadingAllPermissions || isLoadingAssetPermissions ? (
-              <Spinner />
-            ) : isErrorAllPermissions ? (
-              <p className="text-red-500">Error loading all permissions. Please try again.</p>
-            ) : isErrorAssetPermissions ? (
-              <p className="text-red-500">Error loading asset's permissions. Please try again.</p>
-            ) : allPermissions.length === 0 ? (
-              <p className="text-gray-500 italic">No permissions available to assign.</p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 max-h-[400px] overflow-auto border rounded p-3">
-                {allPermissions.map((permission) => {
-                  const isAssigned = assetPermissions.some((p) => p.id === permission.id);
-                  const isTogglingThisPermission = togglingPermissionId === permission.id;
-                  const isAnyMutationPending = assignPermissionToAsset.isPending || revokePermissionFromAsset.isPending;
+      <div className="mb-6 max-w-sm">
+        <label htmlFor="role-select" className="block mb-1 font-semibold">
+          Select Role
+        </label>
+        <Select
+          id="role-select"
+          options={roles.map((r) => ({ label: r.name, value: r.id }))}
+          value={selectedRoleId ?? ""}
+          onChange={(val) => setSelectedRoleId(val === "" ? null : Number(val))}
+          placeholder="Select a role..."
+        />
+      </div>
 
-                  return (
-                    <label key={permission.id} className="flex items-center gap-2 cursor-pointer">
-                      <Checkbox
-                        checked={isAssigned}
-                        onCheckedChange={(checked) => handleTogglePermission(permission, checked as boolean)}
-                        disabled={isTogglingThisPermission || isAnyMutationPending}
-                      />
-                      <span>{permission.key}</span>
-                      {isTogglingThisPermission && <Spinner size="small" />}
-                    </label>
-                  );
-                })}
-              </div>
-            )}
-          </>
-        )}
-      </section>
+      {!selectedRoleId ? (
+        <p className="text-gray-600 italic">Please select a role to see asset permissions.</p>
+      ) : (
+        <DataTable<Asset>
+          columns={columns}
+          fetchPage={async (pageIndex, pageSize) => {
+            const start = pageIndex * pageSize;
+            const paginated = assets.slice(start, start + pageSize);
+            return {
+              data: paginated,
+              total: assets.length,
+            };
+          }}
+          pageSizes={[10, 20, 50]}
+          initialPageSize={20}
+        />
+      )}
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>

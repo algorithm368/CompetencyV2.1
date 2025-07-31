@@ -49,5 +49,6 @@ rbacRoutes.delete("/assets/:assetId" /*, authenticate*/, AssetController.delete)
 rbacRoutes.get("/assets/:assetId/permissions", AssetPermissionController.getPermissions);
 rbacRoutes.post("/assets/:assetId/permissions", AssetPermissionController.assignPermission);
 rbacRoutes.delete("/assets/:assetId/permissions", AssetPermissionController.revokePermission);
+rbacRoutes.get("/assets/:assetId/role-permissions", AssetPermissionController.getRolePermissionsForAsset);
 
 export default rbacRoutes;

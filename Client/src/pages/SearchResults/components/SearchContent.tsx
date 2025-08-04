@@ -2,11 +2,13 @@ import React from "react";
 import { AnimatePresence } from "framer-motion";
 
 // State Components
-import SearchLoadingState from "./SearchLoadingState";
-import SearchErrorState from "./SearchErrorState";
-import SearchWelcomeState from "./SearchWelcomeState";
-import SearchEmptyState from "./SearchEmptyState";
-import SuccessState from "./SearchSuccessState";
+import {
+  SearchLoadingState,
+  SearchErrorState,
+  SearchWelcomeState,
+  SearchEmptyState,
+  SearchSuccessState,
+} from "./states";
 
 interface CompetencyItem {
   id: string;
@@ -52,24 +54,26 @@ const SearchContent: React.FC<SearchContentProps> = ({
 
   return (
     <div className="min-h-[400px]">
-      <AnimatePresence mode="wait">
-        {renderConditions.isLoading && <SearchLoadingState />}
+      <AnimatePresence mode="wait" initial={false}>
+        {renderConditions.isLoading && (
+          <SearchLoadingState key="loading" />
+        )}
 
         {renderConditions.hasError && (
-          <SearchErrorState error={error!} onRetry={onRetry} />
+          <SearchErrorState key="error" error={error!} onRetry={onRetry} />
         )}
 
         {renderConditions.hasNoQuery && (
-          <SearchWelcomeState onSuggestionClick={onSuggestionClick} />
+          <SearchWelcomeState key="welcome" onSuggestionClick={onSuggestionClick} />
         )}
 
         {renderConditions.isEmpty && (
-          <SearchEmptyState query={query} onNewSearch={onNewSearch} />
+          <SearchEmptyState key="empty" query={query} onNewSearch={onNewSearch} />
         )}
 
         {renderConditions.hasResults && (
-          <SuccessState
-            key="success"
+          <SearchSuccessState
+            key={`success-${query}`} // Include query in key for better transitions
             query={query}
             items={pageItems}
             onViewDetails={onViewDetails}

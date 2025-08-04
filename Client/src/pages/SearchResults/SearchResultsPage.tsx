@@ -4,8 +4,7 @@ import { useNavigate } from "react-router-dom";
 // Layout and Component Imports
 import Layout from "@Layouts/Layout";
 import { WhiteTealBackground } from "@Components/Common/Background/WhiteTealBackground";
-import SearchHeader from "./components/SearchHeader";
-import SearchContent from "./components/SearchContent";
+import { SearchHeader, SearchContent } from "./components";
 
 // Hooks
 import { useLazyCompetencyResults } from "./hooks/useCompetencyResults";

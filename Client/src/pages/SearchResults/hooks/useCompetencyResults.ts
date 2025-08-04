@@ -5,8 +5,9 @@ import { fetchCompetenciesBySearchTerm } from "../services/searchCompetencyAPI";
 /**
  * @constant DEBOUNCE_DELAY
  * @description Defines the debounce delay in milliseconds for lazy loading search
+ * Reduced for smoother user experience
  */
-const DEBOUNCE_DELAY = 500;
+const DEBOUNCE_DELAY = 300;
 
 /**
  * @type {ItemType}
@@ -248,12 +249,12 @@ export function useLazyCompetencyResults() {
       return;
     }
 
-    // Start loading and clear previous errors
-    setLoading(true);
+    // Show immediate feedback for typing
     setError(null);
 
     // Set up debounced execution
     const handler = setTimeout(async () => {
+      setLoading(true);
       try {
         const data = await fetchCompetenciesBySearchTerm(safeSearchTerm.trim());
         setResults(Array.isArray(data) ? data : []);

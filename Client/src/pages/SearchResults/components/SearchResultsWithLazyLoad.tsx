@@ -2,7 +2,7 @@
 import React, { useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, ArrowUp } from "lucide-react";
-import ResultsList from "./ResultsList";
+import { ResultsList } from "./ui";
 import { useLazyLoading } from "../hooks/useLazyLoading";
 
 interface ItemType {
@@ -31,20 +31,20 @@ const containerVariants = {
 };
 
 const loadingVariants = {
-  hidden: { opacity: 0, scale: 0.8 },
+  hidden: { opacity: 0, scale: 0.95 },
   visible: {
     opacity: 1,
     scale: 1,
     transition: {
-      duration: 0.3,
+      duration: 0.2,
       ease: "easeOut",
     },
   },
   exit: {
     opacity: 0,
-    scale: 0.8,
+    scale: 0.95,
     transition: {
-      duration: 0.2,
+      duration: 0.15,
     },
   },
 };
@@ -57,9 +57,9 @@ const SearchResultsWithLazyLoad: React.FC<SearchResultsWithLazyLoadProps> = ({
   const { displayedItems, hasMore, isLoading, loadMoreItems, sentinelRef } =
     useLazyLoading({
       items,
-      initialLoad: 8,
-      loadMore: 6,
-      threshold: 0.5,
+      initialLoad: 12, // Increased from 8 for better initial load
+      loadMore: 8, // Increased from 6 for smoother progression
+      threshold: 0.3, // Reduced from 0.5 for earlier loading
     });
 
   // Memoized statistics
@@ -118,7 +118,7 @@ const SearchResultsWithLazyLoad: React.FC<SearchResultsWithLazyLoadProps> = ({
       <div className="space-y-4">
         <ResultsList items={displayedItems} onViewDetails={onViewDetails} />
 
-        {/* Loading State */}
+        {/* Loading State - Improved with smaller, more subtle indicator */}
         <AnimatePresence>
           {isLoading && (
             <motion.div
@@ -126,20 +126,26 @@ const SearchResultsWithLazyLoad: React.FC<SearchResultsWithLazyLoadProps> = ({
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="flex items-center justify-center p-8"
+              className="flex items-center justify-center p-6"
             >
-              <div className="flex items-center gap-3 text-gray-600">
-                <Loader2 className="w-5 h-5 animate-spin" />
+              <div className="flex items-center gap-2 text-gray-500 bg-white/60 backdrop-blur-sm rounded-lg px-4 py-2 border border-gray-200/50">
+                <Loader2 className="w-4 h-4 animate-spin" />
                 <span className="text-sm font-medium">
-                  Loading more results...
+                  Loading...
                 </span>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Load More Trigger (Intersection Observer Sentinel) */}
-        {hasMore && !isLoading && <div ref={sentinelRef} className="h-4" />}
+        {/* Load More Trigger (Intersection Observer Sentinel) - Moved higher for better UX */}
+        {hasMore && !isLoading && (
+          <div 
+            ref={sentinelRef} 
+            className="h-2 bg-transparent" 
+            aria-hidden="true"
+          />
+        )}
 
         {/* Manual Load More Button (fallback) */}
         {hasMore && !isLoading && (
@@ -154,22 +160,23 @@ const SearchResultsWithLazyLoad: React.FC<SearchResultsWithLazyLoadProps> = ({
         )}
 
         {/* End of Results */}
-        {!hasMore && items.length > 8 && (
+        {!hasMore && items.length > 12 && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center gap-4 p-8 text-center"
+            transition={{ delay: 0.2 }}
+            className="flex flex-col items-center gap-3 p-6 text-center"
           >
-            <div className="p-3 bg-gray-50 rounded-full">
-              <ArrowUp className="w-5 h-5 text-gray-400" />
+            <div className="p-2 bg-gray-50 rounded-full">
+              <ArrowUp className="w-4 h-4 text-gray-400" />
             </div>
             <div>
-              <p className="text-gray-600 mb-2">
+              <p className="text-gray-600 text-sm mb-1">
                 You've reached the end of the results
               </p>
               <button
                 onClick={scrollToTop}
-                className="text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors duration-200 underline decoration-2 underline-offset-2"
+                className="text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors duration-200 underline decoration-2 underline-offset-2 hover:no-underline"
               >
                 Back to top
               </button>

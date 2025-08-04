@@ -1,7 +1,6 @@
-// Update Client/src/pages/SearchResults/components/SearchSuccessState.tsx
 import React from "react";
 import { motion } from "framer-motion";
-import SearchResultsWithLazyLoad from "./SearchResultsWithLazyLoad";
+import SearchResultsWithLazyLoad from "../SearchResultsWithLazyLoad";
 
 interface ItemType {
   id: string; // Changed from number to string

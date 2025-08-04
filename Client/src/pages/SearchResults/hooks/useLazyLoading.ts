@@ -1,15 +1,15 @@
 // Client/src/pages/SearchResults/hooks/useLazyLoading.ts
 import { useState, useEffect, useCallback, useRef } from "react";
 
-interface UseLazyLoadingOptions {
-  items: any[];
+interface UseLazyLoadingOptions<T = unknown> {
+  items: T[];
   initialLoad?: number;
   loadMore?: number;
   threshold?: number;
 }
 
-interface UseLazyLoadingReturn {
-  displayedItems: any[];
+interface UseLazyLoadingReturn<T = unknown> {
+  displayedItems: T[];
   hasMore: boolean;
   isLoading: boolean;
   loadMoreItems: () => void;
@@ -17,41 +17,52 @@ interface UseLazyLoadingReturn {
   reset: () => void;
 }
 
-export const useLazyLoading = ({
+export const useLazyLoading = <T = unknown>({
   items,
   initialLoad = 10,
   loadMore = 5,
   threshold = 0.8,
-}: UseLazyLoadingOptions): UseLazyLoadingReturn => {
+}: UseLazyLoadingOptions<T>): UseLazyLoadingReturn<T> => {
   const [displayedCount, setDisplayedCount] = useState(initialLoad);
   const [isLoading, setIsLoading] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
+  const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Calculate derived state
   const displayedItems = items.slice(0, displayedCount);
   const hasMore = displayedCount < items.length;
 
-  // Load more items function
+  // Load more items function with smoother loading
   const loadMoreItems = useCallback(() => {
     if (isLoading || !hasMore) return;
 
     setIsLoading(true);
 
-    // Simulate network delay for better UX
-    setTimeout(() => {
+    // Clear any existing timeout
+    if (loadingTimeoutRef.current) {
+      clearTimeout(loadingTimeoutRef.current);
+    }
+
+    // Shorter delay for smoother experience
+    loadingTimeoutRef.current = setTimeout(() => {
       setDisplayedCount((prev) => Math.min(prev + loadMore, items.length));
       setIsLoading(false);
-    }, 300);
+    }, 150); // Reduced from 300ms to 150ms for smoother loading
   }, [isLoading, hasMore, loadMore, items.length]);
 
   // Reset function to go back to initial state
   const reset = useCallback(() => {
     setDisplayedCount(initialLoad);
     setIsLoading(false);
+    
+    // Clear any pending timeouts
+    if (loadingTimeoutRef.current) {
+      clearTimeout(loadingTimeoutRef.current);
+    }
   }, [initialLoad]);
 
-  // Intersection Observer setup
+  // Intersection Observer setup with improved configuration
   useEffect(() => {
     if (!sentinelRef.current || !hasMore) return;
 
@@ -64,7 +75,7 @@ export const useLazyLoading = ({
       },
       {
         threshold,
-        rootMargin: "50px", // Load a bit before the sentinel comes into view
+        rootMargin: "100px", // Increased from 50px for earlier loading
       }
     );
 
@@ -81,6 +92,15 @@ export const useLazyLoading = ({
   useEffect(() => {
     reset();
   }, [items, reset]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return {
     displayedItems,

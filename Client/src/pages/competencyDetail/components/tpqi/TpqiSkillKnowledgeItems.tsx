@@ -13,7 +13,7 @@ import {
   filterValidKnowledge,
   countTpqiItems,
 } from "../../utils/tpqiUtils";
-import TpqiEvidenceItem from "./TpqiEvidenceItem";
+import UrlInputBox from "../ui/UrlInputBox";
 
 // Types
 interface TpqiSkillKnowledgeItemsProps {
@@ -288,6 +288,29 @@ const UnitHeader: React.FC<{
 ));
 UnitHeader.displayName = "UnitHeader";
 
+// Helper functions for approval status
+const getApprovalStatusClass = (status: string): string => {
+  switch (status) {
+    case "APPROVED":
+      return "bg-emerald-50 text-emerald-700 border border-emerald-200";
+    case "REJECTED":
+      return "bg-red-50 text-red-700 border border-red-200";
+    default:
+      return "bg-amber-50 text-amber-700 border border-amber-200";
+  }
+};
+
+const getApprovalStatusLabel = (status: string): string => {
+  switch (status) {
+    case "APPROVED":
+      return "Approved";
+    case "REJECTED":
+      return "Requires Revision";
+    default:
+      return "Under Review";
+  }
+};
+
 const SkillsList: React.FC<SkillsListProps> = memo(
   ({ skills, evidenceState, handlers }) => {
     const handleUrlChange = useCallback(
@@ -308,36 +331,104 @@ const SkillsList: React.FC<SkillsListProps> = memo(
 
     return (
       <div>
-        <h4 className="font-medium text-gray-800 mb-2 flex items-center">
+        <h4 className="font-medium text-gray-800 mb-4 flex items-center">
           <FaCertificate className="w-4 h-4 mr-2 text-green-600" />
-          Skills:
+          Skills ({skills.length})
         </h4>
-        <ul className="space-y-4">
+        <div className="space-y-6">
           {skills.map((skill) => {
             const key = `skill-${skill.id}`;
+            const isSubmitted = evidenceState.submitted[key] || false;
+            const isLoading = evidenceState.loading[key] || false;
+            const error = evidenceState.errors[key] || "";
+            const url = evidenceState.urls[key] || "";
+            const approvalStatus =
+              evidenceState.approvalStatus[key] || "NOT_APPROVED";
+
             return (
-              <TpqiEvidenceItem
+              <div
                 key={skill.id}
-                evidence={{ type: "skill", id: skill.id }}
-                item={{
-                  id: skill.id,
-                  name: skill.skill_name,
-                  description: skill.skill_description,
-                }}
-                url={evidenceState.urls[key] || ""}
-                approvalStatus={
-                  evidenceState.approvalStatus[key] || "NOT_APPROVED"
-                }
-                submitted={evidenceState.submitted[key] || false}
-                loading={evidenceState.loading[key] || false}
-                error={evidenceState.errors[key] || ""}
-                onUrlChange={handleUrlChange(skill.id)}
-                onRemove={handleRemove(skill.id)}
-                onSubmit={handleSubmit(skill.id)}
-              />
+                className="bg-white/60 border border-green-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-200"
+              >
+                {/* Skill Header */}
+                <div className="mb-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1">
+                      <h5 className="font-semibold text-gray-800 text-lg mb-1">
+                        {skill.skill_name}
+                      </h5>
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                        🔧 Skill Evidence
+                      </span>
+                    </div>
+                    {isSubmitted && (
+                      <span
+                        className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium shadow-sm ${getApprovalStatusClass(
+                          approvalStatus
+                        )}`}
+                      >
+                        {getApprovalStatusLabel(approvalStatus)}
+                      </span>
+                    )}
+                  </div>
+
+                  {skill.skill_description && (
+                    <div className="bg-slate-50 border border-slate-200 p-3 rounded-lg mt-3">
+                      <h6 className="text-sm font-medium text-slate-700 mb-2">
+                        Skill Description
+                      </h6>
+                      <p className="text-sm text-slate-600 leading-relaxed">
+                        {skill.skill_description}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Evidence Input */}
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <label
+                      htmlFor={`skill-evidence-${skill.id}`}
+                      className="text-sm font-medium text-slate-700"
+                    >
+                      Evidence Documentation
+                    </label>
+                    <span className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                      Required
+                    </span>
+                  </div>
+
+                  <UrlInputBox
+                    url={url}
+                    onChange={handleUrlChange(skill.id)}
+                    onRemove={handleRemove(skill.id)}
+                    onSubmit={handleSubmit(skill.id)}
+                    placeholder="https://example.com/your-skill-evidence"
+                    colorClass="border-blue-300"
+                    disabled={isLoading}
+                    readonly={isSubmitted && approvalStatus === "APPROVED"}
+                    loading={isLoading}
+                  />
+
+                  {error && (
+                    <div className="mt-3 flex items-start gap-3 text-red-700 text-sm bg-red-50 border border-red-200 rounded-lg p-3 shadow-sm">
+                      <span className="text-red-500">⚠️</span>
+                      <div>
+                        <p className="font-medium">Submission Error</p>
+                        <p className="text-red-600 mt-1">{error}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  <p className="text-xs text-slate-500 mt-2">
+                    Provide a link to portfolio, documentation, or other
+                    evidence demonstrating this skill
+                  </p>
+                </div>
+              </div>
             );
           })}
-        </ul>
+        </div>
       </div>
     );
   }
@@ -364,36 +455,104 @@ const KnowledgeList: React.FC<KnowledgeListProps> = memo(
 
     return (
       <div>
-        <h4 className="font-medium text-gray-800 mb-2 flex items-center">
+        <h4 className="font-medium text-gray-800 mb-4 flex items-center">
           <FaCertificate className="w-4 h-4 mr-2 text-green-600" />
-          Knowledge:
+          Knowledge ({knowledge.length})
         </h4>
-        <ul className="space-y-4">
+        <div className="space-y-6">
           {knowledge.map((item) => {
             const key = `knowledge-${item.id}`;
+            const isSubmitted = evidenceState.submitted[key] || false;
+            const isLoading = evidenceState.loading[key] || false;
+            const error = evidenceState.errors[key] || "";
+            const url = evidenceState.urls[key] || "";
+            const approvalStatus =
+              evidenceState.approvalStatus[key] || "NOT_APPROVED";
+
             return (
-              <TpqiEvidenceItem
+              <div
                 key={item.id}
-                evidence={{ type: "knowledge", id: item.id }}
-                item={{
-                  id: item.id,
-                  name: item.knowledge_name,
-                  description: item.knowledge_description,
-                }}
-                url={evidenceState.urls[key] || ""}
-                approvalStatus={
-                  evidenceState.approvalStatus[key] || "NOT_APPROVED"
-                }
-                submitted={evidenceState.submitted[key] || false}
-                loading={evidenceState.loading[key] || false}
-                error={evidenceState.errors[key] || ""}
-                onUrlChange={handleUrlChange(item.id)}
-                onRemove={handleRemove(item.id)}
-                onSubmit={handleSubmit(item.id)}
-              />
+                className="bg-white/60 border border-green-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-200"
+              >
+                {/* Knowledge Header */}
+                <div className="mb-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1">
+                      <h5 className="font-semibold text-gray-800 text-lg mb-1">
+                        {item.knowledge_name}
+                      </h5>
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
+                        📚 Knowledge Evidence
+                      </span>
+                    </div>
+                    {isSubmitted && (
+                      <span
+                        className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium shadow-sm ${getApprovalStatusClass(
+                          approvalStatus
+                        )}`}
+                      >
+                        {getApprovalStatusLabel(approvalStatus)}
+                      </span>
+                    )}
+                  </div>
+
+                  {item.knowledge_description && (
+                    <div className="bg-slate-50 border border-slate-200 p-3 rounded-lg mt-3">
+                      <h6 className="text-sm font-medium text-slate-700 mb-2">
+                        Knowledge Description
+                      </h6>
+                      <p className="text-sm text-slate-600 leading-relaxed">
+                        {item.knowledge_description}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Evidence Input */}
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <label
+                      htmlFor={`knowledge-evidence-${item.id}`}
+                      className="text-sm font-medium text-slate-700"
+                    >
+                      Evidence Documentation
+                    </label>
+                    <span className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                      Required
+                    </span>
+                  </div>
+
+                  <UrlInputBox
+                    url={url}
+                    onChange={handleUrlChange(item.id)}
+                    onRemove={handleRemove(item.id)}
+                    onSubmit={handleSubmit(item.id)}
+                    placeholder="https://example.com/your-knowledge-evidence"
+                    colorClass="border-purple-300"
+                    disabled={isLoading}
+                    readonly={isSubmitted && approvalStatus === "APPROVED"}
+                    loading={isLoading}
+                  />
+
+                  {error && (
+                    <div className="mt-3 flex items-start gap-3 text-red-700 text-sm bg-red-50 border border-red-200 rounded-lg p-3 shadow-sm">
+                      <span className="text-red-500">⚠️</span>
+                      <div>
+                        <p className="font-medium">Submission Error</p>
+                        <p className="text-red-600 mt-1">{error}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  <p className="text-xs text-slate-500 mt-2">
+                    Provide a link to documentation, research, or other evidence
+                    demonstrating this knowledge
+                  </p>
+                </div>
+              </div>
             );
           })}
-        </ul>
+        </div>
       </div>
     );
   }

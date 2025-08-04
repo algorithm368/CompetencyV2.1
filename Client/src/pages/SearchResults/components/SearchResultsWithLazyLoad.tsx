@@ -108,32 +108,6 @@ const SearchResultsWithLazyLoad: React.FC<SearchResultsWithLazyLoadProps> = ({
       style={{ willChange: 'opacity, transform' }} // Optimize for GPU acceleration
     >
       {/* Results Header with Stats */}
-      <div className="mb-6 p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-gray-200/50">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              Search Results for "{query}"
-            </h2>
-            <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
-              <span>
-                Showing {stats.displayed} of {stats.total} results
-              </span>
-              {stats.sfiaCount > 0 && (
-                <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-xs">
-                  <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                  {stats.sfiaCount} SFIA
-                </span>
-              )}
-              {stats.tpqiCount > 0 && (
-                <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-md text-xs">
-                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-                  {stats.tpqiCount} TPQI
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Results List */}
       <div className="space-y-4">

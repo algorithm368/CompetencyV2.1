@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { APIError, isNetworkError, isTimeoutError, isNotFoundError } from '../services/competencyDetailAPI';
+import { APIError, isNetworkError, isTimeoutError, isNotFoundError } from '../../services/competencyDetailAPI';
 
 // Type aliases to fix union type issues
 type CompetencySource = 'sfia' | 'tpqi';

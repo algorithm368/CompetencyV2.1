@@ -4,16 +4,16 @@ import {
   SfiaSkillResponse,
   TpqiUnitResponse,
   APIError,
-} from "../services/competencyDetailAPI";
+} from "../../services/competencyDetailAPI";
 import {
   CompetencyDetailState,
   MultipleCompetencyDetailState,
   UseCompetencyDetailOptions,
   DEFAULT_OPTIONS,
   CompetencyRequest,
-} from "./types";
-import { useCompetencyCache } from "./cache";
-import { useRetryLogic } from "./retry";
+} from "../types";
+import { useCompetencyCache } from "../utils/useCompetencyCache";
+import { useRetryLogic } from "../utils/useRetryLogic";
 import { useSfiaSkillDetail } from "./useSfiaSkillDetail";
 import { useTpqiUnitDetail } from "./useTpqiUnitDetail";
 

@@ -1,6 +1,6 @@
 import { useCallback, useRef } from "react";
-import { APIError, isNetworkError, isTimeoutError, isNotFoundError } from "../services/competencyDetailAPI";
-import { CompetencySource } from "./types";
+import { APIError, isNetworkError, isTimeoutError, isNotFoundError } from "../../services/competencyDetailAPI";
+import { CompetencySource } from "../types";
 
 /**
  * Custom hook for managing retry logic

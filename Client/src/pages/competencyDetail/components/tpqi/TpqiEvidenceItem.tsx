@@ -1,6 +1,6 @@
 import React, { memo, useState, useCallback } from "react";
 import { FaCheck, FaClock, FaTimes, FaTrash, FaPaperPlane } from "react-icons/fa";
-import { EvidenceType } from "../../hooks/useTpqiEvidenceSender";
+import { EvidenceType } from "../../hooks/evidence/useTpqiEvidenceSender";
 
 interface TpqiEvidenceItemProps {
   evidence: EvidenceType;

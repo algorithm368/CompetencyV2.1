@@ -1,34 +1,34 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo, useTransition } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  motion,
+  LazyMotion,
+  domAnimation,
+  useReducedMotion,
+} from "framer-motion";
 
-// Layout and Component Imports
 import Layout from "@Layouts/Layout";
-import { WhiteTealBackground } from "@Components/Common/Background/WhiteTealBackground";
 import { SearchHeader, SearchContent } from "./components";
 
 // Hooks
 import { useLazyCompetencyResults } from "./hooks/useCompetencyResults";
 
-// Types
-interface NavigationConfig {
-  sfia: string;
-  tpqi: string;
-  fallback: string;
-}
-
 // Constants
-const NAVIGATION_ROUTES: NavigationConfig = {
-  sfia: "/competency/sfia",
-  tpqi: "/competency/tpqi",
-  fallback: "/home",
-} as const;
-
 const UI_CONSTANTS = {
   SEARCH_PLACEHOLDER: "พิมพ์คำค้นหา เช่น Software",
 } as const;
 
 /**
- * ResultsPage Component with Lazy Loading Support
+ * Enhanced ResultsPage Component with Smooth UX/UI
+ *
+ * Features:
+ * - Smooth animations with reduced motion support
+ * - React 18 transitions 1r non-blocking UI updates
+ * - Enhanced loading states with progress indicators
+ * - Optimized skeleton loading with shimmer effects
+ * - Lazy loading with intersection observer
+ * - Performance optimizations with memoization
+ * - Smooth scroll behavior
  */
 const ResultsPage: React.FC = () => {
   // ============================================================================
@@ -46,6 +46,51 @@ const ResultsPage: React.FC = () => {
   } = useLazyCompetencyResults();
 
   const navigate = useNavigate();
+  const prefersReducedMotion = useReducedMotion();
+  const [isPending, startTransition] = useTransition();
+
+  // ============================================================================
+  // MEMOIZED VALUES FOR PERFORMANCE
+  // ============================================================================
+
+  const navigationConfig = useMemo(
+    () => ({
+      sfia: "/competency/sfia",
+      tpqi: "/competency/tpqi",
+      fallback: "/home",
+    }),
+    []
+  );
+
+  // Animation variants that respect user's motion preferences
+  const pageVariants = useMemo(() => {
+    if (prefersReducedMotion) {
+      return {
+        initial: { opacity: 1 },
+        animate: { opacity: 1 },
+        exit: { opacity: 1 },
+      };
+    }
+    return {
+      initial: { opacity: 0, y: 20 },
+      animate: {
+        opacity: 1,
+        y: 0,
+        transition: {
+          duration: 0.4,
+          ease: "easeOut",
+        },
+      },
+      exit: {
+        opacity: 0,
+        y: -10,
+        transition: {
+          duration: 0.2,
+          ease: "easeIn",
+        },
+      },
+    };
+  }, [prefersReducedMotion]);
 
   // ============================================================================
   // EVENT HANDLERS
@@ -62,20 +107,20 @@ const ResultsPage: React.FC = () => {
 
       switch (framework) {
         case "sfia":
-          navigate(`${NAVIGATION_ROUTES.sfia}/${itemId}`);
+          navigate(`${navigationConfig.sfia}/${itemId}`);
           break;
         case "tpqi":
-          navigate(`${NAVIGATION_ROUTES.tpqi}/${itemId}`);
+          navigate(`${navigationConfig.tpqi}/${itemId}`);
           break;
         default:
           console.warn(
             `Unknown framework type: ${framework}, redirecting to home`
           );
-          navigate(NAVIGATION_ROUTES.fallback);
+          navigate(navigationConfig.fallback);
           break;
       }
     },
-    [allItems, navigate]
+    [allItems, navigate, navigationConfig]
   );
 
   const handleRetry = useCallback(() => {
@@ -83,14 +128,6 @@ const ResultsPage: React.FC = () => {
     console.debug(`Retrying search with term: "${retryTerm}"`);
     handleSearch(retryTerm);
   }, [searchTerm, query, handleSearch]);
-
-  const handleSuggestionClick = useCallback(
-    (suggestion: string) => {
-      setSearchTerm(suggestion);
-      handleSearch(suggestion);
-    },
-    [setSearchTerm, handleSearch]
-  );
 
   const handleNewSearch = useCallback(() => {
     setSearchTerm("");
@@ -101,9 +138,23 @@ const ResultsPage: React.FC = () => {
     (term: string) => {
       const searchInput = term || searchTerm;
       console.debug(`Executing search with term: "${searchInput}"`);
-      handleSearch(searchInput);
+
+      // Use transition for smoother state updates
+      startTransition(() => {
+        handleSearch(searchInput);
+      });
     },
-    [searchTerm, handleSearch]
+    [searchTerm, handleSearch, startTransition]
+  );
+
+  const handleSuggestionClick = useCallback(
+    (suggestion: string) => {
+      startTransition(() => {
+        setSearchTerm(suggestion);
+        handleSearch(suggestion);
+      });
+    },
+    [setSearchTerm, handleSearch, startTransition]
   );
 
   // ============================================================================
@@ -112,19 +163,52 @@ const ResultsPage: React.FC = () => {
 
   return (
     <Layout>
-      <WhiteTealBackground>
-        <div className="relative pt-24 pb-20 px-4 md:px-6 lg:px-8 min-h-screen">
-          <SearchHeader
-            searchTerm={searchTerm}
-            onSearchTermChange={setSearchTerm}
-            onSearch={handleSearchExecution}
-            placeholder={UI_CONSTANTS.SEARCH_PLACEHOLDER}
-            query={query}
-          />
+      <LazyMotion features={domAnimation}>
+        <motion.div
+          className="flex-1 pt-24 pb-20 px-4 md:px-6 lg:px-8 bg-gradient-to-b from-teal-50 via-teal-25 to-white"
+          variants={pageVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+        >
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{
+              opacity: 1,
+              y: 0,
+              transition: {
+                duration: 0.5,
+                ease: "easeOut",
+                delay: 0.1,
+              },
+            }}
+          >
+            <SearchHeader
+              searchTerm={searchTerm}
+              onSearchTermChange={setSearchTerm}
+              onSearch={handleSearchExecution}
+              placeholder={UI_CONSTANTS.SEARCH_PLACEHOLDER}
+              query={query}
+            />
+          </motion.div>
 
-          <div className="max-w-6xl mx-auto">
+          <motion.div
+            className={`max-w-6xl mx-auto transition-opacity duration-200 ${
+              isPending ? "opacity-70" : "opacity-100"
+            }`}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{
+              opacity: isPending ? 0.7 : 1,
+              y: 0,
+              transition: {
+                duration: 0.5,
+                ease: "easeOut",
+                delay: 0.2,
+              },
+            }}
+          >
             <SearchContent
-              loading={loading}
+              loading={loading || isPending}
               error={error}
               query={query}
               pageItems={allItems}
@@ -133,9 +217,9 @@ const ResultsPage: React.FC = () => {
               onSuggestionClick={handleSuggestionClick}
               onNewSearch={handleNewSearch}
             />
-          </div>
-        </div>
-      </WhiteTealBackground>
+          </motion.div>
+        </motion.div>
+      </LazyMotion>
     </Layout>
   );
 };

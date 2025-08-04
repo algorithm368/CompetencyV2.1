@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { useAuth } from "@Contexts/AuthContext";
-import { SfiaEvidenceService } from "../services/postSfiaEvidenceAPI";
-import { SubmitEvidenceRequest, EvidenceState } from "../types/sfia";
+import { SfiaEvidenceService } from "../../services/postSfiaEvidenceAPI";
+import { SubmitEvidenceRequest, EvidenceState } from "../../types/sfia";
 
 /**
  * # SFIA Evidence Management Hook

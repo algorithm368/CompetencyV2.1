@@ -1,5 +1,5 @@
 import React from "react";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 // State Components
 import {
@@ -27,11 +27,58 @@ interface SearchContentProps {
   onNewSearch: () => void;
 }
 
+// Anti-blink animation variants
+const createAnimationVariants = (prefersReducedMotion: boolean) => {
+  if (prefersReducedMotion) return {};
+
+  return {
+    initial: { opacity: 0.95 }, // Start with high opacity to prevent harsh transitions
+    animate: {
+      opacity: 1,
+      transition: {
+        duration: 0.15, // Very fast transition
+        ease: "easeOut",
+      },
+    },
+    exit: {
+      opacity: 0.95, // Exit to high opacity instead of 0
+      transition: {
+        duration: 0.1,
+        ease: "easeIn",
+      },
+    },
+  };
+};
+
+// Wrapper component for animated states
+const AnimatedStateWrapper: React.FC<{
+  children: React.ReactNode;
+  stateKey: string;
+  prefersReducedMotion: boolean;
+}> = ({ children, stateKey, prefersReducedMotion }) => {
+  const variants = createAnimationVariants(prefersReducedMotion);
+
+  return (
+    <motion.div
+      key={stateKey}
+      variants={variants}
+      initial={prefersReducedMotion ? false : "initial"}
+      animate={prefersReducedMotion ? false : "animate"}
+      exit={prefersReducedMotion ? false : "exit"}
+      style={{ willChange: "opacity" }}
+      className="flex-1 flex flex-col"
+    >
+      {children}
+    </motion.div>
+  );
+};
+
 /**
- * SearchContent Component
- * 
+ * Enhanced SearchContent Component
+ *
  * Manages the display of different search states using AnimatePresence
  * for smooth transitions between loading, error, empty, and success states
+ * with anti-blink optimizations
  */
 const SearchContent: React.FC<SearchContentProps> = ({
   loading,
@@ -43,6 +90,8 @@ const SearchContent: React.FC<SearchContentProps> = ({
   onSuggestionClick,
   onNewSearch,
 }) => {
+  const prefersReducedMotion = useReducedMotion();
+
   // Render conditions to determine which component state to show
   const renderConditions = {
     isLoading: loading,
@@ -53,34 +102,64 @@ const SearchContent: React.FC<SearchContentProps> = ({
   };
 
   return (
-    <div className="min-h-[400px]">
-      <AnimatePresence mode="sync" initial={false}>
+    <motion.div
+      className="flex-1 flex flex-col"
+      style={{ willChange: "opacity" }} // Optimize for GPU acceleration
+      initial={prefersReducedMotion ? false : { opacity: 0.98 }}
+      animate={prefersReducedMotion ? false : { opacity: 1 }}
+      transition={prefersReducedMotion ? {} : { duration: 0.2 }}
+    >
+      <AnimatePresence mode="wait" initial={false}>
         {renderConditions.isLoading && (
-          <SearchLoadingState key="loading" />
+          <AnimatedStateWrapper
+            stateKey="loading"
+            prefersReducedMotion={prefersReducedMotion}
+          >
+            <SearchLoadingState />
+          </AnimatedStateWrapper>
         )}
 
         {renderConditions.hasError && (
-          <SearchErrorState key="error" error={error!} onRetry={onRetry} />
+          <AnimatedStateWrapper
+            stateKey="error"
+            prefersReducedMotion={prefersReducedMotion}
+          >
+            <SearchErrorState error={error!} onRetry={onRetry} />
+          </AnimatedStateWrapper>
         )}
 
         {renderConditions.hasNoQuery && (
-          <SearchWelcomeState key="welcome" onSuggestionClick={onSuggestionClick} />
+          <AnimatedStateWrapper
+            stateKey="welcome"
+            prefersReducedMotion={prefersReducedMotion}
+          >
+            <SearchWelcomeState onSuggestionClick={onSuggestionClick} />
+          </AnimatedStateWrapper>
         )}
 
         {renderConditions.isEmpty && (
-          <SearchEmptyState key="empty" query={query} onNewSearch={onNewSearch} />
+          <AnimatedStateWrapper
+            stateKey="empty"
+            prefersReducedMotion={prefersReducedMotion}
+          >
+            <SearchEmptyState query={query} onNewSearch={onNewSearch} />
+          </AnimatedStateWrapper>
         )}
 
         {renderConditions.hasResults && (
-          <SearchSuccessState
-            key={`success-${query}`} // Include query in key for better transitions
-            query={query}
-            items={pageItems}
-            onViewDetails={onViewDetails}
-          />
+          <AnimatedStateWrapper
+            stateKey={`success-${query}`}
+            prefersReducedMotion={prefersReducedMotion}
+          >
+            <SearchSuccessState
+              query={query}
+              items={pageItems}
+              onViewDetails={onViewDetails}
+            />
+          </AnimatedStateWrapper>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 };
 

@@ -18,7 +18,9 @@ export default defineConfig({
       "@Utils": path.resolve(__dirname, "src/utils"),
     },
   },
+  // Source map configuration
   build: {
+    sourcemap: true,
     rollupOptions: {
       output: {
         manualChunks: {

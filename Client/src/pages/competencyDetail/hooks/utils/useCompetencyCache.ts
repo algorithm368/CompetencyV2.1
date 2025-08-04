@@ -1,6 +1,6 @@
 import { useCallback, useRef } from "react";
-import { SfiaSkillResponse, TpqiUnitResponse } from "../services/competencyDetailAPI";
-import { CacheEntry, CompetencySource } from "./types";
+import { SfiaSkillResponse, TpqiUnitResponse } from "../../services/competencyDetailAPI";
+import { CacheEntry, CompetencySource } from "../types";
 
 /**
  * Custom hook for managing cache operations

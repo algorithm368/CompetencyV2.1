@@ -16,10 +16,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 ">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar isTop={isTop} />
 
-      <main className="flex-1 z-10 -py-1">{children}</main>
+      <main className="flex-1 flex flex-col">{children}</main>
 
       <Footer />
     </div>

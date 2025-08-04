@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@Contexts/AuthContext";
-import { GetSfiaEvidenceService } from "../services/getSfiaEvidenceAPI";
+import { GetSfiaEvidenceService } from "../../services/getSfiaEvidenceAPI";
 
 interface EvidenceData {
   [subSkillId: number]: {

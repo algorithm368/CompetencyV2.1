@@ -4,8 +4,8 @@ import {
   useTpqiEvidenceSender,
   TpqiEvidenceState,
   EvidenceType,
-} from "../../hooks/useTpqiEvidenceSender";
-import { useTpqiEvidenceFetcher } from "../../hooks/useTpqiEvidenceFetcher";
+} from "../../hooks/evidence/useTpqiEvidenceSender";
+import { useTpqiEvidenceFetcher } from "../../hooks/evidence/useTpqiEvidenceFetcher";
 import { TpqiUnit, TpqiSkill, TpqiKnowledge } from "../../types/tpqi";
 import {
   filterValidUnits,

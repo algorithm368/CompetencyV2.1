@@ -1,4 +1,8 @@
-import { SfiaSkillResponse, TpqiUnitResponse, APIError } from "../services/competencyDetailAPI";
+import {
+  SfiaSkillResponse,
+  TpqiUnitResponse,
+  APIError,
+} from "../services/competencyDetailAPI";
 
 // Types for the hook
 export interface CompetencyDetailState {
@@ -49,4 +53,47 @@ export interface CompetencyRequest {
 export interface CacheEntry {
   data: SfiaSkillResponse | TpqiUnitResponse;
   timestamp: number;
+}
+
+// ====================================
+// Evidence-related types
+// ====================================
+
+export interface TpqiEvidenceData {
+  skills?: {
+    [skillId: number]: { evidenceUrl: string; approvalStatus: string | null };
+  };
+  knowledge?: {
+    [knowledgeId: number]: {
+      evidenceUrl: string;
+      approvalStatus: string | null;
+    };
+  };
+}
+
+export interface UseTpqiEvidenceFetcherResult {
+  evidenceData: TpqiEvidenceData | null;
+  loading: boolean;
+  error: string | null;
+  refetch: () => Promise<void>;
+}
+
+export interface TpqiEvidenceState {
+  urls: { [id: string]: string };
+  submitted: { [id: string]: boolean };
+  loading: { [id: string]: boolean };
+  errors: { [id: string]: string };
+  approvalStatus: { [id: string]: string };
+}
+
+export interface SfiaEvidenceState {
+  urls: { [id: string]: string };
+  submitted: { [id: string]: boolean };
+  loading: { [id: string]: boolean };
+  errors: { [id: string]: string };
+}
+
+export interface EvidenceType {
+  type: "skill" | "knowledge";
+  id: number;
 }

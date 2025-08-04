@@ -4,7 +4,7 @@ import {
   TpqiEvidenceService,
   SubmitTpqiEvidenceRequest,
   ApiResponse,
-} from "../services/postTpqiEvidenceAPI";
+} from "../../services/postTpqiEvidenceAPI";
 
 /**
  * Interface for TPQI evidence state management

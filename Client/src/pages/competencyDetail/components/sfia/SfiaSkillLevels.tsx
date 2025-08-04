@@ -1,7 +1,7 @@
 import React, { useMemo, useEffect, useCallback, memo } from "react";
 import { FaGraduationCap } from "react-icons/fa";
-import { useSfiaEvidenceSender } from "../../hooks/useSfiaEvidenceSender";
-import { useEvidenceFetcher } from "@Pages/competencyDetail/hooks/useSfiaEvidenceFetcher";
+import { useSfiaEvidenceSender } from "../../hooks/evidence/useSfiaEvidenceSender";
+import { useEvidenceFetcher } from "@Pages/competencyDetail/hooks/evidence/useSfiaEvidenceFetcher";
 import {
   SfiaLevel,
   SfiaDescription,

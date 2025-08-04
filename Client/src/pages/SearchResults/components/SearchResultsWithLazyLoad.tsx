@@ -4,7 +4,6 @@ import React, { useMemo } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Loader2, ArrowUp } from "lucide-react";
 import { ResultsList } from "./ui";
-import { useLazyLoading } from "../hooks/useLazyLoading";
 
 interface ItemType {
   id: string;
@@ -54,13 +53,21 @@ const SearchResultsWithLazyLoad: React.FC<SearchResultsWithLazyLoadProps> = ({
 }) => {
   const shouldReduceMotion = useReducedMotion();
   
-  const { displayedItems, hasMore, isLoading, loadMoreItems, sentinelRef } =
-    useLazyLoading({
-      items,
-      initialLoad: 12, // Increased from 8 for better initial load
-      loadMore: 8, // Increased from 6 for smoother progression
-      threshold: 0.3, // Reduced from 0.5 for earlier loading
-    });
+  // For now, let's bypass lazy loading and show all items to fix the "only 3 items" issue
+  const displayedItems = items; // Show all items
+  const hasMore = false; // No pagination needed
+  const isLoading = false; // No loading state needed
+  const loadMoreItems = () => {}; // No-op function
+  const sentinelRef = { current: null }; // Dummy ref
+
+  // Original lazy loading (commented out for debugging)
+  // const { displayedItems, hasMore, isLoading, loadMoreItems, sentinelRef } =
+  //   useLazyLoading({
+  //     items,
+  //     initialLoad: 12, // Increased from 8 for better initial load
+  //     loadMore: 8, // Increased from 6 for smoother progression
+  //     threshold: 0.3, // Reduced from 0.5 for earlier loading
+  //   });
 
   // Memoized statistics
   const stats = useMemo(

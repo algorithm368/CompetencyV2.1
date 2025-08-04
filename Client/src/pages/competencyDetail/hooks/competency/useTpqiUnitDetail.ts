@@ -1,21 +1,13 @@
 import { useState, useCallback } from "react";
-import {
-  fetchSfiaSkillDetailByCode,
-  SfiaSkillResponse,
-  APIError,
-} from "../services/competencyDetailAPI";
-import {
-  CompetencyDetailState,
-  UseCompetencyDetailOptions,
-  DEFAULT_OPTIONS,
-} from "./types";
-import { useCompetencyCache } from "./cache";
-import { useRetryLogic } from "./retry";
+import { fetchTpqiUnitDetailByCode, TpqiUnitResponse, APIError } from "../../services/competencyDetailAPI";
+import { CompetencyDetailState, UseCompetencyDetailOptions, DEFAULT_OPTIONS } from "../types";
+import { useCompetencyCache } from "../utils/useCompetencyCache";
+import { useRetryLogic } from "../utils/useRetryLogic";
 
 /**
- * Simplified hook for SFIA skill details only
+ * Simplified hook for TPQI unit details only
  */
-export function useSfiaSkillDetail(options: UseCompetencyDetailOptions = {}) {
+export function useTpqiUnitDetail(options: UseCompetencyDetailOptions = {}) {
   const opts = { ...DEFAULT_OPTIONS, ...options };
 
   // State
@@ -27,20 +19,10 @@ export function useSfiaSkillDetail(options: UseCompetencyDetailOptions = {}) {
   });
 
   // Cache management
-  const {
-    getFromCache,
-    setCache,
-    clearCache: clearCacheUtility,
-    isInCache,
-    getCacheKey,
-  } = useCompetencyCache(opts.cacheDuration);
+  const { getFromCache, setCache, clearCache: clearCacheUtility, isInCache, getCacheKey } = useCompetencyCache(opts.cacheDuration);
 
   // Retry logic
-  const {
-    executeWithRetry,
-    getRetryAttempts: getRetryAttemptsUtility,
-    clearRetryTracking,
-  } = useRetryLogic(
+  const { executeWithRetry, getRetryAttempts: getRetryAttemptsUtility, clearRetryTracking } = useRetryLogic(
     opts.maxRetries,
     opts.retryDelay,
     opts.autoRetryOnNetworkError,
@@ -48,12 +30,12 @@ export function useSfiaSkillDetail(options: UseCompetencyDetailOptions = {}) {
   );
 
   /**
-   * Fetch SFIA skill detail with retry logic
+   * Fetch TPQI unit detail with retry logic
    */
-  const fetchSkillDetail = useCallback(
-    async (skillCode: string): Promise<void> => {
+  const fetchUnitDetail = useCallback(
+    async (unitCode: string): Promise<void> => {
       // Check cache first
-      const cachedData = getFromCache("sfia", skillCode);
+      const cachedData = getFromCache("tpqi", unitCode);
       if (cachedData) {
         setState({
           data: cachedData,
@@ -68,13 +50,13 @@ export function useSfiaSkillDetail(options: UseCompetencyDetailOptions = {}) {
 
       try {
         const data = await executeWithRetry(
-          () => fetchSfiaSkillDetailByCode(skillCode),
-          "sfia",
-          skillCode
+          () => fetchTpqiUnitDetailByCode(unitCode),
+          "tpqi",
+          unitCode
         );
 
         // Store in cache
-        setCache("sfia", skillCode, data);
+        setCache("tpqi", unitCode, data);
 
         setState({
           data,
@@ -83,10 +65,7 @@ export function useSfiaSkillDetail(options: UseCompetencyDetailOptions = {}) {
           lastFetched: new Date(),
         });
       } catch (error) {
-        const apiError =
-          error instanceof APIError
-            ? error
-            : new APIError("Unknown error occurred");
+        const apiError = error instanceof APIError ? error : new APIError("Unknown error occurred");
         setState({
           data: null,
           loading: false,
@@ -111,13 +90,13 @@ export function useSfiaSkillDetail(options: UseCompetencyDetailOptions = {}) {
   }, []);
 
   /**
-   * Clear cache for specific skill code
+   * Clear cache for specific unit code
    */
   const clearCache = useCallback(
-    (skillCode?: string): void => {
-      clearCacheUtility("sfia", skillCode);
-      if (skillCode) {
-        clearRetryTracking("sfia", skillCode);
+    (unitCode?: string): void => {
+      clearCacheUtility("tpqi", unitCode);
+      if (unitCode) {
+        clearRetryTracking("tpqi", unitCode);
       } else {
         clearRetryTracking();
       }
@@ -126,35 +105,35 @@ export function useSfiaSkillDetail(options: UseCompetencyDetailOptions = {}) {
   );
 
   /**
-   * Get retry attempts for a specific skill code
+   * Get retry attempts for a specific unit code
    */
   const getRetryAttempts = useCallback(
-    (skillCode: string): number => {
-      return getRetryAttemptsUtility("sfia", skillCode);
+    (unitCode: string): number => {
+      return getRetryAttemptsUtility("tpqi", unitCode);
     },
     [getRetryAttemptsUtility]
   );
 
   /**
-   * Check if skill code is in cache
+   * Check if unit code is in cache
    */
-  const isSkillInCache = useCallback(
-    (skillCode: string): boolean => {
-      return isInCache("sfia", skillCode);
+  const isUnitInCache = useCallback(
+    (unitCode: string): boolean => {
+      return isInCache("tpqi", unitCode);
     },
     [isInCache]
   );
 
   return {
-    skillDetail: state.data as SfiaSkillResponse | null,
+    unitDetail: state.data as TpqiUnitResponse | null,
     loading: state.loading,
     error: state.error,
     lastFetched: state.lastFetched,
-    fetchSkillDetail,
+    fetchUnitDetail,
     resetState,
     clearCache,
     getRetryAttempts,
-    isInCache: isSkillInCache,
+    isInCache: isUnitInCache,
     hasError: !!state.error,
     hasData: !!state.data,
   };

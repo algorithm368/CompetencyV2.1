@@ -1,7 +1,7 @@
 import React, { useMemo, useEffect, useCallback, memo } from "react";
 import { FaGraduationCap } from "react-icons/fa";
-import { useSfiaEvidence } from "../../hooks/useSfiaEvidence";
-import { useEvidenceFetcher } from "@Pages/competencyDetail/hooks/useEvidenceFetcher";
+import { useSfiaEvidenceSender } from "../../hooks/useSfiaEvidenceSender";
+import { useEvidenceFetcher } from "@Pages/competencyDetail/hooks/useSfiaEvidenceFetcher";
 import {
   SfiaLevel,
   SfiaDescription,
@@ -64,7 +64,7 @@ const SfiaSkillLevels: React.FC<SfiaSkillLevelsProps> = memo(
       handleRemove,
       handleSubmit,
       initializeEvidenceUrls,
-    } = useSfiaEvidence();
+    } = useSfiaEvidenceSender();
 
     const {
       evidenceData,

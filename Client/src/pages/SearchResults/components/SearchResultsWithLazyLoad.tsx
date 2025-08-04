@@ -1,6 +1,7 @@
 // Client/src/pages/SearchResults/components/SearchResultsWithLazyLoad.tsx
+// Optimized for smooth animations with reduced motion support and no-blink transitions
 import React, { useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Loader2, ArrowUp } from "lucide-react";
 import { ResultsList } from "./ui";
 import { useLazyLoading } from "../hooks/useLazyLoading";
@@ -17,34 +18,31 @@ interface SearchResultsWithLazyLoadProps {
   query: string;
 }
 
-// Animation variants
+// Animation variants - Optimized to prevent blinking with minimal motion
 const containerVariants = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0.95 }, // Very high starting opacity
   visible: {
     opacity: 1,
-    y: 0,
     transition: {
-      duration: 0.4,
+      duration: 0.1, // Extremely fast
       ease: "easeOut",
     },
   },
 };
 
 const loadingVariants = {
-  hidden: { opacity: 0, scale: 0.95 },
+  hidden: { opacity: 0.7 }, // Start with partial opacity to prevent harsh appearance
   visible: {
     opacity: 1,
-    scale: 1,
     transition: {
-      duration: 0.2,
+      duration: 0.1,
       ease: "easeOut",
     },
   },
   exit: {
-    opacity: 0,
-    scale: 0.95,
+    opacity: 0.7, // Exit to partial opacity instead of 0
     transition: {
-      duration: 0.15,
+      duration: 0.08,
     },
   },
 };
@@ -54,6 +52,8 @@ const SearchResultsWithLazyLoad: React.FC<SearchResultsWithLazyLoadProps> = ({
   onViewDetails,
   query,
 }) => {
+  const shouldReduceMotion = useReducedMotion();
+  
   const { displayedItems, hasMore, isLoading, loadMoreItems, sentinelRef } =
     useLazyLoading({
       items,
@@ -76,15 +76,29 @@ const SearchResultsWithLazyLoad: React.FC<SearchResultsWithLazyLoadProps> = ({
   );
 
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (shouldReduceMotion) {
+      // Instant scroll for users who prefer reduced motion
+      window.scrollTo(0, 0);
+    } else {
+      // Use requestAnimationFrame for smoother scrolling performance
+      const scrollStep = () => {
+        if (window.pageYOffset > 0) {
+          window.scrollTo(0, window.pageYOffset - window.pageYOffset * 0.1);
+          requestAnimationFrame(scrollStep);
+        }
+      };
+      requestAnimationFrame(scrollStep);
+    }
   };
 
   return (
     <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
+      key={`search-results-${query}`} // Add key to prevent component reuse causing blinks
+      variants={shouldReduceMotion ? {} : containerVariants}
+      initial={shouldReduceMotion ? false : "hidden"}
+      animate={shouldReduceMotion ? false : "visible"}
       className="w-full"
+      style={{ willChange: 'opacity, transform' }} // Optimize for GPU acceleration
     >
       {/* Results Header with Stats */}
       <div className="mb-6 p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-gray-200/50">
@@ -119,14 +133,16 @@ const SearchResultsWithLazyLoad: React.FC<SearchResultsWithLazyLoadProps> = ({
         <ResultsList items={displayedItems} onViewDetails={onViewDetails} />
 
         {/* Loading State - Improved with smaller, more subtle indicator */}
-        <AnimatePresence>
+        <AnimatePresence mode="wait">
           {isLoading && (
             <motion.div
-              variants={loadingVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
+              key="loading-indicator"
+              variants={shouldReduceMotion ? {} : loadingVariants}
+              initial={shouldReduceMotion ? false : "hidden"}
+              animate={shouldReduceMotion ? false : "visible"}
+              exit={shouldReduceMotion ? false : "exit"}
               className="flex items-center justify-center p-6"
+              style={{ willChange: 'opacity' }}
             >
               <div className="flex items-center gap-2 text-gray-500 bg-white/60 backdrop-blur-sm rounded-lg px-4 py-2 border border-gray-200/50">
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -147,25 +163,30 @@ const SearchResultsWithLazyLoad: React.FC<SearchResultsWithLazyLoadProps> = ({
           />
         )}
 
-        {/* Manual Load More Button (fallback) */}
+        {/* Manual Load More Button (fallback) - Reduced hover effects */}
         {hasMore && !isLoading && (
           <div className="flex justify-center pt-6">
             <button
               onClick={loadMoreItems}
-              className="px-6 py-3 bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50 rounded-xl text-gray-700 font-medium transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="px-6 py-3 bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50 rounded-xl text-gray-700 font-medium transition-all duration-150 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               Load More Results
             </button>
           </div>
         )}
 
-        {/* End of Results */}
+        {/* End of Results - Smoother animation */}
         {!hasMore && items.length > 12 && (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+            key="end-of-results"
+            initial={shouldReduceMotion ? false : { opacity: 0.8 }}
+            animate={shouldReduceMotion ? false : { opacity: 1 }}
+            transition={shouldReduceMotion ? {} : { 
+              duration: 0.15,
+              ease: "easeOut"
+            }}
             className="flex flex-col items-center gap-3 p-6 text-center"
+            style={{ willChange: 'opacity' }}
           >
             <div className="p-2 bg-gray-50 rounded-full">
               <ArrowUp className="w-4 h-4 text-gray-400" />
@@ -176,7 +197,7 @@ const SearchResultsWithLazyLoad: React.FC<SearchResultsWithLazyLoadProps> = ({
               </p>
               <button
                 onClick={scrollToTop}
-                className="text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors duration-200 underline decoration-2 underline-offset-2 hover:no-underline"
+                className="text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors duration-150 underline decoration-2 underline-offset-2 hover:no-underline"
               >
                 Back to top
               </button>

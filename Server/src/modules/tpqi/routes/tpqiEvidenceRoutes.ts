@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { postTpqiEvidenceController } from "../controllers/postEvidenceController"
+import { postTpqiEvidenceController } from "../controllers/postEvidenceController";
+import { getTpqiEvidenceController } from "../controllers/getEvidenceController";
 import { authenticate } from "@/middlewares/authMiddleware";
 
 const router = Router();
@@ -14,5 +15,10 @@ router.get("/", (req, res) => {
 // permission: protected
 // body: { "skillId": "string", "knowledgeId": "string"
 router.post("/", authenticate, postTpqiEvidenceController);
+
+// example route: /api/tpqi/evidence/get
+// permission: protected
+// body: { "unitCode": "string" }
+router.post("/get", authenticate, getTpqiEvidenceController);
 
 export default router;

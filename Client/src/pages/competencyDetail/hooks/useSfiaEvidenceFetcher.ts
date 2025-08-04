@@ -31,7 +31,7 @@ export function useEvidenceFetcher(skillCode: string) {
 
       if (response.success && response.data?.evidences) {
         const evidenceMap: EvidenceData = {};
-        response.data.evidences.forEach((evidence: any) => {
+        response.data.evidences.forEach((evidence: unknown) => {
           if (evidence.evidenceUrl) {
             evidenceMap[evidence.id] = {
               url: evidence.evidenceUrl,

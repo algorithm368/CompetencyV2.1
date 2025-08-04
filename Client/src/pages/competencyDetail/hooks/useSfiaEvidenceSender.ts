@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import { useAuth } from "@Contexts/AuthContext";
-import { SfiaEvidenceService } from "../services/sfiaEvidenceAPI";
+import { SfiaEvidenceService } from "../services/postSfiaEvidenceAPI";
 import { SubmitEvidenceRequest, EvidenceState } from "../types/sfia";
 
 /**
@@ -24,7 +24,7 @@ import { SubmitEvidenceRequest, EvidenceState } from "../types/sfia";
  * ## Quick Usage
  * ```jsx
  * function EvidenceForm({ subSkillId }) {
- *   const { evidenceState, handleUrlChange, handleSubmit } = useSfiaEvidence();
+ *   const { evidenceState, handleUrlChange, handleSubmit } = useSfiaEvidenceSender();
  *
  *   return (
  *     <div>
@@ -50,7 +50,7 @@ import { SubmitEvidenceRequest, EvidenceState } from "../types/sfia";
  * @returns {Function} handleRemove - Clears evidence data: `(id: number) => void`
  * @returns {Function} handleSubmit - Submits evidence: `(id: number) => Promise<void>`
  */
-export const useSfiaEvidence = () => {
+export const useSfiaEvidenceSender = () => {
   // Initialize state for tracking all evidence submissions
   const [evidenceState, setEvidenceState] = useState<EvidenceState>({
     urls: {}, // Evidence input values (URL or text)
@@ -60,37 +60,37 @@ export const useSfiaEvidence = () => {
     approvalStatus: {}, // Approval status for each sub-skill
   });
 
-const initializeEvidenceUrls = useCallback(
-  (evidenceData: {
-    [subSkillId: number]: { url: string; approvalStatus: string | null };
-  }) => {
-    setEvidenceState((prev) => ({
-      ...prev,
-      urls: {
-        ...prev.urls,
-        ...Object.fromEntries(
-          Object.entries(evidenceData).map(([key, value]) => [
-            key.toString(),
-            {
-              url: value.url, // Changed from evidenceUrl to url
-              approvalStatus: value.approvalStatus,
-            },
-          ])
-        ),
-      },
-      submitted: {
-        ...prev.submitted,
-        ...Object.fromEntries(
-          Object.entries(evidenceData).map(([key, value]) => [
-            key.toString(),
-            !!value.url, // Changed from evidenceUrl to url
-          ])
-        ),
-      },
-    }));
-  },
-  []
-);
+  const initializeEvidenceUrls = useCallback(
+    (evidenceData: {
+      [subSkillId: number]: { url: string; approvalStatus: string | null };
+    }) => {
+      setEvidenceState((prev) => ({
+        ...prev,
+        urls: {
+          ...prev.urls,
+          ...Object.fromEntries(
+            Object.entries(evidenceData).map(([key, value]) => [
+              key.toString(),
+              {
+                url: value.url, // Changed from evidenceUrl to url
+                approvalStatus: value.approvalStatus,
+              },
+            ])
+          ),
+        },
+        submitted: {
+          ...prev.submitted,
+          ...Object.fromEntries(
+            Object.entries(evidenceData).map(([key, value]) => [
+              key.toString(),
+              !!value.url, // Changed from evidenceUrl to url
+            ])
+          ),
+        },
+      }));
+    },
+    []
+  );
 
   // Get authentication token from context
   const { accessToken } = useAuth();

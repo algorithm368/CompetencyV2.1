@@ -1,5 +1,5 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import SearchResultsWithLazyLoad from "../SearchResultsWithLazyLoad";
 
 interface ItemType {
@@ -11,27 +11,22 @@ interface ItemType {
 interface SuccessStateProps {
   query: string;
   items: ItemType[];
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-  onViewDetails: (id: string) => void; // Changed from number to string
+  onViewDetails: (id: string) => void;
 }
 
 const containerVariants = {
-  hidden: { opacity: 0, y: 15 },
+  hidden: { opacity: 0.9 }, // Start with high opacity to prevent blink
   visible: {
     opacity: 1,
-    y: 0,
     transition: {
-      duration: 0.4,
+      duration: 0.15, // Very fast transition
       ease: "easeOut",
     },
   },
   exit: {
-    opacity: 0,
-    y: -15,
+    opacity: 0.9, // Exit to high opacity, not 0
     transition: {
-      duration: 0.3,
+      duration: 0.1,
       ease: "easeIn",
     },
   },
@@ -42,13 +37,16 @@ const SuccessState: React.FC<SuccessStateProps> = ({
   items,
   onViewDetails,
 }) => {
+  const shouldReduceMotion = useReducedMotion();
+
   return (
     <motion.div
       key="results"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      exit="exit"
+      variants={shouldReduceMotion ? {} : containerVariants}
+      initial={shouldReduceMotion ? false : "hidden"}
+      animate={shouldReduceMotion ? false : "visible"}
+      exit={shouldReduceMotion ? false : "exit"}
+      style={{ willChange: 'opacity' }}
     >
       <SearchResultsWithLazyLoad
         items={items}

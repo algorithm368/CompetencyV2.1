@@ -54,7 +54,7 @@ const SearchContent: React.FC<SearchContentProps> = ({
 
   return (
     <div className="min-h-[400px]">
-      <AnimatePresence mode="wait" initial={false}>
+      <AnimatePresence mode="sync" initial={false}>
         {renderConditions.isLoading && (
           <SearchLoadingState key="loading" />
         )}

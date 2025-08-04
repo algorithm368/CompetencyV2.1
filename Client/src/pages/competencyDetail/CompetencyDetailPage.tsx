@@ -35,6 +35,7 @@ import NoDataState from "./components/states/NoDataState";
 import PageHeader from "./components/layouts/PageHeader";
 import SfiaSection from "./components/sfia/SfiaSection";
 import TpqiSection from "./components/tpqi/TpqiSection";
+import TpqiContainer from "./components/tpqi/TpqiContainer";
 import PageFooter from "./components/layouts/PageFooter";
 import FloatingTooltip from "./components/ui/FloatingTooltip";
 import OptimizedBackgroundDecor from "./components/layouts/OptimizedBackgroundDecor";
@@ -388,7 +389,7 @@ const CompetencyDetailPage: React.FC = () => {
                     {source === "tpqi" &&
                       "competency" in competencyData &&
                       competencyData.competency && (
-                        <TpqiSection competency={competencyData.competency} />
+                        <TpqiContainer competency={competencyData.competency} />
                       )}
                   </motion.div>
 

@@ -37,16 +37,6 @@ const Login: React.FC<LoginProps> = ({ open, onClose, handleLogin }) => {
   };
   }, []);
 
-  const handleGitHubLogin = useCallback(() => {
-    handleLogin({ credential: "MOCK_GITHUB_TOKEN" });
-    onClose();
-  }, [handleLogin, onClose]);
-
-  const handleLinkedInLogin = useCallback(() => {
-    handleLogin({ credential: "MOCK_LINKEDIN_TOKEN" });
-    onClose();
-  }, [handleLogin, onClose]);
-
   if (!open) return null;
 
   return (

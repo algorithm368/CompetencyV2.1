@@ -1,16 +1,16 @@
 import React, { Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import RouteWrapper from "./guards/RouteWrapper";
+import Loading from "@Components/Loading/Loading";
 
 import { adminRoutes } from "./admin/adminRoutes";
 import { sfiaRoutes } from "./sfiaRoutes";
 import { tpqiRoutes } from "./tpqiRoutes";
-// import { competencyRoutes } from "./competencyRoutes";
 
 import { HomePage, ResultsPage, CompetencyDetailPage, ProfilePage, AboutPage } from "@Pages/ExportPages";
 
 const AppRoutes: React.FC = () => (
-  <Suspense fallback={<PageLoader />}>
+  <Suspense fallback={<Loading />}>
     <Routes>
       {/* Public Routes */}
       <Route path="/" element={<Navigate to="/home" replace />} />

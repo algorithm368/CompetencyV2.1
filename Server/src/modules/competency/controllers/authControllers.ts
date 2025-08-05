@@ -106,8 +106,8 @@ export const refreshAccessToken = async (
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: "/",
     });
-    res.status(StatusCodes.OK).json({ accessToken, expiresIn: process.env.JWT_REFRESH_EXPIRATION || "3600" });
-  } catch (err) {
+    res.status(StatusCodes.OK).json({ accessToken: newAccessToken, expiresIn: process.env.JWT_REFRESH_EXPIRATION || "3600" });
+  } catch (err: any) {
     console.error("Refresh token failed:", err);
     res.clearCookie("refreshToken", {
       httpOnly: true,
@@ -116,14 +116,6 @@ export const refreshAccessToken = async (
       path: "/",
     });
 
-    res
-      .status(StatusCodes.OK)
-      .json({
-        accessToken: newAccessToken,
-        expiresIn: process.env.EXPIRES_IN || "3600",
-      });
-  } catch (err: any) {
-    console.error("Error during refresh token:", err);
     res
       .status(StatusCodes.UNAUTHORIZED)
       .json({ message: err.message || "Refresh token failed" });

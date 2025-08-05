@@ -34,7 +34,6 @@ const Login: React.FC<LoginProps> = ({ open, onClose, handleLogin }) => {
 
   const handleGoogleError = useCallback(() => {
     console.error("Google login error");
-  };
   }, []);
 
   if (!open) return null;

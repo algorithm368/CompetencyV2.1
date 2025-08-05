@@ -37,7 +37,11 @@ const Navbar: React.FC<{ isTop: boolean }> = ({ isTop }) => {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      if (menuOpen && !target.closest(".mobile-menu") && !target.closest(".menu-button")) {
+      if (
+        menuOpen &&
+        !target.closest(".mobile-menu") &&
+        !target.closest(".menu-button")
+      ) {
         setMenuOpen(false);
       }
     };
@@ -98,7 +102,9 @@ const Navbar: React.FC<{ isTop: boolean }> = ({ isTop }) => {
               <div className="w-8 h-8 bg-teal-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-lg">C</span>
               </div>
-              <span className="text-2xl font-bold text-gray-900">Competency</span>
+              <span className="text-2xl font-bold text-gray-900">
+                Competency
+              </span>
             </Link>
           </div>
 
@@ -158,7 +164,11 @@ const Navbar: React.FC<{ isTop: boolean }> = ({ isTop }) => {
               aria-label="Toggle menu"
               aria-expanded={menuOpen}
             >
-              {menuOpen ? <FaTimes className="h-5 w-5" /> : <FaBars className="h-5 w-5" />}
+              {menuOpen ? (
+                <FaTimes className="h-5 w-5" />
+              ) : (
+                <FaBars className="h-5 w-5" />
+              )}
             </button>
           </div>
         </div>
@@ -173,7 +183,9 @@ const Navbar: React.FC<{ isTop: boolean }> = ({ isTop }) => {
               aria-modal="true"
             >
               <div className="flex items-center justify-between p-4 border-b border-gray-200">
-                <span className="text-gray-900 font-semibold text-lg">Menu</span>
+                <span className="text-gray-900 font-semibold text-lg">
+                  Menu
+                </span>
                 <button
                   onClick={closeMenu}
                   onKeyDown={(e) => {

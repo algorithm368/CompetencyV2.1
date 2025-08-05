@@ -34,13 +34,80 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [expiresIn, setExpiresIn] = useState<number | null>(null);
   const retryCounts = useRef<Record<string, number>>({});
 
+  const refreshAccessToken = useCallback(async () => {
+    try {
+      const response = await refreshAccessTokenService();
+      setAccessToken(response.accessToken);
+      setExpiresIn(response.expiresIn);
+
+      // Store in localStorage with consistent keys
+      localStorage.setItem("accessToken", response.accessToken);
+      localStorage.setItem("expiresIn", response.expiresIn.toString());
+    } catch (err) {
+      console.error("Failed to refresh access token:", err);
+      setUser(null);
+      setAccessToken(null);
+      setExpiresIn(null);
+
+      // Clear localStorage with consistent keys
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("expiresIn");
+      localStorage.removeItem("user");
+    }
+  }, []);
+
+  // Initialize auth state from localStorage on mount
+  useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        const storedToken = localStorage.getItem("accessToken");
+        const storedExpiresIn = localStorage.getItem("expiresIn");
+        const storedUser = localStorage.getItem("user");
+
+        if (storedToken && storedExpiresIn && storedUser) {
+          const expiresInNumber = parseInt(storedExpiresIn, 10);
+          const userObject = JSON.parse(storedUser);
+
+          // Check if token is still valid (not expired)
+          const currentTime = Math.floor(Date.now() / 1000);
+          if (currentTime < expiresInNumber) {
+            setAccessToken(storedToken);
+            setExpiresIn(expiresInNumber);
+            setUser(userObject);
+          } else {
+            // Token expired, try to refresh
+            try {
+              await refreshAccessToken();
+            } catch {
+              // Refresh failed, clear storage
+              localStorage.removeItem("accessToken");
+              localStorage.removeItem("expiresIn");
+              localStorage.removeItem("user");
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Failed to initialize auth:", error);
+        // Clear corrupted data
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("expiresIn");
+        localStorage.removeItem("user");
+      }
+    };
+
+    initializeAuth();
+  }, [refreshAccessToken]);
+
   const login = useCallback(async (idToken: string) => {
     const { user, accessToken, expiresIn } = await loginWithGoogle(idToken);
     setUser(user);
     setAccessToken(accessToken);
     setExpiresIn(expiresIn);
+
+    // Store in localStorage with consistent keys
     localStorage.setItem("accessToken", accessToken);
-    localStorage.setItem("expiresIn", expiresIn);
+    localStorage.setItem("expiresIn", expiresIn.toString());
+    localStorage.setItem("user", JSON.stringify(user));
   }, []);
 
   const logout = useCallback(async () => {
@@ -49,27 +116,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setAccessToken(null);
     setExpiresIn(null);
 
-    localStorage.removeItem("token");
+    // Clear localStorage with consistent keys
+    localStorage.removeItem("accessToken");
     localStorage.removeItem("expiresIn");
-  }, []);
-
-  const refreshAccessToken = useCallback(async () => {
-    try {
-      const response = await refreshAccessTokenService();
-      setAccessToken(response.accessToken);
-      setExpiresIn(response.expiresIn);
-
-      localStorage.setItem("token", response.accessToken);
-      localStorage.setItem("expiresIn", response.expiresIn.toString());
-    } catch (err) {
-      console.error("Failed to refresh access token:", err);
-      setUser(null);
-      setAccessToken(null);
-      setExpiresIn(null);
-
-      localStorage.removeItem("token");
-      localStorage.removeItem("expiresIn");
-    }
+    localStorage.removeItem("user");
   }, []);
 
   const fetchCurrentUser = useCallback(async () => {
@@ -77,6 +127,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await fetchCurrentUserService(accessToken);
       setUser(response.user);
+
+      // Update user in localStorage
+      localStorage.setItem("user", JSON.stringify(response.user));
+
       retryCounts.current = {};
     } catch {
       if (user?.profileImage) {

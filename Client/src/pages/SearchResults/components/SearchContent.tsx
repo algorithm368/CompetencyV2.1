@@ -26,8 +26,6 @@ interface SearchContentProps {
   onSuggestionClick: (suggestion: string) => void;
   onNewSearch: () => void;
 }
-
-// Anti-blink animation variants
 const createAnimationVariants = (prefersReducedMotion: boolean) => {
   if (prefersReducedMotion) return {};
 

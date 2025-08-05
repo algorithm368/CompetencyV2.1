@@ -24,9 +24,9 @@ export const AdvisorAffiliations: React.FC<AdvisorAffiliationsProps> = ({
         สังกัด
       </h3>
       <div className="space-y-2">
-        {affiliations.map((affiliation, index) => (
+        {affiliations.map((affiliation) => (
           <a
-            key={index}
+            key={affiliation.url}
             href={affiliation.url}
             target="_blank"
             rel="noopener noreferrer"

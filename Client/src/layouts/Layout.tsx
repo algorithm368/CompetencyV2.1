@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Navbar, Footer } from "@Components/ExportComponent";
 
-const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+interface LayoutProps {
+  children: React.ReactNode;
+}
+
+const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isTop, setIsTop] = useState(true);
 
   useEffect(() => {
@@ -9,18 +13,14 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       setIsTop(window.scrollY === 0);
     };
 
-    handleScroll();
     window.addEventListener("scroll", handleScroll);
-
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar isTop={isTop} />
-
       <main className="flex-1 flex flex-col">{children}</main>
-
       <Footer />
     </div>
   );

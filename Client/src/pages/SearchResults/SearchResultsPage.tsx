@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useTransition } from "react";
+import React, { useCallback, useMemo, useTransition, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   motion,
@@ -16,6 +16,7 @@ import { useLazyCompetencyResults } from "./hooks/useCompetencyResults";
 // Constants
 const UI_CONSTANTS = {
   SEARCH_PLACEHOLDER: "พิมพ์คำค้นหา เช่น Software",
+  TYPING_DELAY: 500, // Match your hook's DEBOUNCE_DELAY
 } as const;
 
 /**
@@ -23,12 +24,13 @@ const UI_CONSTANTS = {
  *
  * Features:
  * - Smooth animations with reduced motion support
- * - React 18 transitions 1r non-blocking UI updates
+ * - React 18 transitions for non-blocking UI updates
  * - Enhanced loading states with progress indicators
  * - Optimized skeleton loading with shimmer effects
  * - Lazy loading with intersection observer
  * - Performance optimizations with memoization
  * - Smooth scroll behavior
+ * - Debounced search with typing indicators
  */
 const ResultsPage: React.FC = () => {
   // ============================================================================
@@ -48,6 +50,42 @@ const ResultsPage: React.FC = () => {
   const navigate = useNavigate();
   const prefersReducedMotion = useReducedMotion();
   const [isPending, startTransition] = useTransition();
+  
+  // Add typing state to show immediate feedback during debounce
+  const [isTyping, setIsTyping] = useState(false);
+  const [typingTimer, setTypingTimer] = useState<NodeJS.Timeout | null>(null);
+
+  // ============================================================================
+  // TYPING INDICATOR LOGIC
+  // ============================================================================
+
+  useEffect(() => {
+    // Clear existing timer
+    if (typingTimer) {
+      clearTimeout(typingTimer);
+    }
+
+    // If there's a search term, show typing indicator
+    if (searchTerm && searchTerm.trim().length > 0) {
+      setIsTyping(true);
+      
+      // Set timer to hide typing indicator after debounce delay
+      const timer = setTimeout(() => {
+        setIsTyping(false);
+      }, UI_CONSTANTS.TYPING_DELAY);
+      
+      setTypingTimer(timer);
+    } else {
+      setIsTyping(false);
+    }
+
+    // Cleanup
+    return () => {
+      if (typingTimer) {
+        clearTimeout(typingTimer);
+      }
+    };
+  }, [searchTerm]); // Remove typingTimer from dependencies to avoid infinite loop
 
   // ============================================================================
   // MEMOIZED VALUES FOR PERFORMANCE
@@ -209,6 +247,7 @@ const ResultsPage: React.FC = () => {
           >
             <SearchContent
               loading={loading || isPending}
+              isTyping={isTyping}
               error={error}
               query={query}
               pageItems={allItems}

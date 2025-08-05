@@ -4,10 +4,11 @@ import { fetchCompetenciesBySearchTerm } from "../services/searchCompetencyAPI";
 
 /**
  * @constant DEBOUNCE_DELAY
- * @description Defines the debounce delay in milliseconds for lazy loading search
- * Reduced for smoother user experience
+ * @description Defines the debounce delay in milliseconds for search
+ * Optimized for smooth user experience - shows typing indicator immediately,
+ * then searches after user stops typing for this duration
  */
-const DEBOUNCE_DELAY = 300;
+const DEBOUNCE_DELAY = 500; // Increased for better UX
 
 /**
  * @type {ItemType}

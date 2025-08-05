@@ -10,6 +10,26 @@ import {
   SearchSuccessState,
 } from "./states";
 
+// Simple typing indicator component
+const SearchTypingState: React.FC<{ query: string }> = ({ query }) => (
+  <motion.div
+    className="flex items-center justify-center py-12"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    transition={{ duration: 0.2 }}
+  >
+    <div className="flex items-center gap-3 text-gray-500 bg-white/60 backdrop-blur-sm rounded-lg px-4 py-3 border border-gray-100">
+      <div className="flex space-x-1">
+        <div className="w-2 h-2 bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+        <div className="w-2 h-2 bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+        <div className="w-2 h-2 bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+      </div>
+      <span className="text-sm font-medium">กำลังพิมพ์ "{query}"...</span>
+    </div>
+  </motion.div>
+);
+
 interface CompetencyItem {
   id: string;
   framework: string;
@@ -18,6 +38,7 @@ interface CompetencyItem {
 
 interface SearchContentProps {
   loading: boolean;
+  isTyping?: boolean; // Add typing state prop
   error: string | null;
   query: string;
   pageItems: CompetencyItem[];
@@ -80,6 +101,7 @@ const AnimatedStateWrapper: React.FC<{
  */
 const SearchContent: React.FC<SearchContentProps> = ({
   loading,
+  isTyping = false,
   error,
   query,
   pageItems,
@@ -92,11 +114,12 @@ const SearchContent: React.FC<SearchContentProps> = ({
 
   // Render conditions to determine which component state to show
   const renderConditions = {
-    isLoading: loading,
-    hasError: error && !loading,
-    hasNoQuery: !loading && !error && !query,
-    isEmpty: !loading && !error && query && pageItems.length === 0,
-    hasResults: !loading && !error && query && pageItems.length > 0,
+    isTyping: isTyping && !loading && !error && query.length > 0,
+    isLoading: loading && !isTyping,
+    hasError: error && !loading && !isTyping,
+    hasNoQuery: !loading && !error && !query && !isTyping,
+    isEmpty: !loading && !error && query && pageItems.length === 0 && !isTyping,
+    hasResults: !loading && !error && query && pageItems.length > 0 && !isTyping,
   };
 
   return (
@@ -108,6 +131,15 @@ const SearchContent: React.FC<SearchContentProps> = ({
       transition={prefersReducedMotion ? {} : { duration: 0.2 }}
     >
       <AnimatePresence mode="wait" initial={false}>
+        {renderConditions.isTyping && (
+          <AnimatedStateWrapper
+            stateKey="typing"
+            prefersReducedMotion={prefersReducedMotion}
+          >
+            <SearchTypingState query={query} />
+          </AnimatedStateWrapper>
+        )}
+
         {renderConditions.isLoading && (
           <AnimatedStateWrapper
             stateKey="loading"

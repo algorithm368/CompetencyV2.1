@@ -89,15 +89,15 @@ const CompetencyDetailPage: React.FC = () => {
   // First check for known malformed patterns, then use original params if safe
   const sourceIsMalformed = source && isMalformedParam(source);
   const idIsMalformed = id && isMalformedParam(id);
-  
+
   // Use original params if they're not malformed, otherwise try to sanitize
-  const finalSource = sourceIsMalformed ? sanitizeUrlParams({ source }).source : source;
+  const finalSource = sourceIsMalformed
+    ? sanitizeUrlParams({ source }).source
+    : source;
   const finalId = idIsMalformed ? sanitizeUrlParams({ id }).id : id;
-  
+
   const isValidSource = finalSource === "sfia" || finalSource === "tpqi";
-  const isValidId = finalId && 
-    finalId.length > 0 &&
-    finalId.length < 100; // Reasonable length limit
+  const isValidId = finalId && finalId.length > 0 && finalId.length < 100; // Reasonable length limit
 
   // Use the final validated parameters
   const validatedSource = isValidSource ? finalSource : undefined;
@@ -133,15 +133,15 @@ const CompetencyDetailPage: React.FC = () => {
    * @see {@link useAnimationVariants}
    */
   const { containerVariants, itemVariants } = useAnimationVariants();
-  
+
   /**
    * Modified animation variants that respect reduced motion preferences
    * @type {object}
    */
-  const accessibleContainerVariants = prefersReducedMotion 
+  const accessibleContainerVariants = prefersReducedMotion
     ? { hidden: { opacity: 1 }, visible: { opacity: 1 } }
     : containerVariants;
-    
+
   const accessibleItemVariants = prefersReducedMotion
     ? { hidden: { opacity: 1 }, visible: { opacity: 1 } }
     : itemVariants;
@@ -364,7 +364,14 @@ const CompetencyDetailPage: React.FC = () => {
     } catch (err) {
       console.error("Retry failed:", err);
     }
-  }, [clearErrors, resetState, validatedSource, validatedId, sfiaHook, tpqiHook]);
+  }, [
+    clearErrors,
+    resetState,
+    validatedSource,
+    validatedId,
+    sfiaHook,
+    tpqiHook,
+  ]);
 
   // Validate URL parameters
   if (!isValidSource || !isValidId) {
@@ -390,7 +397,10 @@ const CompetencyDetailPage: React.FC = () => {
                   exit={{ opacity: 0 }}
                   className="flex flex-col items-center justify-center min-h-96"
                 >
-                  <LoadingState source={validatedSource || ""} id={validatedId || ""} />
+                  <LoadingState
+                    source={validatedSource || ""}
+                    id={validatedId || ""}
+                  />
                 </motion.div>
               )}
 

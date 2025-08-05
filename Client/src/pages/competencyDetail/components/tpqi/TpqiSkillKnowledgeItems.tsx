@@ -1,5 +1,12 @@
 import React, { useMemo, useEffect, useCallback, memo } from "react";
-import { FaCertificate } from "react-icons/fa";
+import {
+  FaCertificate,
+  FaCheckCircle,
+  FaExclamationTriangle,
+  FaSpinner,
+  FaClock,
+  FaTimesCircle,
+} from "react-icons/fa";
 import {
   useTpqiEvidenceSender,
   TpqiEvidenceState,
@@ -239,8 +246,6 @@ const Unit: React.FC<UnitProps> = memo(({ unit, evidenceState, handlers }) => {
   return (
     <li className="mb-8">
       <div className="flex flex-col p-6 bg-white/80 backdrop-blur-md rounded-2xl border border-green-200 gap-2 shadow-md hover:shadow-xl transition-all duration-300 relative overflow-hidden">
-        <UnitHeader unit={unit} itemCounts={itemCounts} />
-
         <div className="space-y-6">
           {filteredSkills.length > 0 && (
             <SkillsList
@@ -263,53 +268,6 @@ const Unit: React.FC<UnitProps> = memo(({ unit, evidenceState, handlers }) => {
   );
 });
 Unit.displayName = "Unit";
-
-const UnitHeader: React.FC<{
-  unit: TpqiUnit;
-  itemCounts: { skills: number; knowledge: number; total: number };
-}> = memo(({ unit, itemCounts }) => (
-  <div className="mb-4">
-    <h3 className="text-xl font-semibold text-gray-800 mb-2 flex items-center justify-between">
-      <span>
-        {unit.unit_code} - {unit.unit_name}
-      </span>
-      {itemCounts.total > 0 && (
-        <span
-          className="text-sm font-normal text-green-600 bg-green-100 px-3 py-1 rounded-full"
-          aria-label={`${itemCounts.total} item${
-            itemCounts.total !== 1 ? "s" : ""
-          }`}
-        >
-          {itemCounts.skills} skills, {itemCounts.knowledge} knowledge
-        </span>
-      )}
-    </h3>
-  </div>
-));
-UnitHeader.displayName = "UnitHeader";
-
-// Helper functions for approval status
-const getApprovalStatusClass = (status: string): string => {
-  switch (status) {
-    case "APPROVED":
-      return "bg-emerald-50 text-emerald-700 border border-emerald-200";
-    case "REJECTED":
-      return "bg-red-50 text-red-700 border border-red-200";
-    default:
-      return "bg-amber-50 text-amber-700 border border-amber-200";
-  }
-};
-
-const getApprovalStatusLabel = (status: string): string => {
-  switch (status) {
-    case "APPROVED":
-      return "Approved";
-    case "REJECTED":
-      return "Requires Revision";
-    default:
-      return "Under Review";
-  }
-};
 
 const SkillsList: React.FC<SkillsListProps> = memo(
   ({ skills, evidenceState, handlers }) => {
@@ -335,7 +293,7 @@ const SkillsList: React.FC<SkillsListProps> = memo(
           <FaCertificate className="w-4 h-4 mr-2 text-green-600" />
           Skills ({skills.length})
         </h4>
-        <div className="space-y-6">
+        <ul className="space-y-4">
           {skills.map((skill) => {
             const key = `skill-${skill.id}`;
             const isSubmitted = evidenceState.submitted[key] || false;
@@ -345,90 +303,188 @@ const SkillsList: React.FC<SkillsListProps> = memo(
             const approvalStatus =
               evidenceState.approvalStatus[key] || "NOT_APPROVED";
 
+            // Determine status for icon and badge
+            const getStatusIcon = () => {
+              if (isLoading)
+                return (
+                  <FaSpinner className="w-5 h-5 text-blue-500 animate-spin flex-shrink-0" />
+                );
+              if (error)
+                return (
+                  <FaExclamationTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                );
+              if (isSubmitted) {
+                if (approvalStatus === "APPROVED")
+                  return (
+                    <FaCheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                  );
+                if (approvalStatus === "REJECTED")
+                  return (
+                    <FaTimesCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                  );
+                return (
+                  <FaClock className="w-5 h-5 text-yellow-500 flex-shrink-0" />
+                );
+              }
+              return url ? (
+                <div className="w-5 h-5 border-2 border-blue-300 rounded-full flex-shrink-0" />
+              ) : (
+                <div className="w-5 h-5 border-2 border-gray-300 rounded-full flex-shrink-0" />
+              );
+            };
+
+            const getStatusBadge = () => {
+              if (isLoading)
+                return (
+                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                    Submitting...
+                  </span>
+                );
+              if (error)
+                return (
+                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                    Error
+                  </span>
+                );
+              if (isSubmitted) {
+                if (approvalStatus === "APPROVED")
+                  return (
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                      Approved
+                    </span>
+                  );
+                if (approvalStatus === "REJECTED")
+                  return (
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                      Rejected
+                    </span>
+                  );
+                return (
+                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                    Pending Approval
+                  </span>
+                );
+              }
+              return url ? (
+                <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                  Ready to Submit
+                </span>
+              ) : (
+                <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
+                  No Evidence
+                </span>
+              );
+            };
+
             return (
-              <div
+              <li
                 key={skill.id}
-                className="bg-white/60 border border-green-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-200"
+                className="flex flex-col gap-3"
+                aria-labelledby={`skill-${skill.id}`}
               >
-                {/* Skill Header */}
-                <div className="mb-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1">
-                      <h5 className="font-semibold text-gray-800 text-lg mb-1">
-                        {skill.skill_name}
-                      </h5>
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
-                        🔧 Skill Evidence
-                      </span>
-                    </div>
-                    {isSubmitted && (
-                      <span
-                        className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium shadow-sm ${getApprovalStatusClass(
-                          approvalStatus
-                        )}`}
-                      >
-                        {getApprovalStatusLabel(approvalStatus)}
-                      </span>
-                    )}
-                  </div>
-
-                  {skill.skill_description && (
-                    <div className="bg-slate-50 border border-slate-200 p-3 rounded-lg mt-3">
-                      <h6 className="text-sm font-medium text-slate-700 mb-2">
-                        Skill Description
-                      </h6>
-                      <p className="text-sm text-slate-600 leading-relaxed">
-                        {skill.skill_description}
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Evidence Input */}
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <label
-                      htmlFor={`skill-evidence-${skill.id}`}
-                      className="text-sm font-medium text-slate-700"
+                {/* Skill header with status indicator */}
+                <div className="flex items-start gap-3">
+                  <div className="flex items-center gap-2 flex-1">
+                    {getStatusIcon()}
+                    {/* Skill text */}
+                    <span
+                      id={`skill-${skill.id}`}
+                      className="text-gray-800 leading-relaxed"
                     >
-                      Evidence Documentation
-                    </label>
-                    <span className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
-                      Required
+                      {skill.skill_name}
                     </span>
                   </div>
+                  {getStatusBadge()}
+                </div>
 
+                {/* Evidence input area */}
+                <div className="ml-8 flex-1 min-w-0">
                   <UrlInputBox
                     url={url}
                     onChange={handleUrlChange(skill.id)}
                     onRemove={handleRemove(skill.id)}
                     onSubmit={handleSubmit(skill.id)}
-                    placeholder="https://example.com/your-skill-evidence"
+                    placeholder="Enter skill evidence URL"
                     colorClass="border-blue-300"
                     disabled={isLoading}
-                    readonly={isSubmitted && approvalStatus === "APPROVED"}
+                    readonly={isSubmitted && !isLoading}
                     loading={isLoading}
                   />
 
-                  {error && (
-                    <div className="mt-3 flex items-start gap-3 text-red-700 text-sm bg-red-50 border border-red-200 rounded-lg p-3 shadow-sm">
-                      <span className="text-red-500">⚠️</span>
-                      <div>
-                        <p className="font-medium">Submission Error</p>
-                        <p className="text-red-600 mt-1">{error}</p>
+                  {/* Status messages */}
+                  <div className="mt-2 space-y-1">
+                    {/* Loading state */}
+                    {isLoading && (
+                      <div
+                        className="flex items-center gap-2 text-blue-600 text-sm"
+                        aria-live="polite"
+                      >
+                        <FaSpinner className="w-3 h-3 animate-spin" />
+                        <span>Submitting your evidence...</span>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  <p className="text-xs text-slate-500 mt-2">
-                    Provide a link to portfolio, documentation, or other
-                    evidence demonstrating this skill
-                  </p>
+                    {/* Error state */}
+                    {error && !isLoading && (
+                      <div
+                        className="flex items-center gap-2 text-red-600 text-sm bg-red-50 border border-red-200 rounded p-2"
+                        role="alert"
+                        aria-live="assertive"
+                      >
+                        <FaExclamationTriangle className="w-3 h-3" />
+                        <span>{error}</span>
+                      </div>
+                    )}
+
+                    {/* Status-specific messages */}
+                    {!isLoading && !error && (
+                      <>
+                        {isSubmitted && approvalStatus === "APPROVED" && (
+                          <div className="flex items-center gap-2 text-green-600 text-sm bg-green-50 border border-green-200 rounded p-2">
+                            <FaCheckCircle className="w-3 h-3" />
+                            <span>Your evidence has been approved! ✨</span>
+                          </div>
+                        )}
+                        {isSubmitted && approvalStatus === "REJECTED" && (
+                          <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 border border-red-200 rounded p-2">
+                            <FaTimesCircle className="w-3 h-3" />
+                            <span>
+                              Your evidence was not approved. Please submit new
+                              evidence.
+                            </span>
+                          </div>
+                        )}
+                        {isSubmitted &&
+                          approvalStatus !== "APPROVED" &&
+                          approvalStatus !== "REJECTED" && (
+                            <div className="flex items-center gap-2 text-yellow-600 text-sm bg-yellow-50 border border-yellow-200 rounded p-2">
+                              <FaClock className="w-3 h-3" />
+                              <span>
+                                Your evidence is pending review by an
+                                administrator.
+                              </span>
+                            </div>
+                          )}
+                        {!isSubmitted && url && (
+                          <div className="text-blue-600 text-sm">
+                            👍 Ready to submit! Click the submit button when
+                            you're satisfied with your evidence.
+                          </div>
+                        )}
+                        {!url && (
+                          <div className="text-gray-500 text-sm">
+                            💡 Add a URL to online evidence demonstrating this
+                            skill
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
+              </li>
             );
           })}
-        </div>
+        </ul>
       </div>
     );
   }
@@ -459,7 +515,7 @@ const KnowledgeList: React.FC<KnowledgeListProps> = memo(
           <FaCertificate className="w-4 h-4 mr-2 text-green-600" />
           Knowledge ({knowledge.length})
         </h4>
-        <div className="space-y-6">
+        <ul className="space-y-4">
           {knowledge.map((item) => {
             const key = `knowledge-${item.id}`;
             const isSubmitted = evidenceState.submitted[key] || false;
@@ -469,90 +525,188 @@ const KnowledgeList: React.FC<KnowledgeListProps> = memo(
             const approvalStatus =
               evidenceState.approvalStatus[key] || "NOT_APPROVED";
 
+            // Determine status for icon and badge
+            const getStatusIcon = () => {
+              if (isLoading)
+                return (
+                  <FaSpinner className="w-5 h-5 text-purple-500 animate-spin flex-shrink-0" />
+                );
+              if (error)
+                return (
+                  <FaExclamationTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                );
+              if (isSubmitted) {
+                if (approvalStatus === "APPROVED")
+                  return (
+                    <FaCheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                  );
+                if (approvalStatus === "REJECTED")
+                  return (
+                    <FaTimesCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                  );
+                return (
+                  <FaClock className="w-5 h-5 text-yellow-500 flex-shrink-0" />
+                );
+              }
+              return url ? (
+                <div className="w-5 h-5 border-2 border-purple-300 rounded-full flex-shrink-0" />
+              ) : (
+                <div className="w-5 h-5 border-2 border-gray-300 rounded-full flex-shrink-0" />
+              );
+            };
+
+            const getStatusBadge = () => {
+              if (isLoading)
+                return (
+                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                    Submitting...
+                  </span>
+                );
+              if (error)
+                return (
+                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                    Error
+                  </span>
+                );
+              if (isSubmitted) {
+                if (approvalStatus === "APPROVED")
+                  return (
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                      Approved
+                    </span>
+                  );
+                if (approvalStatus === "REJECTED")
+                  return (
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                      Rejected
+                    </span>
+                  );
+                return (
+                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                    Pending Approval
+                  </span>
+                );
+              }
+              return url ? (
+                <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                  Ready to Submit
+                </span>
+              ) : (
+                <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
+                  No Evidence
+                </span>
+              );
+            };
+
             return (
-              <div
+              <li
                 key={item.id}
-                className="bg-white/60 border border-green-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-200"
+                className="flex flex-col gap-3"
+                aria-labelledby={`knowledge-${item.id}`}
               >
-                {/* Knowledge Header */}
-                <div className="mb-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1">
-                      <h5 className="font-semibold text-gray-800 text-lg mb-1">
-                        {item.knowledge_name}
-                      </h5>
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
-                        📚 Knowledge Evidence
-                      </span>
-                    </div>
-                    {isSubmitted && (
-                      <span
-                        className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium shadow-sm ${getApprovalStatusClass(
-                          approvalStatus
-                        )}`}
-                      >
-                        {getApprovalStatusLabel(approvalStatus)}
-                      </span>
-                    )}
-                  </div>
-
-                  {item.knowledge_description && (
-                    <div className="bg-slate-50 border border-slate-200 p-3 rounded-lg mt-3">
-                      <h6 className="text-sm font-medium text-slate-700 mb-2">
-                        Knowledge Description
-                      </h6>
-                      <p className="text-sm text-slate-600 leading-relaxed">
-                        {item.knowledge_description}
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Evidence Input */}
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <label
-                      htmlFor={`knowledge-evidence-${item.id}`}
-                      className="text-sm font-medium text-slate-700"
+                {/* Knowledge header with status indicator */}
+                <div className="flex items-start gap-3">
+                  <div className="flex items-center gap-2 flex-1">
+                    {getStatusIcon()}
+                    {/* Knowledge text */}
+                    <span
+                      id={`knowledge-${item.id}`}
+                      className="text-gray-800 leading-relaxed"
                     >
-                      Evidence Documentation
-                    </label>
-                    <span className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
-                      Required
+                      {item.knowledge_name}
                     </span>
                   </div>
+                  {getStatusBadge()}
+                </div>
 
+                {/* Evidence input area */}
+                <div className="ml-8 flex-1 min-w-0">
                   <UrlInputBox
                     url={url}
                     onChange={handleUrlChange(item.id)}
                     onRemove={handleRemove(item.id)}
                     onSubmit={handleSubmit(item.id)}
-                    placeholder="https://example.com/your-knowledge-evidence"
+                    placeholder="Enter knowledge evidence URL"
                     colorClass="border-purple-300"
                     disabled={isLoading}
-                    readonly={isSubmitted && approvalStatus === "APPROVED"}
+                    readonly={isSubmitted && !isLoading}
                     loading={isLoading}
                   />
 
-                  {error && (
-                    <div className="mt-3 flex items-start gap-3 text-red-700 text-sm bg-red-50 border border-red-200 rounded-lg p-3 shadow-sm">
-                      <span className="text-red-500">⚠️</span>
-                      <div>
-                        <p className="font-medium">Submission Error</p>
-                        <p className="text-red-600 mt-1">{error}</p>
+                  {/* Status messages */}
+                  <div className="mt-2 space-y-1">
+                    {/* Loading state */}
+                    {isLoading && (
+                      <div
+                        className="flex items-center gap-2 text-purple-600 text-sm"
+                        aria-live="polite"
+                      >
+                        <FaSpinner className="w-3 h-3 animate-spin" />
+                        <span>Submitting your evidence...</span>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  <p className="text-xs text-slate-500 mt-2">
-                    Provide a link to documentation, research, or other evidence
-                    demonstrating this knowledge
-                  </p>
+                    {/* Error state */}
+                    {error && !isLoading && (
+                      <div
+                        className="flex items-center gap-2 text-red-600 text-sm bg-red-50 border border-red-200 rounded p-2"
+                        role="alert"
+                        aria-live="assertive"
+                      >
+                        <FaExclamationTriangle className="w-3 h-3" />
+                        <span>{error}</span>
+                      </div>
+                    )}
+
+                    {/* Status-specific messages */}
+                    {!isLoading && !error && (
+                      <>
+                        {isSubmitted && approvalStatus === "APPROVED" && (
+                          <div className="flex items-center gap-2 text-green-600 text-sm bg-green-50 border border-green-200 rounded p-2">
+                            <FaCheckCircle className="w-3 h-3" />
+                            <span>Your evidence has been approved! ✨</span>
+                          </div>
+                        )}
+                        {isSubmitted && approvalStatus === "REJECTED" && (
+                          <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 border border-red-200 rounded p-2">
+                            <FaTimesCircle className="w-3 h-3" />
+                            <span>
+                              Your evidence was not approved. Please submit new
+                              evidence.
+                            </span>
+                          </div>
+                        )}
+                        {isSubmitted &&
+                          approvalStatus !== "APPROVED" &&
+                          approvalStatus !== "REJECTED" && (
+                            <div className="flex items-center gap-2 text-yellow-600 text-sm bg-yellow-50 border border-yellow-200 rounded p-2">
+                              <FaClock className="w-3 h-3" />
+                              <span>
+                                Your evidence is pending review by an
+                                administrator.
+                              </span>
+                            </div>
+                          )}
+                        {!isSubmitted && url && (
+                          <div className="text-purple-600 text-sm">
+                            👍 Ready to submit! Click the submit button when
+                            you're satisfied with your evidence.
+                          </div>
+                        )}
+                        {!url && (
+                          <div className="text-gray-500 text-sm">
+                            💡 Add a URL to online evidence demonstrating this
+                            knowledge
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
+              </li>
             );
           })}
-        </div>
+        </ul>
       </div>
     );
   }

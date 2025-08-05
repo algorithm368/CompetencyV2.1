@@ -30,16 +30,6 @@ export const getEvidenceStatus = (
   submitted: boolean,
   approvalStatus?: string | null
 ): EvidenceStatus => {
-  // Debug logging to help track status determination
-  console.log('getEvidenceStatus called with:', {
-    evidenceLoading,
-    loading,
-    error,
-    url: url ? 'present' : 'empty',
-    submitted,
-    approvalStatus
-  });
-
   if (evidenceLoading) return EvidenceStatus.LOADING;
   if (loading) return EvidenceStatus.LOADING;
   if (error) return EvidenceStatus.ERROR;
@@ -52,12 +42,10 @@ export const getEvidenceStatus = (
       case ApprovalStatus.APPROVED:
       case 'APPROVE':
       case 'ACCEPTED':
-        console.log('Status determined: APPROVED');
         return EvidenceStatus.APPROVED;
       case ApprovalStatus.REJECTED:
       case 'REJECT':
       case 'DECLINED':
-        console.log('Status determined: REJECTED');
         return EvidenceStatus.REJECTED;
       case ApprovalStatus.NOT_APPROVED:
       case 'PENDING':
@@ -65,16 +53,13 @@ export const getEvidenceStatus = (
       case '':
       case null:
       case undefined:
-        console.log('Status determined: PENDING (NOT_APPROVED or similar)');
         return EvidenceStatus.PENDING;
       default:
-        console.log(`Status determined: PENDING (unknown status: ${approvalStatus})`);
         return EvidenceStatus.PENDING;
     }
   }
 
   const finalStatus = url ? EvidenceStatus.READY_TO_SUBMIT : EvidenceStatus.NOT_STARTED;
-  console.log('Status determined:', finalStatus);
   return finalStatus;
 };
 

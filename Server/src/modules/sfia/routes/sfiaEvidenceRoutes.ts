@@ -19,4 +19,6 @@ router.post("/", authenticate, postEvidenceController);
 // permission: protected
 router.post("/get", authenticate, getEvidenceController);
 
+router.delete("/:id", authenticate, delEvidenceController.deleteEvidence);
+
 export default router;

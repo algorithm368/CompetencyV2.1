@@ -1,5 +1,5 @@
 import { Router } from "express";
-import sfiaSkill from "./sfiaSkillRoutes"
+import sfiaSkill from "./sfiaSkillRoutes";
 import sfiaEvidence from "./sfiaEvidenceRoutes";
 
 const router = Router();

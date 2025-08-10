@@ -24,6 +24,7 @@ interface EvidenceHandlers {
   onUrlChange: (evidence: EvidenceType, value: string) => void;
   onRemove: (evidence: EvidenceType) => void;
   onSubmit: (evidence: EvidenceType) => void;
+  onDelete: (evidence: EvidenceType) => void;
 }
 
 interface UnitsListProps {
@@ -57,6 +58,7 @@ const TpqiSkillKnowledgeItems: React.FC<TpqiSkillKnowledgeItemsProps> = memo(
       handleUrlChange,
       handleRemove,
       handleSubmit,
+      handleDelete,
       initializeEvidenceUrls,
     } = useTpqiEvidenceSender();
 
@@ -81,8 +83,11 @@ const TpqiSkillKnowledgeItems: React.FC<TpqiSkillKnowledgeItemsProps> = memo(
         onSubmit: (evidence: EvidenceType) => {
           void handleSubmit(evidence);
         },
+        onDelete: (evidence: EvidenceType) => {
+          void handleDelete(evidence);
+        },
       }),
-      [handleUrlChange, handleRemove, handleSubmit]
+      [handleUrlChange, handleRemove, handleSubmit, handleDelete]
     );
 
     if (filteredUnits.length === 0) {
@@ -271,6 +276,11 @@ const SkillsList: React.FC<SkillsListProps> = memo(
         handlers.onSubmit({ type: "skill", id: skillId }),
       [handlers]
     );
+    const handleDelete = useCallback(
+      (skillId: number) => () =>
+        handlers.onDelete({ type: "skill", id: skillId }),
+      [handlers]
+    );
 
     return (
       <div>
@@ -283,6 +293,7 @@ const SkillsList: React.FC<SkillsListProps> = memo(
             const key = `skill-${skill.id}`;
             const isSubmitted = evidenceState.submitted[key] || false;
             const isLoading = evidenceState.loading[key] || false;
+            const isDeleting = evidenceState.deleting[key] || false;
             const error = evidenceState.errors[key] || "";
             const url = evidenceState.urls[key] || "";
             const approvalStatus =
@@ -297,6 +308,7 @@ const SkillsList: React.FC<SkillsListProps> = memo(
                 approvalStatus={approvalStatus}
                 submitted={isSubmitted}
                 loading={isLoading}
+                deleting={isDeleting}
                 error={error}
                 colorVariant="blue"
                 skillType="skill"
@@ -304,6 +316,7 @@ const SkillsList: React.FC<SkillsListProps> = memo(
                 onUrlChange={handleUrlChange(skill.id)}
                 onRemove={handleRemove(skill.id)}
                 onSubmit={handleSubmit(skill.id)}
+                onDelete={handleDelete(skill.id)}
               />
             );
           })}
@@ -331,6 +344,11 @@ const KnowledgeList: React.FC<KnowledgeListProps> = memo(
         handlers.onSubmit({ type: "knowledge", id: knowledgeId }),
       [handlers]
     );
+    const handleDelete = useCallback(
+      (knowledgeId: number) => () =>
+        handlers.onDelete({ type: "knowledge", id: knowledgeId }),
+      [handlers]
+    );
 
     return (
       <div>
@@ -343,6 +361,7 @@ const KnowledgeList: React.FC<KnowledgeListProps> = memo(
             const key = `knowledge-${item.id}`;
             const isSubmitted = evidenceState.submitted[key] || false;
             const isLoading = evidenceState.loading[key] || false;
+            const isDeleting = evidenceState.deleting[key] || false;
             const error = evidenceState.errors[key] || "";
             const url = evidenceState.urls[key] || "";
             const approvalStatus =
@@ -357,6 +376,7 @@ const KnowledgeList: React.FC<KnowledgeListProps> = memo(
                 approvalStatus={approvalStatus}
                 submitted={isSubmitted}
                 loading={isLoading}
+                deleting={isDeleting}
                 error={error}
                 colorVariant="purple"
                 skillType="knowledge"
@@ -364,6 +384,7 @@ const KnowledgeList: React.FC<KnowledgeListProps> = memo(
                 onUrlChange={handleUrlChange(item.id)}
                 onRemove={handleRemove(item.id)}
                 onSubmit={handleSubmit(item.id)}
+                onDelete={handleDelete(item.id)}
               />
             );
           })}

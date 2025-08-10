@@ -5,6 +5,7 @@ import {
   SubmitTpqiEvidenceRequest,
   ApiResponse,
 } from "../../services/postTpqiEvidenceAPI";
+import { DeleteTpqiEvidenceService } from "../../services/deleteTpqiEvidenceAPI";
 
 /**
  * Interface for TPQI evidence state management
@@ -12,7 +13,8 @@ import {
 export interface TpqiEvidenceState {
   urls: { [id: string]: string }; // Evidence URLs for each skill/knowledge ID
   submitted: { [id: string]: boolean }; // Submission status
-  loading: { [id: string]: boolean }; // Loading states
+  loading: { [id: string]: boolean }; // Loading states for submission
+  deleting: { [id: string]: boolean }; // Loading states for deletion
   errors: { [id: string]: string }; // Error messages
   approvalStatus: { [id: string]: string }; // Approval status
 }
@@ -83,7 +85,8 @@ export const useTpqiEvidenceSender = () => {
   const [evidenceState, setEvidenceState] = useState<TpqiEvidenceState>({
     urls: {}, // Evidence input values (URLs)
     submitted: {}, // Submission completion status
-    loading: {}, // API call loading states
+    loading: {}, // API call loading states for submission
+    deleting: {}, // API call loading states for deletion
     errors: {}, // Validation and submission errors
     approvalStatus: {}, // Approval status for each skill/knowledge
   });
@@ -150,11 +153,16 @@ export const useTpqiEvidenceSender = () => {
   const baseApi = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
   /**
-   * Service instance for API calls - memoized to prevent unnecessary re-creation
+   * Service instances for API calls - memoized to prevent unnecessary re-creation
    */
   const evidenceService = useMemo(
     () => new TpqiEvidenceService(baseApi, accessToken),
-    []
+    [baseApi, accessToken]
+  );
+
+  const deleteService = useMemo(
+    () => new DeleteTpqiEvidenceService(baseApi, accessToken),
+    [baseApi, accessToken]
   );
 
   /**
@@ -358,15 +366,114 @@ export const useTpqiEvidenceSender = () => {
     return !!(url?.trim() && !loading && accessToken);
   };
 
+  /**
+   * Deletes evidence for a specific skill or knowledge item
+   *
+   * @param {EvidenceType} evidence - The evidence object containing type and ID
+   * @returns {Promise<boolean>} Promise that resolves to true if deletion was successful
+   */
+  const handleDelete = async (evidence: EvidenceType): Promise<boolean> => {
+    const key = getEvidenceKey(evidence);
+
+    // Validate evidence
+    if (!evidence.type || (evidence.type !== "knowledge" && evidence.type !== "skill")) {
+      setEvidenceState((prev) => ({
+        ...prev,
+        errors: { ...prev.errors, [key]: "Invalid evidence type" },
+      }));
+      return false;
+    }
+
+    if (!evidence.id || evidence.id <= 0) {
+      setEvidenceState((prev) => ({
+        ...prev,
+        errors: { ...prev.errors, [key]: `Invalid ${evidence.type} ID` },
+      }));
+      return false;
+    }
+
+    // Check authentication
+    if (!accessToken) {
+      setEvidenceState((prev) => ({
+        ...prev,
+        errors: { ...prev.errors, [key]: "Authentication required. Please log in again." },
+      }));
+      return false;
+    }
+
+    try {
+      // Set deleting state
+      setEvidenceState((prev) => ({
+        ...prev,
+        deleting: { ...prev.deleting, [key]: true },
+        errors: { ...prev.errors, [key]: "" },
+      }));
+
+      console.log(`🔥 Deleting ${evidence.type} evidence for ID: ${evidence.id}`);
+
+      // Make API call
+      const result = await deleteService.deleteEvidence({
+        evidenceType: evidence.type,
+        evidenceId: evidence.id,
+      });
+
+      if (result.success) {
+        console.log(`✅ ${evidence.type} evidence deleted successfully:`, result.data);
+        
+        // Clear evidence from state after successful deletion
+        setEvidenceState((prev) => ({
+          ...prev,
+          urls: { ...prev.urls, [key]: "" },
+          submitted: { ...prev.submitted, [key]: false },
+          approvalStatus: { ...prev.approvalStatus, [key]: "" },
+          errors: { ...prev.errors, [key]: "" },
+        }));
+        
+        return true;
+      } else {
+        const errorMessage = result.message || `Failed to delete ${evidence.type} evidence`;
+        console.error(`❌ ${evidence.type} evidence deletion failed:`, errorMessage);
+        setEvidenceState((prev) => ({
+          ...prev,
+          errors: { ...prev.errors, [key]: errorMessage },
+        }));
+        return false;
+      }
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+      console.error(`❌ Error deleting ${evidence.type} evidence:`, error);
+      setEvidenceState((prev) => ({
+        ...prev,
+        errors: { ...prev.errors, [key]: errorMessage },
+      }));
+      return false;
+    } finally {
+      setEvidenceState((prev) => ({
+        ...prev,
+        deleting: { ...prev.deleting, [key]: false },
+      }));
+    }
+  };
+
+  /**
+   * Helper function to check if evidence is currently being deleted
+   */
+  const isDeleting = (evidence: EvidenceType): boolean => {
+    const key = getEvidenceKey(evidence);
+    return evidenceState.deleting[key] || false;
+  };
+
   return {
     evidenceState,
     handleUrlChange,
     handleRemove,
     handleSubmit,
+    handleDelete,
     initializeEvidenceUrls,
     getEvidenceState,
     canSubmitEvidence,
     getEvidenceKey,
+    isDeleting,
   };
 };
 

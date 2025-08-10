@@ -1,13 +1,11 @@
 import React, { useMemo } from "react";
 import UrlInputBox from "./UrlInputBox";
-import { 
-  StatusIcon, 
-  StatusBadge, 
-  StatusMessages 
+import {
+  StatusIcon,
+  StatusBadge,
+  StatusMessages,
 } from "./EvidenceStatusComponents";
-import { 
-  getEvidenceStatus 
-} from "./evidenceStatusUtils";
+import { getEvidenceStatus } from "./evidenceStatusUtils";
 
 interface EvidenceItemProps {
   /** Unique identifier for the evidence item */
@@ -29,7 +27,7 @@ interface EvidenceItemProps {
   /** Indicates whether evidence is currently being loaded */
   evidenceLoading?: boolean;
   /** Color variant for styling (blue, purple, green) */
-  colorVariant?: 'blue' | 'purple' | 'green';
+  colorVariant?: "blue" | "purple" | "green";
   /** Type of skill/knowledge for messaging */
   skillType?: string;
   /** Placeholder text for the input */
@@ -48,7 +46,7 @@ interface EvidenceItemProps {
 
 /**
  * EvidenceItem Component
- * 
+ *
  * A reusable component for displaying evidence items with status management.
  * Used by both SFIA and TPQI components for consistent UI/UX.
  */
@@ -62,10 +60,9 @@ export const EvidenceItem: React.FC<EvidenceItemProps> = ({
   deleting = false,
   error,
   evidenceLoading = false,
-  colorVariant = 'blue',
-  skillType = 'skill',
+  colorVariant = "blue",
+  skillType = "skill",
   placeholder = "Enter evidence URL",
-  subSkillId,
   onUrlChange,
   onRemove,
   onSubmit,
@@ -73,14 +70,15 @@ export const EvidenceItem: React.FC<EvidenceItemProps> = ({
 }) => {
   // Memoized status calculation
   const status = useMemo(
-    () => getEvidenceStatus(
-      evidenceLoading,
-      loading,
-      error,
-      url,
-      submitted,
-      approvalStatus
-    ),
+    () =>
+      getEvidenceStatus(
+        evidenceLoading,
+        loading,
+        error,
+        url,
+        submitted,
+        approvalStatus
+      ),
     [evidenceLoading, loading, error, url, submitted, approvalStatus]
   );
 
@@ -94,33 +92,39 @@ export const EvidenceItem: React.FC<EvidenceItemProps> = ({
       onDelete,
       placeholder,
       colorClass: {
-        blue: 'border-blue-300',
-        purple: 'border-purple-300',
-        green: 'border-green-300'
+        blue: "border-blue-300",
+        purple: "border-purple-300",
+        green: "border-green-300",
       }[colorVariant],
       disabled: evidenceLoading,
       readonly: submitted && !loading,
       loading,
       deleting,
     }),
-    [url, onUrlChange, onRemove, onSubmit, onDelete, placeholder, colorVariant, evidenceLoading, submitted, loading, deleting]
+    [
+      url,
+      onUrlChange,
+      onRemove,
+      onSubmit,
+      onDelete,
+      placeholder,
+      colorVariant,
+      evidenceLoading,
+      submitted,
+      loading,
+      deleting,
+    ]
   );
 
   return (
-    <li
-      className="flex flex-col gap-3"
-      aria-labelledby={id}
-    >
+    <li className="flex flex-col gap-3" aria-labelledby={id}>
       {/* Evidence header with status indicator */}
       <div className="flex items-start gap-3">
         <div className="flex items-center gap-2 flex-1">
           <StatusIcon status={status} colorVariant={colorVariant} />
 
           {/* Evidence text */}
-          <span
-            id={id}
-            className="text-gray-800 leading-relaxed"
-          >
+          <span id={id} className="text-gray-800 leading-relaxed">
             {text}
           </span>
         </div>

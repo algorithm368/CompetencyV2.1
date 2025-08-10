@@ -103,7 +103,7 @@ const Navbar: React.FC<{ isTop: boolean }> = ({ isTop }) => {
                 <span className="text-white font-bold text-lg">C</span>
               </div>
               <span className="text-2xl font-bold text-gray-900">
-                Competency
+                ompetency
               </span>
             </Link>
           </div>

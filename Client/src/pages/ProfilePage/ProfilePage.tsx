@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+  import React, { useState, useEffect, useContext } from "react";
 import Layout from "@Layouts/Layout";
 import { WhiteTealBackground } from "@Components/Common/Background/WhiteTealBackground";
+import AuthContext from "@Contexts/AuthContext";
 import {
   ProfileHeader,
   ProfileAvatar,
@@ -9,11 +10,16 @@ import {
   FormCard,
   ConfirmationDialog,
   SuccessToast,
-  SaveButton
+  SaveButton,
 } from "./Components";
 import "./ProfilePage.css";
 
 const ProfilePage = () => {
+  const auth = useContext(AuthContext);
+  
+  // Get the same firstName that ProfileDisplay uses for consistency
+  const userFirstName = auth?.user?.firstName || auth?.user?.email?.split("@")[0] || "User";
+  
   const [formData, setFormData] = useState({
     email: "user@example.com",
     firstNameTh: "",
@@ -25,7 +31,7 @@ const ProfilePage = () => {
     address: "",
   });
 
-  const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [showDialog, setShowDialog] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [lastUpdated, setLastUpdated] = useState("");
@@ -43,23 +49,25 @@ const ProfilePage = () => {
     );
   }, []);
 
-  const handleInputChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: e.target.value,
-    }));
-
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors((prev) => ({
+  const handleInputChange =
+    (field: string) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      setFormData((prev) => ({
         ...prev,
-        [field]: "",
+        [field]: e.target.value,
       }));
-    }
-  };
+
+      // Clear error when user starts typing
+      if (errors[field]) {
+        setErrors((prev) => ({
+          ...prev,
+          [field]: "",
+        }));
+      }
+    };
 
   const validateForm = () => {
-    const newErrors: {[key: string]: string} = {};
+    const newErrors: { [key: string]: string } = {};
 
     const requiredFields = {
       firstNameTh: "กรุณากรอกชื่อ (ไทย)",
@@ -94,11 +102,11 @@ const ProfilePage = () => {
   const confirmSave = async () => {
     setIsLoading(true);
     setShowDialog(false);
-    
+
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
       console.log("Saving profile data:", formData);
       setShowToast(true);
 
@@ -143,7 +151,10 @@ const ProfilePage = () => {
                 <div className="relative flex flex-col lg:flex-row items-center justify-between">
                   <div className="flex flex-col lg:flex-row items-center space-y-6 lg:space-y-0 lg:space-x-8 mb-8 lg:mb-0">
                     {/* Avatar */}
-                    <ProfileAvatar size="lg" />
+                    <ProfileAvatar
+                      size="lg"
+                      firstName={userFirstName}
+                    />
 
                     <div className="text-white text-center lg:text-left">
                       <h2 className="text-3xl lg:text-4xl font-bold pb-3">

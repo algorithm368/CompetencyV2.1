@@ -11,19 +11,31 @@ import ProfileDisplay from "./ProfileDisplay";
 import Login from "./Login";
 import AuthContext from "@Contexts/AuthContext";
 
-const Navbar: React.FC<{ isTop: boolean }> = ({ isTop }) => {
+const Navbar: React.FC = () => {
   const auth = useContext(AuthContext);
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
 
+  // Move isLoggedIn declaration before NAV_ITEMS to avoid temporal dead zone
+  const isLoggedIn = !!auth?.user;
+
   const NAV_ITEMS = useMemo(
-    () => [
-      { name: "Home", path: "/home" },
-      { name: "Search", path: "/results" },
-      { name: "About", path: "/about" },
-    ],
-    []
+    () => {
+      const baseItems = [
+        { name: "Home", path: "/home" },
+        { name: "Search", path: "/results" },
+        { name: "About", path: "/about" }
+      ];
+      
+      // Only add Profile item if user is logged in
+      if (isLoggedIn) {
+        baseItems.push({ name: "Profile", path: "/profile" });
+      }
+      
+      return baseItems;
+    },
+    [isLoggedIn]
   );
 
   useEffect(() => {
@@ -58,8 +70,6 @@ const Navbar: React.FC<{ isTop: boolean }> = ({ isTop }) => {
       document.body.style.overflow = "";
     };
   }, [menuOpen]);
-
-  const isLoggedIn = !!auth?.user;
 
   const isActiveNavItem = useCallback(
     (itemPath: string) => location.pathname === itemPath,

@@ -32,9 +32,6 @@ export default defineConfig({
           ],
           "search-results": ["src/pages/SearchResults/SearchResultsPage.tsx"],
           profile: ["src/pages/ProfilePage/ProfilePage.tsx"],
-          "occupation-detail": [
-            "src/pages/OccupationDetail/OccupationDetailPage.tsx",
-          ],
           // Admin pages
           "admin-dashboard": ["src/pages/Admin/Dashboard/DashboardPage.tsx"],
           "admin-users": ["src/pages/Admin/Users/UserPages.tsx"],

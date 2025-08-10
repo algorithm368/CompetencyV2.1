@@ -2,6 +2,8 @@ import React, { useMemo, useEffect, useCallback, memo } from "react";
 import { FaGraduationCap } from "react-icons/fa";
 import { useSfiaEvidenceSender } from "../../hooks/evidence/useSfiaEvidenceSender";
 import { useEvidenceFetcher } from "@Pages/competencyDetail/hooks/evidence/useSfiaEvidenceFetcher";
+import { DeleteSfiaEvidenceService } from "../../services/deleteSfiaEvidenceAPI";
+import { useAuth } from "@Contexts/AuthContext";
 import {
   SfiaLevel,
   SfiaDescription,
@@ -25,6 +27,7 @@ interface EvidenceHandlers {
   onUrlChange: (id: number, value: string) => void;
   onRemove: (id: number) => void;
   onSubmit: (id: number) => void;
+  onDelete: (id: number) => void;
 }
 
 interface SkillLevelsListProps {
@@ -58,6 +61,8 @@ interface SubSkillsSectionProps {
 
 const SfiaSkillLevels: React.FC<SfiaSkillLevelsProps> = memo(
   ({ levels, skillCode }) => {
+    const { accessToken } = useAuth();
+
     const {
       evidenceState,
       handleUrlChange,
@@ -71,6 +76,34 @@ const SfiaSkillLevels: React.FC<SfiaSkillLevelsProps> = memo(
       loading: evidenceLoading,
       error: evidenceError,
     } = useEvidenceFetcher(skillCode);
+
+    // Delete evidence handler
+    const handleDelete = useCallback(
+      (subskillId: number) => async () => {
+        try {
+          const baseApi = import.meta.env.VITE_API_BASE_URL;
+
+          const deleteService = new DeleteSfiaEvidenceService(
+            baseApi,
+            accessToken
+          );
+
+          const result = await deleteService.deleteEvidence({
+            subSkillId: subskillId,
+          });
+
+          if (result.success) {
+            // Remove evidence from state
+            handleRemove(subskillId);
+          } else {
+            console.error("Failed to delete evidence:", result.error);
+          }
+        } catch (error) {
+          console.error("Error deleting evidence:", error);
+        }
+      },
+      [accessToken, handleRemove]
+    );
 
     useEffect(() => {
       if (evidenceData && Object.keys(evidenceData).length > 0) {
@@ -87,8 +120,9 @@ const SfiaSkillLevels: React.FC<SfiaSkillLevelsProps> = memo(
         onSubmit: (id: number) => {
           void handleSubmit(id);
         },
+        onDelete: handleDelete,
       }),
-      [handleUrlChange, handleRemove, handleSubmit]
+      [handleUrlChange, handleRemove, handleSubmit, handleDelete]
     );
 
     if (filteredLevels.length === 0) {
@@ -333,6 +367,18 @@ const SubSkillsSection: React.FC<SubSkillsSectionProps> = memo(
       (subskillId: number) => () => handlers.onSubmit(subskillId),
       [handlers]
     );
+    const handleDelete = useCallback(
+      (subskillId: number) => () => {
+        const deleteFunction = handlers.onDelete(subskillId);
+
+        if (typeof deleteFunction === "function") {
+          return deleteFunction();
+        } else {
+          console.error("🟡 handlers.onDelete did not return a function");
+        }
+      },
+      [handlers]
+    );
     return (
       <div>
         <h4 className="font-medium text-gray-800 mb-2">SubSkills:</h4>
@@ -357,6 +403,7 @@ const SubSkillsSection: React.FC<SubSkillsSectionProps> = memo(
                 onUrlChange={handleUrlChange(subskill.id)}
                 onRemove={handleRemove(subskill.id)}
                 onSubmit={handleSubmit(subskill.id)}
+                onDelete={handleDelete(subskill.id)}
               />
             );
           })}

@@ -22,6 +22,8 @@ interface EvidenceItemProps {
   submitted: boolean;
   /** Indicates whether the submission process is currently in progress */
   loading: boolean;
+  /** Indicates whether the deletion process is currently in progress */
+  deleting?: boolean;
   /** Error message related to the evidence submission (if any) */
   error: string;
   /** Indicates whether evidence is currently being loaded */
@@ -32,12 +34,16 @@ interface EvidenceItemProps {
   skillType?: string;
   /** Placeholder text for the input */
   placeholder?: string;
+  /** SubSkill ID for deletion operations */
+  subSkillId?: number;
   /** Callback to handle URL/description input changes */
   onUrlChange: (value: string) => void;
   /** Callback to handle removal/reset of the evidence input */
   onRemove: () => void;
   /** Callback to trigger evidence submission */
   onSubmit: () => void;
+  /** Callback to trigger evidence deletion from server */
+  onDelete?: () => void;
 }
 
 /**
@@ -53,14 +59,17 @@ export const EvidenceItem: React.FC<EvidenceItemProps> = ({
   approvalStatus,
   submitted,
   loading,
+  deleting = false,
   error,
   evidenceLoading = false,
   colorVariant = 'blue',
   skillType = 'skill',
   placeholder = "Enter evidence URL",
+  subSkillId,
   onUrlChange,
   onRemove,
   onSubmit,
+  onDelete,
 }) => {
   // Memoized status calculation
   const status = useMemo(
@@ -82,6 +91,7 @@ export const EvidenceItem: React.FC<EvidenceItemProps> = ({
       onChange: onUrlChange,
       onRemove,
       onSubmit,
+      onDelete,
       placeholder,
       colorClass: {
         blue: 'border-blue-300',
@@ -91,8 +101,9 @@ export const EvidenceItem: React.FC<EvidenceItemProps> = ({
       disabled: evidenceLoading,
       readonly: submitted && !loading,
       loading,
+      deleting,
     }),
-    [url, onUrlChange, onRemove, onSubmit, placeholder, colorVariant, evidenceLoading, submitted, loading]
+    [url, onUrlChange, onRemove, onSubmit, onDelete, placeholder, colorVariant, evidenceLoading, submitted, loading, deleting]
   );
 
   return (

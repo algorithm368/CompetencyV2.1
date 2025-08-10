@@ -1,22 +1,18 @@
 import React from "react";
-import {
-  FaCheck,
-  FaEdit,
-  FaTrash,
-  FaPaperPlane,
-  FaSpinner,
-} from "react-icons/fa";
+import { FaCheck, FaTrash, FaPaperPlane, FaSpinner } from "react-icons/fa";
 
 interface UrlInputBoxProps {
   url: string;
   onChange: (value: string) => void;
   onRemove: () => void;
   onSubmit: () => void;
+  onDelete?: () => void; // Add onDelete prop for API call
   placeholder?: string;
   colorClass?: string;
   disabled?: boolean;
   readonly?: boolean;
   loading?: boolean; // Add loading prop for better UX
+  deleting?: boolean; // Add deleting state for delete operation
 }
 
 const UrlInputBox: React.FC<UrlInputBoxProps> = ({
@@ -24,18 +20,20 @@ const UrlInputBox: React.FC<UrlInputBoxProps> = ({
   onChange,
   onRemove,
   onSubmit,
+  onDelete,
   placeholder,
   colorClass,
   disabled = false,
   readonly = false,
   loading = false,
+  deleting = false,
 }) => {
   let inputClassName =
     "w-full px-3 py-2 pr-10 border rounded focus:outline-none transition-all duration-300 ";
   if (readonly) {
     inputClassName +=
       "bg-green-50 border-green-300 text-green-800 cursor-not-allowed";
-  } else if (disabled || loading) {
+  } else if (disabled || loading || deleting) {
     inputClassName +=
       "bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed";
   } else {
@@ -66,7 +64,7 @@ const UrlInputBox: React.FC<UrlInputBoxProps> = ({
                 onSubmit();
               }
             }}
-            disabled={disabled || loading}
+            disabled={disabled || loading || deleting}
             readOnly={readonly}
           />
 
@@ -77,30 +75,54 @@ const UrlInputBox: React.FC<UrlInputBoxProps> = ({
           {loading && (
             <FaSpinner className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-500 w-4 h-4 animate-spin" />
           )}
+          {deleting && (
+            <FaSpinner className="absolute right-3 top-1/2 transform -translate-y-1/2 text-red-500 w-4 h-4 animate-spin" />
+          )}
         </div>
 
         {/* Action buttons */}
         <div className="flex gap-2">
-          {/* Edit/Remove button */}
+          {/* Remove/Delete button */}
           {url && (
             <button
               type="button"
               className={`px-3 py-2 rounded transition flex items-center gap-2 ${
                 readonly
-                  ? "bg-blue-100 text-blue-700 hover:bg-blue-200 border border-blue-200"
+                  ? deleting
+                    ? "bg-red-200 text-red-800 cursor-not-allowed border border-red-300"
+                    : "bg-red-100 text-red-700 hover:bg-red-200 border border-red-200"
                   : "bg-orange-100 text-orange-700 hover:bg-orange-200 border border-orange-200"
               } ${
                 disabled && !readonly ? "opacity-50 cursor-not-allowed" : ""
               }`}
-              onClick={onRemove}
-              disabled={(disabled || loading) && !readonly}
-              title={readonly ? "Click to edit evidence" : "Remove evidence"}
+              onClick={(e) => {
+                console.log("Delete button clicked!", { readonly, onDelete, onRemove });
+                e.preventDefault();
+                if (readonly && onDelete) {
+                  console.log("Calling onDelete function...");
+                  onDelete();
+                } else if (!readonly && onRemove) {
+                  console.log("Calling onRemove function...");
+                  onRemove();
+                }
+              }}
+              disabled={(disabled || loading || deleting) && !readonly}
+              title={
+                readonly ? "Delete evidence permanently" : "Remove evidence"
+              }
             >
               {readonly ? (
-                <>
-                  <FaEdit className="w-3 h-3" />
-                  <span>Edit</span>
-                </>
+                deleting ? (
+                  <>
+                    <FaSpinner className="w-3 h-3 animate-spin" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <>
+                    <FaTrash className="w-3 h-3" />
+                    <span>Delete</span>
+                  </>
+                )
               ) : (
                 <>
                   <FaTrash className="w-3 h-3" />
@@ -115,12 +137,12 @@ const UrlInputBox: React.FC<UrlInputBoxProps> = ({
             <button
               type="button"
               className={`px-3 py-2 rounded transition flex items-center gap-2 shadow-sm ${
-                disabled || loading || !url
+                disabled || loading || deleting || !url
                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                   : "bg-green-600 text-white hover:bg-green-700 border border-green-600"
               }`}
               onClick={onSubmit}
-              disabled={disabled || loading || !url}
+              disabled={disabled || loading || deleting || !url}
             >
               {loading ? (
                 <>

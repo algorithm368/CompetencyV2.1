@@ -17,6 +17,8 @@ interface SubSkillItemProps {
   submitted: boolean;
   /** Indicates whether the submission process is currently in progress. */
   loading: boolean;
+  /** Indicates whether the deletion process is currently in progress. */
+  deleting?: boolean;
   /** Error message related to the evidence submission (if any). */
   error: string;
   /** Callback to handle URL/description input changes. */
@@ -25,6 +27,8 @@ interface SubSkillItemProps {
   onRemove: () => void;
   /** Callback to trigger evidence submission. */
   onSubmit: () => void;
+  /** Callback to trigger evidence deletion from server. */
+  onDelete?: () => void;
   /** Optional callback for when evidence is successfully loaded. */
   onEvidenceLoaded?: (evidence: string) => void;
 }
@@ -98,10 +102,12 @@ const SubSkillItem: React.FC<SubSkillItemProps> = ({
   approvalStatus,
   submitted,
   loading,
+  deleting = false,
   error,
   onUrlChange,
   onRemove,
   onSubmit,
+  onDelete,
   onEvidenceLoaded,
 }) => {
   // Custom hook for evidence fetching
@@ -112,6 +118,17 @@ const SubSkillItem: React.FC<SubSkillItemProps> = ({
     onEvidenceLoaded
   );
 
+  // Debug wrapper for onDelete
+  const handleDeleteDebug = () => {
+    console.log("SubSkillItem: onDelete called for subskill", subskill.id);
+    if (onDelete) {
+      console.log("SubSkillItem: Calling parent onDelete...");
+      onDelete();
+    } else {
+      console.log("SubSkillItem: onDelete function is undefined!");
+    }
+  };
+
   return (
     <EvidenceItem
       id={`subskill-${subskill.id}`}
@@ -120,14 +137,17 @@ const SubSkillItem: React.FC<SubSkillItemProps> = ({
       approvalStatus={approvalStatus}
       submitted={submitted}
       loading={loading}
+      deleting={deleting}
       error={error}
       evidenceLoading={evidenceLoading}
       colorVariant="blue"
       skillType="skill"
       placeholder="Enter evidence URL"
+      subSkillId={subskill.id}
       onUrlChange={onUrlChange}
       onRemove={onRemove}
       onSubmit={onSubmit}
+      onDelete={handleDeleteDebug}
     />
   );
 };

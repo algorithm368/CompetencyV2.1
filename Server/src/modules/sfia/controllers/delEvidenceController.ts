@@ -1,9 +1,9 @@
 import { Response, NextFunction } from "express";
-import { deleteEvidenceBySkillAndUser } from "../services/delEvidenceServices";
+import { deleteEvidenceBySubSkillAndUser } from "../services/delEvidenceServices";
 import { AuthenticatedRequest } from "../../../middlewares/authMiddleware";
 
 /**
- * Controller to delete evidence data for a specific skill and user.
+ * Controller to delete evidence data for a specific subskill and user.
  */
 export const delEvidenceController = async (
   req: AuthenticatedRequest,
@@ -20,36 +20,37 @@ export const delEvidenceController = async (
       return;
     }
 
-    const { skillCode } = req.body;
+    const { subSkillId } = req.body;
 
     // Validate required field
-    if (!skillCode) {
+    if (!subSkillId) {
       res.status(400).json({
         success: false,
-        message: "Skill code is required in the request body.",
+        message: "SubSkill ID is required in the request body.",
       });
       return;
     }
 
-    // Validate skillCode is not empty
-    if (typeof skillCode !== "string" || skillCode.trim() === "") {
+    // Validate subSkillId is a positive number
+    const numericSubSkillId = parseInt(subSkillId);
+    if (isNaN(numericSubSkillId) || numericSubSkillId <= 0) {
       res.status(400).json({
         success: false,
-        message: "Skill code cannot be empty.",
+        message: "SubSkill ID must be a valid positive number.",
       });
       return;
     }
 
     // Use the authenticated user's ID instead of requiring it in the request body
-    const deleteResult = await deleteEvidenceBySkillAndUser(
-      skillCode.trim(),
+    const deleteResult = await deleteEvidenceBySubSkillAndUser(
+      numericSubSkillId,
       req.user.userId
     );
 
     if (!deleteResult) {
       res.status(404).json({
         success: false,
-        message: "No evidence found for the specified skill and user.",
+        message: "No evidence found for the specified subskill and user.",
       });
       return;
     }

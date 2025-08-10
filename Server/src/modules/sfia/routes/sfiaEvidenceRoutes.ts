@@ -1,6 +1,7 @@
 import { Router } from "express";
-import { postEvidenceController } from "../controllers/postEvidenceController";
 import { getEvidenceController } from "../controllers/getEvidenceController";
+import { postEvidenceController } from "../controllers/postEvidenceController";
+import { delEvidenceController } from "../controllers/delEvidenceController";
 import { authenticate } from "@/middlewares/authMiddleware";
 
 const router = Router();
@@ -19,6 +20,8 @@ router.post("/", authenticate, postEvidenceController);
 // permission: protected
 router.post("/get", authenticate, getEvidenceController);
 
-router.delete("/:id", authenticate, delEvidenceController.deleteEvidence);
+// example route: /api/sfia/evidence/delete
+// permission: protected
+router.delete("/delete", authenticate, delEvidenceController);
 
 export default router;

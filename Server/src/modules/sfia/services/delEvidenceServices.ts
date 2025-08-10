@@ -104,46 +104,49 @@ export async function deleteEvidenceById(
 }
 
 /**
- * Deletes evidence by skill code and user ID.
+ * Deletes evidence by subskill ID and user ID.
  *
- * This function provides an alternative deletion method by:
- * - Finding evidence associated with a specific skill code and user
+ * This function provides deletion by specific subskill:
+ * - Finding evidence associated with a specific subskill ID and user
  * - Deleting the most recent evidence for that combination
  * - Returning the deleted evidence information
  *
  * @async
- * @function deleteEvidenceBySkillAndUser
- * @param {string} skillCode - The skill code associated with the evidence.
+ * @function deleteEvidenceBySubSkillAndUser
+ * @param {number} subSkillId - The subskill ID associated with the evidence.
  * @param {string} userId - The user ID who owns the evidence.
  * @returns {Promise<DeleteEvidenceResult|null>} The deleted evidence data, or null if no evidence found.
  *
  * @throws {Error} If parameters are invalid or database operation fails.
  *
  * @example
- * // Delete evidence by skill code and user
- * const deleted = await deleteEvidenceBySkillAndUser('SKILL-001', 'user-123');
+ * // Delete evidence by subskill ID and user
+ * const deleted = await deleteEvidenceBySubSkillAndUser(123, 'user-456');
  * if (deleted) {
  *   console.log(`Deleted evidence: ${deleted.evidenceUrl}`);
  * } else {
  *   console.log('No evidence found to delete');
  * }
  */
-export async function deleteEvidenceBySkillAndUser(
-  skillCode: string,
+export async function deleteEvidenceBySubSkillAndUser(
+  subSkillId: number,
   userId: string
 ): Promise<DeleteEvidenceResult | null> {
   try {
     // Validate input parameters
-    if (!skillCode || !userId) {
-      throw new Error("Skill code and user ID are required parameters");
+    if (!subSkillId || !userId) {
+      throw new Error("SubSkill ID and user ID are required parameters");
     }
 
-    // Find the evidence to delete through the proper relationship chain
+    // Validate subSkillId is a positive number
+    if (typeof subSkillId !== 'number' || subSkillId <= 0) {
+      throw new Error("SubSkill ID must be a positive number");
+    }
+
+    // Find the evidence to delete
     const evidenceToDelete = await prismaSfia.information.findFirst({
       where: {
-        subSkill: {
-          skillCode: skillCode.trim(),
-        },
+        subSkillId: subSkillId,
         dataCollection: {
           userId: userId.trim(),
         },
@@ -165,9 +168,9 @@ export async function deleteEvidenceBySkillAndUser(
 
     return result as DeleteEvidenceResult;
   } catch (error: any) {
-    console.error("Error deleting evidence by skill and user:", error);
+    console.error("Error deleting evidence by subskill and user:", error);
     throw new Error(
-      `Failed to delete evidence for skill: ${skillCode} and user: ${userId}`
+      `Failed to delete evidence for subskill: ${subSkillId} and user: ${userId}`
     );
   }
 }

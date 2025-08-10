@@ -24,7 +24,7 @@ export interface SubmitEvidenceRequest {
 export interface ApiResponse {
   success: boolean;
   message: string;
-  data?: any;
+  data?: unknown;
 }
 
 export interface EvidenceState {
@@ -36,6 +36,7 @@ export interface EvidenceState {
   };
   submitted: { [subSkillId: string]: boolean };
   loading: { [subSkillId: string]: boolean };
+  deleting: { [subSkillId: string]: boolean };
   errors: { [subSkillId: string]: string };
   approvalStatus: { [subSkillId: string]: string | null };
 }

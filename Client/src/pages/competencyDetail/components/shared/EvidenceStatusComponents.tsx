@@ -70,6 +70,12 @@ export const StatusIcon: React.FC<StatusIconProps> = ({
           className={`w-5 h-5 ${colors.primary} animate-spin flex-shrink-0`}
         />
       );
+    case EvidenceStatus.DELETING:
+      return (
+        <FaSpinner
+          className="w-5 h-5 text-red-500 animate-spin flex-shrink-0"
+        />
+      );
     case EvidenceStatus.ERROR:
       return (
         <FaExclamationTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
@@ -110,6 +116,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
           {config.badgeText}
         </span>
       );
+    case EvidenceStatus.DELETING:
     case EvidenceStatus.ERROR:
     case EvidenceStatus.REJECTED:
       return (
@@ -161,6 +168,17 @@ export const StatusMessages: React.FC<StatusMessagesProps> = ({
         </div>
       )}
 
+      {/* Deleting state */}
+      {status === EvidenceStatus.DELETING && (
+        <div
+          className="flex items-center gap-2 text-red-600 text-sm"
+          aria-live="polite"
+        >
+          <FaSpinner className="w-3 h-3 animate-spin" />
+          <span>{config.message}</span>
+        </div>
+      )}
+
       {/* Error state */}
       {status === EvidenceStatus.ERROR && error && (
         <div
@@ -174,7 +192,7 @@ export const StatusMessages: React.FC<StatusMessagesProps> = ({
       )}
 
       {/* Status-specific messages */}
-      {status !== EvidenceStatus.LOADING && status !== EvidenceStatus.ERROR && (
+      {status !== EvidenceStatus.LOADING && status !== EvidenceStatus.DELETING && status !== EvidenceStatus.ERROR && (
         <>
           {status === EvidenceStatus.APPROVED && (
             <div className="flex items-center gap-2 text-green-600 text-sm bg-green-50 border border-green-200 rounded p-2">

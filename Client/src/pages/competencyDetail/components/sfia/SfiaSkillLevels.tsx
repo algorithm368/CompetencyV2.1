@@ -2,8 +2,6 @@ import React, { useMemo, useEffect, useCallback, memo } from "react";
 import { FaGraduationCap } from "react-icons/fa";
 import { useSfiaEvidenceSender } from "../../hooks/evidence/useSfiaEvidenceSender";
 import { useEvidenceFetcher } from "@Pages/competencyDetail/hooks/evidence/useSfiaEvidenceFetcher";
-import { DeleteSfiaEvidenceService } from "../../services/deleteSfiaEvidenceAPI";
-import { useAuth } from "@Contexts/AuthContext";
 import {
   SfiaLevel,
   SfiaDescription,
@@ -61,13 +59,12 @@ interface SubSkillsSectionProps {
 
 const SfiaSkillLevels: React.FC<SfiaSkillLevelsProps> = memo(
   ({ levels, skillCode }) => {
-    const { accessToken } = useAuth();
-
     const {
       evidenceState,
       handleUrlChange,
       handleRemove,
       handleSubmit,
+      handleDelete,
       initializeEvidenceUrls,
     } = useSfiaEvidenceSender();
 
@@ -76,34 +73,6 @@ const SfiaSkillLevels: React.FC<SfiaSkillLevelsProps> = memo(
       loading: evidenceLoading,
       error: evidenceError,
     } = useEvidenceFetcher(skillCode);
-
-    // Delete evidence handler
-    const handleDelete = useCallback(
-      (subskillId: number) => async () => {
-        try {
-          const baseApi = import.meta.env.VITE_API_BASE_URL;
-
-          const deleteService = new DeleteSfiaEvidenceService(
-            baseApi,
-            accessToken
-          );
-
-          const result = await deleteService.deleteEvidence({
-            subSkillId: subskillId,
-          });
-
-          if (result.success) {
-            // Remove evidence from state
-            handleRemove(subskillId);
-          } else {
-            console.error("Failed to delete evidence:", result.error);
-          }
-        } catch (error) {
-          console.error("Error deleting evidence:", error);
-        }
-      },
-      [accessToken, handleRemove]
-    );
 
     useEffect(() => {
       if (evidenceData && Object.keys(evidenceData).length > 0) {
@@ -120,7 +89,9 @@ const SfiaSkillLevels: React.FC<SfiaSkillLevelsProps> = memo(
         onSubmit: (id: number) => {
           void handleSubmit(id);
         },
-        onDelete: handleDelete,
+        onDelete: (id: number) => {
+          void handleDelete(id);
+        },
       }),
       [handleUrlChange, handleRemove, handleSubmit, handleDelete]
     );
@@ -394,11 +365,12 @@ const SubSkillsSection: React.FC<SubSkillsSectionProps> = memo(
                 url={
                   typeof evidenceUrl === "string"
                     ? evidenceUrl
-                    : evidenceUrl?.url || ""
+                    : evidenceUrl?.evidenceUrl || ""
                 }
                 approvalStatus={evidenceUrl?.approvalStatus || "NOT_APPROVED"}
                 submitted={evidenceState.submitted[idStr] || false}
                 loading={evidenceState.loading[idStr] || false}
+                deleting={evidenceState.deleting[idStr] || false}
                 error={evidenceState.errors[idStr] || ""}
                 onUrlChange={handleUrlChange(subskill.id)}
                 onRemove={handleRemove(subskill.id)}

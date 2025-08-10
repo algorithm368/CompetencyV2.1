@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { useAuth } from "@Contexts/AuthContext";
 import { SfiaEvidenceService } from "../../services/postSfiaEvidenceAPI";
+import { DeleteSfiaEvidenceService } from "../../services/deleteSfiaEvidenceAPI";
 import { SubmitEvidenceRequest, EvidenceState } from "../../types/sfia";
 
 /**
@@ -56,6 +57,7 @@ export const useSfiaEvidenceSender = () => {
     urls: {}, // Evidence input values (URL or text)
     submitted: {}, // Submission completion status
     loading: {}, // API call loading states
+    deleting: {}, // Evidence deletion loading states
     errors: {}, // Validation and submission errors
     approvalStatus: {}, // Approval status for each sub-skill
   });
@@ -72,7 +74,7 @@ export const useSfiaEvidenceSender = () => {
             Object.entries(evidenceData).map(([key, value]) => [
               key.toString(),
               {
-                url: value.url, // Changed from evidenceUrl to url
+                evidenceUrl: value.url, // Using evidenceUrl to match type definition
                 approvalStatus: value.approvalStatus,
               },
             ])
@@ -83,7 +85,7 @@ export const useSfiaEvidenceSender = () => {
           ...Object.fromEntries(
             Object.entries(evidenceData).map(([key, value]) => [
               key.toString(),
-              !!value.url, // Changed from evidenceUrl to url
+              !!value.url, // Check if URL exists
             ])
           ),
         },
@@ -261,11 +263,104 @@ export const useSfiaEvidenceSender = () => {
     }
   };
 
+  /**
+   * Handles evidence deletion for a specific sub-skill
+   *
+   * @param {number} id - The sub-skill ID to delete evidence for
+   * @returns {Promise<boolean>} Promise that resolves to true if deletion was successful
+   *
+   * Process:
+   * 1. Validates user authentication
+   * 2. Sets deleting state to show UI feedback
+   * 3. Calls delete API
+   * 4. Updates state based on success/failure
+   * 5. Clears deleting state
+   */
+  const handleDelete = useCallback(
+    async (id: number): Promise<boolean> => {
+      const idStr = id.toString();
+
+      // Step 1: Validate authentication
+      if (!accessToken) {
+        console.error("❌ User is not authenticated");
+        setEvidenceState((prev) => ({
+          ...prev,
+          errors: { ...prev.errors, [idStr]: "Authentication required" },
+        }));
+        return false;
+      }
+
+      // Step 2: Set deleting state
+      setEvidenceState((prev) => ({
+        ...prev,
+        deleting: { ...prev.deleting, [idStr]: true },
+        errors: { ...prev.errors, [idStr]: "" }, // Clear any previous errors
+      }));
+
+      try {
+        // Step 3: Create delete service and call API
+        const deleteService = new DeleteSfiaEvidenceService(
+          baseApi,
+          accessToken
+        );
+        const result = await deleteService.deleteEvidence({
+          subSkillId: id,
+        });
+
+        if (result.success) {
+          // Step 4a: Successful deletion - reset evidence state
+          console.log(
+            `✅ SFIA evidence deleted successfully for subskill ID: ${id}`
+          );
+          setEvidenceState((prev) => ({
+            ...prev,
+            urls: {
+              ...prev.urls,
+              [idStr]: { evidenceUrl: "", approvalStatus: null },
+            },
+            submitted: { ...prev.submitted, [idStr]: false },
+            errors: { ...prev.errors, [idStr]: "" },
+            approvalStatus: { ...prev.approvalStatus, [idStr]: null },
+          }));
+          return true;
+        } else {
+          // Step 4b: API returned error
+          const errorMessage = result.message || "Failed to delete evidence";
+          console.error(`❌ SFIA evidence deletion failed:`, errorMessage);
+          setEvidenceState((prev) => ({
+            ...prev,
+            errors: { ...prev.errors, [idStr]: errorMessage },
+          }));
+          return false;
+        }
+      } catch (error: unknown) {
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred";
+        console.error(`❌ Error deleting SFIA evidence:`, error);
+        setEvidenceState((prev) => ({
+          ...prev,
+          errors: { ...prev.errors, [idStr]: errorMessage },
+        }));
+        return false;
+      } finally {
+        // Step 5: Always clear deleting state
+        setEvidenceState((prev) => ({
+          ...prev,
+          deleting: { ...prev.deleting, [idStr]: false },
+        }));
+      }
+    },
+    [accessToken, baseApi]
+  );
+
   return {
     evidenceState,
     handleUrlChange,
     handleRemove,
     handleSubmit,
+    handleDelete,
     initializeEvidenceUrls,
   };
 };

@@ -77,9 +77,10 @@ export const EvidenceItem: React.FC<EvidenceItemProps> = ({
         error,
         url,
         submitted,
-        approvalStatus
+        approvalStatus,
+        deleting
       ),
-    [evidenceLoading, loading, error, url, submitted, approvalStatus]
+    [evidenceLoading, loading, error, url, submitted, approvalStatus, deleting]
   );
 
   // Memoized input props

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { FaCheck, FaTrash, FaPaperPlane, FaSpinner } from "react-icons/fa";
 
 interface UrlInputBoxProps {
@@ -28,27 +28,99 @@ const UrlInputBox: React.FC<UrlInputBoxProps> = ({
   loading = false,
   deleting = false,
 }) => {
-  let inputClassName =
-    "w-full px-3 py-2 pr-10 border rounded focus:outline-none transition-all duration-300 ";
-  if (readonly) {
-    inputClassName +=
-      "bg-green-50 border-green-300 text-green-800 cursor-not-allowed";
-  } else if (disabled || loading || deleting) {
-    inputClassName +=
-      "bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed";
-  } else {
-    inputClassName +=
-      "bg-white border-gray-300 text-gray-900 focus:ring-2 focus:ring-blue-400 focus:border-blue-400";
-  }
-  inputClassName += " placeholder-gray-400";
+  const [isRemoving, setIsRemoving] = useState(false);
+
+  // Handle remove animation
+  const handleRemoveClick = () => {
+    if (readonly && onDelete) {
+      console.log("Calling onDelete function...");
+      onDelete();
+    } else if (!readonly && onRemove) {
+      console.log("Calling onRemove function...");
+      setIsRemoving(true);
+      // Add small delay for animation
+      setTimeout(() => {
+        onRemove();
+        setIsRemoving(false);
+      }, 200);
+    }
+  };
+
+  // Reset states when URL changes
+  useEffect(() => {
+    if (!url) {
+      setIsRemoving(false);
+    }
+  }, [url]);
+
+  // Determine input styling based on state
+  const getInputClassName = () => {
+    const baseClassName = "w-full px-3 py-2 pr-10 border rounded transition-all duration-300 ease-in-out ";
+    
+    if (readonly) {
+      return baseClassName + "bg-green-50 border-green-300 text-green-800 cursor-not-allowed placeholder-gray-400";
+    }
+    
+    if (disabled || loading || deleting) {
+      return baseClassName + "bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed placeholder-gray-400";
+    }
+    
+    if (isRemoving) {
+      return baseClassName + "bg-red-50 border-red-300 text-red-700 transform scale-95 placeholder-gray-400";
+    }
+    
+    return baseClassName + "bg-white border-gray-300 text-gray-900 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 hover:border-blue-300 placeholder-gray-400";
+  };
+
+  // Determine button styling
+  const getButtonClassName = () => {
+    const baseClassName = "px-3 py-2 rounded transition-all duration-200 flex items-center gap-2 ";
+    
+    if (readonly) {
+      if (deleting) {
+        return baseClassName + "bg-red-200 text-red-800 cursor-not-allowed border border-red-300";
+      }
+      return baseClassName + "bg-red-100 text-red-700 hover:bg-red-200 border border-red-200 hover:scale-105";
+    }
+    
+    const disabledClass = disabled && !readonly ? " opacity-50 cursor-not-allowed" : "";
+    return baseClassName + "bg-orange-100 text-orange-700 hover:bg-orange-200 border border-orange-200 hover:scale-105" + disabledClass;
+  };
+
+  // Render delete button content
+  const renderDeleteButtonContent = () => {
+    if (readonly) {
+      if (deleting) {
+        return (
+          <>
+            <FaSpinner className="w-3 h-3 animate-spin" />
+            <span>Deleting...</span>
+          </>
+        );
+      }
+      return (
+        <>
+          <FaTrash className="w-3 h-3" />
+          <span>Delete</span>
+        </>
+      );
+    }
+    
+    return (
+      <>
+        <FaTrash className={`w-3 h-3 transition-transform duration-200 ${isRemoving ? 'scale-110' : ''}`} />
+        <span>{isRemoving ? 'Removing...' : 'Remove'}</span>
+      </>
+    );
+  };
 
   return (
-    <div className={`flex flex-col gap-2 mt-2 ${colorClass || ""}`}>
+    <div className={`flex flex-col gap-2 mt-2 transition-all duration-300 ${colorClass || ""} ${isRemoving ? 'opacity-75 transform scale-95' : ''}`}>
       <div className="flex gap-2">
         <div className="relative flex-1">
           <input
             type="url"
-            className={inputClassName}
+            className={getInputClassName()}
             placeholder={placeholder || "Enter URL or description"}
             value={url}
             onChange={(e) => onChange(e.target.value)}
@@ -69,10 +141,10 @@ const UrlInputBox: React.FC<UrlInputBoxProps> = ({
           />
 
           {/* Status icon inside input */}
-          {readonly && (
-            <FaCheck className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-500 w-4 h-4" />
+          {readonly && !deleting && (
+            <FaCheck className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-500 w-4 h-4 transition-all duration-200" />
           )}
-          {loading && (
+          {loading && !deleting && (
             <FaSpinner className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-500 w-4 h-4 animate-spin" />
           )}
           {deleting && (
@@ -81,54 +153,23 @@ const UrlInputBox: React.FC<UrlInputBoxProps> = ({
         </div>
 
         {/* Action buttons */}
-        <div className="flex gap-2">
+        <div className={`flex gap-2 transition-all duration-200 ${isRemoving ? 'scale-95' : ''}`}>
           {/* Remove/Delete button */}
           {url && (
             <button
               type="button"
-              className={`px-3 py-2 rounded transition flex items-center gap-2 ${
-                readonly
-                  ? deleting
-                    ? "bg-red-200 text-red-800 cursor-not-allowed border border-red-300"
-                    : "bg-red-100 text-red-700 hover:bg-red-200 border border-red-200"
-                  : "bg-orange-100 text-orange-700 hover:bg-orange-200 border border-orange-200"
-              } ${
-                disabled && !readonly ? "opacity-50 cursor-not-allowed" : ""
-              }`}
+              className={getButtonClassName()}
               onClick={(e) => {
                 console.log("Delete button clicked!", { readonly, onDelete, onRemove });
                 e.preventDefault();
-                if (readonly && onDelete) {
-                  console.log("Calling onDelete function...");
-                  onDelete();
-                } else if (!readonly && onRemove) {
-                  console.log("Calling onRemove function...");
-                  onRemove();
-                }
+                handleRemoveClick();
               }}
               disabled={(disabled || loading || deleting) && !readonly}
               title={
                 readonly ? "Delete evidence permanently" : "Remove evidence"
               }
             >
-              {readonly ? (
-                deleting ? (
-                  <>
-                    <FaSpinner className="w-3 h-3 animate-spin" />
-                    <span>Deleting...</span>
-                  </>
-                ) : (
-                  <>
-                    <FaTrash className="w-3 h-3" />
-                    <span>Delete</span>
-                  </>
-                )
-              ) : (
-                <>
-                  <FaTrash className="w-3 h-3" />
-                  <span>Remove</span>
-                </>
-              )}
+              {renderDeleteButtonContent()}
             </button>
           )}
 
@@ -136,10 +177,10 @@ const UrlInputBox: React.FC<UrlInputBoxProps> = ({
           {!readonly && (
             <button
               type="button"
-              className={`px-3 py-2 rounded transition flex items-center gap-2 shadow-sm ${
+              className={`px-3 py-2 rounded transition-all duration-200 flex items-center gap-2 shadow-sm ${
                 disabled || loading || deleting || !url
                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-green-600 text-white hover:bg-green-700 border border-green-600"
+                  : "bg-green-600 text-white hover:bg-green-700 border border-green-600 hover:scale-105"
               }`}
               onClick={onSubmit}
               disabled={disabled || loading || deleting || !url}
@@ -161,7 +202,7 @@ const UrlInputBox: React.FC<UrlInputBoxProps> = ({
       </div>
 
       {/* Status indicators and submitted URL */}
-      {readonly && url && (
+      {readonly && url && !deleting && (
         <div className="bg-green-50 border border-green-200 rounded p-3">
           <div className="flex items-center gap-2 mb-2">
             <FaCheck className="text-green-500 w-4 h-4" />
@@ -177,6 +218,18 @@ const UrlInputBox: React.FC<UrlInputBoxProps> = ({
           >
             {url}
           </a>
+        </div>
+      )}
+
+      {/* Deleting status message */}
+      {deleting && (
+        <div className="bg-red-50 border border-red-200 rounded p-3">
+          <div className="flex items-center gap-2">
+            <FaSpinner className="text-red-500 w-4 h-4 animate-spin" />
+            <span className="text-red-700 font-medium text-sm">
+              Deleting evidence...
+            </span>
+          </div>
         </div>
       )}
     </div>

@@ -1,6 +1,7 @@
 // Types and Enums
 export enum EvidenceStatus {
   LOADING = "loading",
+  DELETING = "deleting",
   ERROR = "error",
   APPROVED = "approved",
   REJECTED = "rejected", 
@@ -28,8 +29,10 @@ export const getEvidenceStatus = (
   error: string,
   url: string,
   submitted: boolean,
-  approvalStatus?: string | null
+  approvalStatus?: string | null,
+  deleting?: boolean
 ): EvidenceStatus => {
+  if (deleting) return EvidenceStatus.DELETING;
   if (evidenceLoading) return EvidenceStatus.LOADING;
   if (loading) return EvidenceStatus.LOADING;
   if (error) return EvidenceStatus.ERROR;
@@ -69,6 +72,11 @@ export const STATUS_CONFIGS: Record<EvidenceStatus, StatusConfig> = {
     badgeText: "Submitting...",
     message: "Submitting your evidence...",
     badgeClass: "bg-blue-100 text-blue-700",
+  },
+  [EvidenceStatus.DELETING]: {
+    badgeText: "Deleting...",
+    message: "Removing your evidence...",
+    badgeClass: "bg-red-100 text-red-700",
   },
   [EvidenceStatus.ERROR]: {
     badgeText: "Error",

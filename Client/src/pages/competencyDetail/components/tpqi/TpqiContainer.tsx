@@ -48,7 +48,6 @@ const TpqiContainer: React.FC<TpqiContainerProps> = ({ competency }) => {
   return (
     <>
       <OverviewSection overall={competency?.overall} />
-      <NotesSection note={competency?.note} />
 
       {/* Use new evidence-based TPQI component */}
       {tpqiUnits.length > 0 && (

@@ -7,8 +7,6 @@ import QuickNavigation from "../ui/QuickNavigation";
 import CompetencyInfo from "../ui/CompetencyInfo";
 import StatsCard from "../ui/StatsCard";
 
-
-
 interface QuickNavItem {
   label: string;
   href: string;
@@ -20,7 +18,7 @@ interface PageHeaderProps {
   competencyTitle: string;
   lastFetched?: Date;
   quickNavItems: QuickNavItem[];
-  competencyData: any;
+  competencyData: unknown;
   isBookmarked: boolean;
   isFavorited: boolean;
   onBack: () => void;
@@ -32,7 +30,7 @@ interface PageHeaderProps {
   onTooltip: (key: string | null) => void;
   getFrameworkIcon: (framework: string) => React.ReactNode;
   getFrameworkColor: (framework: string) => string;
-  itemVariants: any;
+  itemVariants: unknown;
 }
 
 const PageHeader: React.FC<PageHeaderProps> = ({

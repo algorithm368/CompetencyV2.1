@@ -4,7 +4,6 @@ export { default as TpqiContainer } from './TpqiContainer';
 // New Evidence-based Components (Matching SFIA Structure)
 export { default as TpqiSection } from './TpqiSection';
 export { default as TpqiSkillKnowledgeItems } from './TpqiSkillKnowledgeItems';
-export { default as TpqiEvidenceItem } from './TpqiEvidenceItem';
 
 // Demo & Test Components
 export { default as TpqiDemo } from './TpqiDemo';

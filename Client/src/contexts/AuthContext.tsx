@@ -15,11 +15,13 @@ import {
   refreshAccessToken as refreshAccessTokenService,
   getCurrentUser as fetchCurrentUserService,
 } from "@Services/competency/authService";
+import { initApiInterceptors } from "@Services/api";
 
 interface AuthContextType {
   user: GoogleLoginResponse["user"] | null;
   accessToken: string | null;
   expiresIn: number | null;
+  isLoading: boolean;
   login: (idToken: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshAccessToken: () => Promise<void>;
@@ -32,6 +34,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthContextType["user"]>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [expiresIn, setExpiresIn] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(true); // Start with loading true
   const retryCounts = useRef<Record<string, number>>({});
 
   const refreshAccessToken = useCallback(async () => {
@@ -56,8 +59,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  // Initialize auth state from localStorage on mount
+  // Initialize API interceptors and auth state from localStorage on mount
   useEffect(() => {
+    // Initialize API interceptors first
+    initApiInterceptors();
+    
     const initializeAuth = async () => {
       try {
         const storedToken = localStorage.getItem("accessToken");
@@ -92,6 +98,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         localStorage.removeItem("accessToken");
         localStorage.removeItem("expiresIn");
         localStorage.removeItem("user");
+      } finally {
+        // Set loading to false regardless of success or failure
+        setIsLoading(false);
       }
     };
 
@@ -171,6 +180,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       user,
       accessToken,
       expiresIn,
+      isLoading,
       login,
       logout,
       refreshAccessToken,
@@ -180,6 +190,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       user,
       accessToken,
       expiresIn,
+      isLoading,
       login,
       logout,
       refreshAccessToken,

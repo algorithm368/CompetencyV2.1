@@ -67,32 +67,47 @@ const Login: React.FC<LoginProps> = ({ open, onClose, handleLogin }) => {
             <div className="absolute inset-0 bg-teal-600/20 backdrop-blur-sm"></div>
             <div className="text-center text-white relative z-10">
               <h2 className="text-2xl font-bold mb-2">Competency Database</h2>
-              <p className="text-sm opacity-90">Accurate Competency Assessment System</p>
+              <p className="text-sm opacity-90">
+                Accurate Competency Assessment System
+              </p>
               <div className="mt-4 w-16 h-1 bg-white/30 rounded-full mx-auto"></div>
             </div>
           </div>
           {/* Right Panel */}
           <div className="md:w-7/12 w-full flex items-center justify-center p-6 bg-gray-50/30">
             <div className="w-full max-w-xs">
-              <h3 className="text-2xl font-bold text-center mb-2 text-gray-900">Sign In</h3>
-              <p className="text-sm text-gray-600 text-center mb-6">Choose your preferred sign-in method</p>
+              <h3 className="text-2xl font-bold text-center mb-2 text-gray-900">
+                Sign In
+              </h3>
+              <p className="text-sm text-gray-600 text-center mb-6">
+                Choose your preferred sign-in method
+              </p>
 
               <div className="space-y-3">
                 {/* Google Login Button */}
-                <div className="flex justify-center relative w-[300px] h-[45px] mx-auto">
-                  <div className="absolute inset-0 z-10 flex items-center justify-center border border-gray-300 text-gray-700 rounded-xl bg-white hover:bg-gray-50 hover:border-teal-300 transition-all duration-200 shadow-sm hover:shadow-md">
-                    <FcGoogle className="h-5 w-5 mr-3" />
-                    <span className="text-sm font-medium">Sign in with Google</span>
+                <div className="flex justify-center relative w-[300px] h-[45px] mx-auto group">
+                  <div className="absolute inset-0 z-10 flex items-center justify-center border border-gray-300 text-gray-700 rounded-xl bg-white hover:bg-gray-50 hover:border-teal-300 hover:shadow-lg hover:scale-105 transition-all duration-300 shadow-sm cursor-pointer group-hover:border-teal-400 group-hover:shadow-xl group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-teal-50">
+                    <FcGoogle className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform duration-300" />
+                    <span className="text-sm font-medium group-hover:text-teal-700 transition-colors duration-300">
+                      Sign in with Google
+                    </span>
                   </div>
                   <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
                     <div className="absolute inset-0 opacity-1 z-20">
-                      <GoogleLogin onSuccess={handleGoogleSuccess} onError={handleGoogleError} width="300" useOneTap={false} />
+                      <GoogleLogin
+                        onSuccess={handleGoogleSuccess}
+                        onError={handleGoogleError}
+                        width="300"
+                        useOneTap={false}
+                      />
                     </div>
                   </GoogleOAuthProvider>
                 </div>
               </div>
               <div className="mt-6 text-center">
-                <p className="text-xs text-gray-500">By signing in, you agree to our Terms of Service</p>
+                <p className="text-xs text-gray-500">
+                  By signing in, you agree to our Terms of Service
+                </p>
               </div>
             </div>
           </div>

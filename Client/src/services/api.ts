@@ -32,13 +32,14 @@ export const scheduleTokenRefresh = (expiresIn: number) => {
   const delay = Math.max((expiresIn - 10) * 1000, 0);
   refreshTimeout = setTimeout(async () => {
     try {
-      const { accessToken, expiresIn: nextExpires } = await refreshAccessToken();
-      localStorage.setItem("token", accessToken);
+      const { accessToken, expiresIn: nextExpires } =
+        await refreshAccessToken();
+      localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("expiresIn", nextExpires.toString());
       api.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
       scheduleTokenRefresh(nextExpires);
     } catch {
-      localStorage.removeItem("token");
+      localStorage.removeItem("accessToken");
       localStorage.removeItem("expiresIn");
     }
   }, delay);
@@ -48,13 +49,13 @@ export function initApiInterceptors() {
   if (interceptorsInitialized) return;
   interceptorsInitialized = true;
 
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("accessToken");
   if (token) {
     api.defaults.headers.common.Authorization = `Bearer ${token}`;
   }
 
   api.interceptors.request.use((config) => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("accessToken");
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -65,7 +66,8 @@ export function initApiInterceptors() {
     (response) => response,
     async (error) => {
       const originalRequest = error.config;
-      if (!originalRequest || originalRequest._retry) return Promise.reject(error);
+      if (!originalRequest || originalRequest._retry)
+        return Promise.reject(error);
 
       const status = error.response?.status;
       const url = originalRequest.url || "";
@@ -75,7 +77,11 @@ export function initApiInterceptors() {
         return Promise.reject(error);
       }
 
-      if (status === 401 && !url.includes("/competency/auth/login") && !url.includes("/competency/auth/refresh-token")) {
+      if (
+        status === 401 &&
+        !url.includes("/competency/auth/login") &&
+        !url.includes("/competency/auth/refresh-token")
+      ) {
         originalRequest._retry = true;
 
         if (isRefreshing) {
@@ -92,7 +98,7 @@ export function initApiInterceptors() {
         try {
           const { accessToken, expiresIn } = await refreshAccessToken();
 
-          localStorage.setItem("token", accessToken);
+          localStorage.setItem("accessToken", accessToken);
           localStorage.setItem("expiresIn", expiresIn.toString());
           api.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
           processQueue(null, accessToken);
@@ -106,7 +112,7 @@ export function initApiInterceptors() {
             processQueue(new Error("Unknown error"), null);
           }
 
-          localStorage.removeItem("token");
+          localStorage.removeItem("accessToken");
           localStorage.removeItem("expiresIn");
 
           window.location.replace("/Home");

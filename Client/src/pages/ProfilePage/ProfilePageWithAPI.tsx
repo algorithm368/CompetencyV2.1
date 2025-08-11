@@ -1,8 +1,8 @@
-  import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import Layout from "@Layouts/Layout";
 import { WhiteTealBackground } from "@Components/Common/Background/WhiteTealBackground";
 import AuthContext from "@Contexts/AuthContext";
-import useProfile from "@Hooks/useProfile";
+import profileService, { ProfileFormData } from "@Services/competency/profileService";
 import {
   ProfileHeader,
   ProfileAvatar,
@@ -21,53 +21,80 @@ const ProfilePage = () => {
   // Get the same firstName that ProfileDisplay uses for consistency
   const userFirstName = auth?.user?.firstName || auth?.user?.email?.split("@")[0] || "User";
   
-  // Dialog and toast states
-  const [showDialog, setShowDialog] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-
-  // Use the profile hook
-  const {
-    formData,
-    loading,
-    saving,
-    error,
-    lastUpdated,
-    loadProfile,
-    updateFormData,
-    saveProfile,
-    validateForm,
-    clearError,
-  } = useProfile({
-    onSaveSuccess: (data) => {
-      console.log("Profile saved successfully:", data);
-      setShowToast(true);
-      setErrors({});
-      // Hide toast after 3 seconds
-      setTimeout(() => setShowToast(false), 3000);
-    },
-    onSaveError: (errorMessage) => {
-      console.error("Error saving profile:", errorMessage);
-      // You could show an error toast here if needed
-    },
-    onLoadError: (errorMessage) => {
-      console.error("Error loading profile:", errorMessage);
-      // You could show an error message here if needed
-    },
+  const [formData, setFormData] = useState<ProfileFormData>({
+    email: "",
+    firstNameTh: "",
+    lastNameTh: "",
+    firstNameEn: "",
+    lastNameEn: "",
+    lineId: "",
+    phone: "",
+    address: "",
   });
 
-  // Load profile data only after auth is initialized and user is authenticated
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [showDialog, setShowDialog] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("บันทึกข้อมูลสำเร็จ!");
+  const [lastUpdated, setLastUpdated] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+
+  // Load user profile data on component mount
   useEffect(() => {
-    if (!auth?.isLoading && auth?.user && auth?.accessToken) {
-      loadProfile().catch(console.error);
+    const loadUserProfile = async () => {
+      try {
+        setIsInitialLoading(true);
+        const profileData = await profileService.getUserProfile();
+        const convertedData = profileService.convertToFormData(profileData);
+        setFormData(convertedData);
+        
+        // Set last updated time
+        setLastUpdated(
+          new Date(profileData.updatedAt).toLocaleDateString("th-TH", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        );
+      } catch (error) {
+        console.error("Error loading user profile:", error);
+        setToastMessage("ไม่สามารถโหลดข้อมูลโปรไฟล์ได้");
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+        
+        // Set default last updated time if loading fails
+        setLastUpdated(
+          new Date().toLocaleDateString("th-TH", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        );
+      } finally {
+        setIsInitialLoading(false);
+      }
+    };
+
+    if (auth?.user) {
+      loadUserProfile();
+    } else {
+      setIsInitialLoading(false);
     }
-  }, [auth?.isLoading, auth?.user, auth?.accessToken, loadProfile]);
+  }, [auth?.user]);
 
   const handleInputChange =
     (field: string) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      updateFormData(field as keyof typeof formData, e.target.value);
-      
+      setFormData((prev) => ({
+        ...prev,
+        [field]: e.target.value,
+      }));
+
       // Clear error when user starts typing
       if (errors[field]) {
         setErrors((prev) => ({
@@ -75,99 +102,102 @@ const ProfilePage = () => {
           [field]: "",
         }));
       }
-      
-      // Clear general error
-      if (error) {
-        clearError();
-      }
     };
 
+  const validateForm = () => {
+    const newErrors: { [key: string]: string } = {};
+
+    const requiredFields = {
+      firstNameTh: "กรุณากรอกชื่อ (ไทย)",
+      lastNameTh: "กรุณากรอกนามสกุล (ไทย)",
+      firstNameEn: "กรุณากรอกชื่อ (อังกฤษ)",
+      lastNameEn: "กรุณากรอกนามสกุล (อังกฤษ)",
+      phone: "กรุณากรอกหมายเลขโทรศัพท์",
+      address: "กรุณากรอกที่อยู่",
+    };
+
+    Object.entries(requiredFields).forEach(([field, message]) => {
+      if (!formData[field as keyof ProfileFormData].trim()) {
+        newErrors[field] = message;
+      }
+    });
+
+    // Phone validation
+    if (formData.phone.trim() && !/^[0-9-+\s()]{10,}$/.test(formData.phone)) {
+      newErrors.phone = "รูปแบบหมายเลขโทรศัพท์ไม่ถูกต้อง";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSave = () => {
-    const validationErrors = validateForm();
-    setErrors(validationErrors);
-    
-    if (Object.keys(validationErrors).length === 0) {
+    if (validateForm()) {
       setShowDialog(true);
     }
   };
 
   const confirmSave = async () => {
+    setIsLoading(true);
     setShowDialog(false);
-    const result = await saveProfile();
-    
-    if (result.errors) {
-      setErrors(result.errors);
+
+    try {
+      const updateData = profileService.convertFromFormData(formData);
+      const updatedProfile = await profileService.updateUserProfile(updateData);
+      
+      setToastMessage("บันทึกข้อมูลส่วนตัวสำเร็จ!");
+      setShowToast(true);
+
+      // Update timestamp
+      setLastUpdated(
+        new Date(updatedProfile.updatedAt).toLocaleDateString("th-TH", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      );
+
+      // Hide toast after 3 seconds
+      setTimeout(() => setShowToast(false), 3000);
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      setToastMessage("เกิดข้อผิดพลาดในการบันทึกข้อมูล");
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  // Show loading spinner while fetching initial data
+  if (isInitialLoading) {
+    return (
+      <Layout>
+        <WhiteTealBackground>
+          <div className="container mx-auto px-4 py-16">
+            <div className="flex items-center justify-center min-h-[50vh]">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto mb-4"></div>
+                <p className="text-teal-700 font-medium">กำลังโหลดข้อมูลโปรไฟล์...</p>
+              </div>
+            </div>
+          </div>
+        </WhiteTealBackground>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
       <WhiteTealBackground>
         <div className="container mx-auto px-4 py-16">
-          {/* Auth Loading State */}
-          {auth?.isLoading && (
-            <div className="flex justify-center items-center py-20">
-              <div className="flex flex-col items-center space-y-4">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
-                <p className="text-teal-600 font-medium">กำลังตรวจสอบการเข้าสู่ระบบ...</p>
-              </div>
-            </div>
-          )}
+          {/* Header Section */}
+          <ProfileHeader lastUpdated={lastUpdated} />
 
-          {/* User Not Authenticated */}
-          {!auth?.isLoading && !auth?.user && (
-            <div className="flex justify-center items-center py-20">
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 max-w-md">
-                <div className="flex items-center space-x-3">
-                  <i className="fas fa-exclamation-circle text-yellow-500 text-xl"></i>
-                  <div>
-                    <h3 className="text-yellow-800 font-medium">กรุณาเข้าสู่ระบบ</h3>
-                    <p className="text-yellow-600 text-sm">คุณจำเป็นต้องเข้าสู่ระบบเพื่อเข้าถึงหน้าโปรไฟล์</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Profile Loading State */}
-          {!auth?.isLoading && auth?.user && loading && (
-            <div className="flex justify-center items-center py-20">
-              <div className="flex flex-col items-center space-y-4">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
-                <p className="text-teal-600 font-medium">กำลังโหลดข้อมูลโปรไฟล์...</p>
-              </div>
-            </div>
-          )}
-
-          {/* Error State */}
-          {!auth?.isLoading && auth?.user && error && !loading && (
-            <div className="flex justify-center items-center py-20">
-              <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
-                <div className="flex items-center space-x-3">
-                  <i className="fas fa-exclamation-triangle text-red-500 text-xl"></i>
-                  <div>
-                    <h3 className="text-red-800 font-medium">เกิดข้อผิดพลาด</h3>
-                    <p className="text-red-600 text-sm">{error}</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => loadProfile().catch(console.error)}
-                  className="mt-4 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  โหลดข้อมูลใหม่
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Profile Content - Only show when auth is loaded, user is authenticated, profile is loaded and no error */}
-          {!auth?.isLoading && auth?.user && !loading && !error && (
-            <>
-              {/* Header Section */}
-              <ProfileHeader lastUpdated={lastUpdated} />
-
-              {/* Main Profile Card */}
-              <div className="max-w-6xl mx-auto">
+          {/* Main Profile Card */}
+          <div className="max-w-6xl mx-auto">
             <div className="bg-white/90 backdrop-blur-sm shadow-2xl rounded-3xl border border-white/30 overflow-hidden">
               {/* Card Header with Avatar */}
               <div className="relative bg-gradient-to-br from-teal-600 to-teal-800 px-8 py-16">
@@ -182,7 +212,7 @@ const ProfilePage = () => {
                     {/* Avatar */}
                     <ProfileAvatar
                       size="lg"
-                      firstName={userFirstName}
+                      firstName={formData.firstNameTh || formData.firstNameEn || userFirstName}
                     />
 
                     <div className="text-white text-center lg:text-left">
@@ -350,15 +380,13 @@ const ProfilePage = () => {
                 <div className="mt-16 pt-8 border-t border-gray-200">
                   <SaveButton
                     onClick={handleSave}
-                    loading={saving}
-                    disabled={saving}
+                    loading={isLoading}
+                    disabled={isLoading}
                   />
                 </div>
               </div>
             </div>
           </div>
-            </>
-          )}
         </div>
       </WhiteTealBackground>
 
@@ -374,7 +402,7 @@ const ProfilePage = () => {
       {/* Success Toast */}
       <SuccessToast
         isVisible={showToast}
-        message="บันทึกข้อมูลสำเร็จ!"
+        message={toastMessage}
         onClose={() => setShowToast(false)}
       />
     </Layout>

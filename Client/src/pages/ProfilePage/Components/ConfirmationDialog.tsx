@@ -17,42 +17,36 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   title,
   message,
   confirmText = "ยืนยัน",
-  cancelText = "ยกเลิก"
+  cancelText = "ยกเลิก",
 }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
-      <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full transform transition-transform duration-300 scale-100 animate-slide-up">
-        <div className="p-8">
-          {/* Icon and Header */}
-          <div className="flex items-center space-x-4 mb-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-amber-100 to-orange-100 rounded-2xl flex items-center justify-center">
-              <i className="fas fa-exclamation-triangle text-amber-600 text-2xl"></i>
-            </div>
-            <div>
-              <h3 className="text-xl font-bold text-gray-900">{title}</h3>
-              <p className="text-sm text-gray-600">กรุณาตรวจสอบข้อมูลให้ถูกต้อง</p>
-            </div>
+    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-lg max-w-lg w-full">
+        <div className="p-6">
+          {/* Header */}
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
           </div>
 
           {/* Message */}
-          <p className="text-gray-700 mb-8 text-lg leading-relaxed">{message}</p>
+          <p className="text-gray-700 mb-6 leading-relaxed">
+            {message}
+          </p>
 
           {/* Action Buttons */}
-          <div className="flex space-x-4">
+          <div className="flex justify-end space-x-3">
             <button
               onClick={onClose}
-              className="flex-1 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold rounded-2xl transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5"
+              className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors duration-200 font-medium"
             >
-              <i className="fas fa-times mr-2"></i>
               {cancelText}
             </button>
             <button
               onClick={onConfirm}
-              className="flex-1 px-6 py-3 bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white font-semibold rounded-2xl transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5"
+              className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-md transition-colors duration-200 font-medium"
             >
-              <i className="fas fa-check mr-2"></i>
               {confirmText}
             </button>
           </div>

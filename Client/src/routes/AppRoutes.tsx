@@ -8,6 +8,7 @@ import { sfiaRoutes } from "./sfiaRoutes";
 import { tpqiRoutes } from "./tpqiRoutes";
 
 import { HomePage, ResultsPage, CompetencyDetailPage, ProfilePage, AboutPage } from "@Pages/ExportPages";
+import PortfolioPage from "@Pages/PortfolioPage/PortfolioPage";
 
 const AppRoutes: React.FC = () => (
   <Suspense fallback={<Loading />}>
@@ -22,6 +23,7 @@ const AppRoutes: React.FC = () => (
       />
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/about" element={<AboutPage />} />
+      <Route path="portfolio" element={<PortfolioPage />} />
 
       {/* Protected Routes */}
       <Route>

@@ -112,5 +112,5 @@ export interface SkillProgressItem {
   percentage: number;
   level?: string;
   category?: string;
-  type: 'sfia' | 'tpqi-skill' | 'tpqi-knowledge';
+  type: "sfia" | "tpqi-skill" | "tpqi-knowledge";
 }

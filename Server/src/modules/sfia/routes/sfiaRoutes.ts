@@ -1,6 +1,7 @@
 import { Router } from "express";
 import sfiaSkill from "./sfiaSkillRoutes";
 import sfiaEvidence from "./sfiaEvidenceRoutes";
+import sfiaSummary from "./sfiaSummaryRoutes";
 
 const router = Router();
 
@@ -16,5 +17,10 @@ router.use("/skills", sfiaSkill);
 // permission: public
 // body: { "skillCode": "string", "userId": "string" }
 router.use("/evidence", sfiaEvidence);
+
+// example route: /api/sfia/summary
+// permission: protected
+// description: User skill summaries and statistics
+router.use("/summary", sfiaSummary);
 
 export default router;

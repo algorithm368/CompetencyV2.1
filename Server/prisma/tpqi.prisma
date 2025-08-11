@@ -12,7 +12,7 @@ model Career {
   id           Int           @id @default(autoincrement())
   name         String        @db.VarChar(255)
   careerLevels CareerLevel[]
-  summaries    TpqiSummary[]
+  TpqiSummary  TpqiSummary[]
 }
 
 model CareerLevel {
@@ -25,7 +25,7 @@ model CareerLevel {
   careerLevelKnowledge CareerLevelKnowledge[]
   careerLevelSkills    CareerLevelSkill[]
   careerLevelUnitCodes CareerLevelUnitCode[]
-  summaries            TpqiSummary[]
+  TpqiSummary          TpqiSummary[]
 
   @@index([careerId], map: "CareerLevel_careerId_fkey")
   @@index([levelId], map: "CareerLevel_levelId_fkey")
@@ -35,7 +35,7 @@ model Level {
   id           Int           @id @default(autoincrement())
   name         String        @db.VarChar(255)
   careerLevels CareerLevel[]
-  summaries    TpqiSummary[]
+  TpqiSummary  TpqiSummary[]
 }
 
 model CareerLevelDetail {
@@ -192,15 +192,15 @@ model TpqiSummary {
   careerLevelId    Int
   skillPercent     Decimal?    @db.Decimal(5, 2)
   knowledgePercent Decimal?    @db.Decimal(5, 2)
-  career           Career      @relation(fields: [careerId], references: [id])
-  careerLevel      CareerLevel @relation(fields: [careerLevelId], references: [id])
-  level            Level       @relation(fields: [levelId], references: [id])
+  Career           Career      @relation(fields: [careerId], references: [id])
+  CareerLevel      CareerLevel @relation(fields: [careerLevelId], references: [id])
+  Level            Level       @relation(fields: [levelId], references: [id])
 
   @@unique([userEmail, careerLevelId])
-  @@index([userEmail])
   @@index([careerId], map: "TpqiSummary_careerId_fkey")
   @@index([careerLevelId], map: "TpqiSummary_careerLevelId_fkey")
   @@index([levelId], map: "TpqiSummary_levelId_fkey")
+  @@index([userEmail])
 }
 
 enum ApprovalStatus {

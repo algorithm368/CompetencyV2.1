@@ -1,6 +1,34 @@
-import React, { useState } from 'react';
-import { FaDownload, FaFilePdf, FaFileExcel, FaShare, FaPrint } from 'react-icons/fa';
-import { PortfolioData } from '@Types/portfolio';
+import React, { useState } from "react";
+import {
+  FaDownload,
+  FaFilePdf,
+  FaFileExcel,
+  FaShare,
+  FaPrint,
+} from "react-icons/fa";
+import { PortfolioData } from "@Types/portfolio";
+import { generatePortfolioPdf } from "./PortfolioPdfGenerator";
+import { useProfile } from "@Hooks/useProfile";
+
+/**
+ * ExportActions Component
+ * 
+ * Provides export functionality for portfolio data with multiple formats:
+ * 
+ * 1. PDF Export: Generates a professional CV-style PDF with:
+ *    - Personal information (Thai & English names, contact details)
+ *    - Portfolio statistics summary
+ *    - SFIA skills breakdown with progress indicators
+ *    - TPQI careers with skill/knowledge percentages
+ *    - Professional formatting with Thai font support
+ * 
+ * 2. Excel Export: Creates CSV file compatible with Excel containing tabular data
+ * 3. Print: Browser-based printing functionality
+ * 4. Share: Web Share API or clipboard copy fallback
+ * 
+ * The PDF export creates a formal document suitable for job applications
+ * or professional portfolio presentation.
+ */
 
 interface ExportActionsProps {
   portfolioData: PortfolioData;
@@ -9,22 +37,35 @@ interface ExportActionsProps {
 const ExportActions: React.FC<ExportActionsProps> = ({ portfolioData }) => {
   const [isExporting, setIsExporting] = useState(false);
 
+  // Get user profile data for PDF generation
+  const { profileData, loadProfile } = useProfile();
+
   const handleExportPDF = async () => {
     setIsExporting(true);
     try {
-      // TODO: Implement PDF export using jsPDF
-      console.log('Exporting PDF...', portfolioData);
-      
-      // Simulate export delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Here you would implement the actual PDF generation
-      // Similar to the existing PortfolioPdf.tsx but using the new data structure
-      
-      alert('PDF export completed!');
+      // Ensure we have profile data for a complete CV
+      let userProfile = profileData;
+      if (!userProfile) {
+        await loadProfile();
+        userProfile = profileData;
+      }
+
+      if (!userProfile) {
+        throw new Error("Unable to load user profile data. Please ensure you are logged in and try again.");
+      }
+
+      // Generate professional CV-style PDF with portfolio and profile data
+      await generatePortfolioPdf(portfolioData, userProfile);
+
+      // Show success message briefly
+      setTimeout(() => {
+        alert("Professional CV PDF exported successfully!");
+      }, 100);
+
     } catch (error) {
-      console.error('PDF export failed:', error);
-      alert('PDF export failed. Please try again.');
+      console.error("PDF export failed:", error);
+      const errorMessage = error instanceof Error ? error.message : "PDF export failed. Please try again.";
+      alert(errorMessage);
     } finally {
       setIsExporting(false);
     }
@@ -33,18 +74,81 @@ const ExportActions: React.FC<ExportActionsProps> = ({ portfolioData }) => {
   const handleExportExcel = async () => {
     setIsExporting(true);
     try {
-      // TODO: Implement Excel export
-      console.log('Exporting Excel...', portfolioData);
-      
-      // Simulate export delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      alert('Excel export completed!');
+      // Create CSV data for Excel compatibility
+      const csvData = generateCSVData(portfolioData);
+      downloadCSV(csvData, "Portfolio_Data.csv");
+
+      // Show success message briefly
+      setTimeout(() => {
+        alert("Excel export completed successfully!");
+      }, 100);
+
     } catch (error) {
-      console.error('Excel export failed:', error);
-      alert('Excel export failed. Please try again.');
+      console.error("Excel export failed:", error);
+      const errorMessage = error instanceof Error ? error.message : "Excel export failed. Please try again.";
+      alert(errorMessage);
     } finally {
       setIsExporting(false);
+    }
+  };
+
+  // Helper function to generate CSV data
+  const generateCSVData = (data: PortfolioData): string => {
+    const headers = ["Type", "Name", "Code/ID", "Level", "Progress (%)", "Category"];
+    const rows = [headers.join(",")];
+
+    // Add SFIA Skills data
+    data.sfiaSkills.forEach((skill) => {
+      const row = [
+        "SFIA Skill",
+        `"${skill.skill?.name || skill.skillCode || 'N/A'}"`,
+        skill.skillCode || "N/A",
+        skill.level?.name || "N/A",
+        Math.round(skill.skillPercent || 0).toString(),
+        `"${skill.skill?.category?.name || 'N/A'}"`
+      ];
+      rows.push(row.join(","));
+    });
+
+    // Add TPQI Careers data
+    data.tpqiCareers.forEach((career) => {
+      const skillRow = [
+        "TPQI Career (Skill)",
+        `"${career.career?.name || 'N/A'}"`,
+        career.careerId?.toString() || "N/A",
+        career.level?.name || "N/A",
+        Math.round(career.skillPercent || 0).toString(),
+        "TPQI"
+      ];
+      rows.push(skillRow.join(","));
+
+      const knowledgeRow = [
+        "TPQI Career (Knowledge)",
+        `"${career.career?.name || 'N/A'}"`,
+        career.careerId?.toString() || "N/A",
+        career.level?.name || "N/A",
+        Math.round(career.knowledgePercent || 0).toString(),
+        "TPQI"
+      ];
+      rows.push(knowledgeRow.join(","));
+    });
+
+    return rows.join("\n");
+  };
+
+  // Helper function to download CSV
+  const downloadCSV = (csvContent: string, filename: string) => {
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", filename);
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
   };
 
@@ -56,58 +160,58 @@ const ExportActions: React.FC<ExportActionsProps> = ({ portfolioData }) => {
     try {
       if (navigator.share) {
         await navigator.share({
-          title: 'My Professional Portfolio',
-          text: 'Check out my professional competency portfolio',
+          title: "My Professional Portfolio",
+          text: "Check out my professional competency portfolio",
           url: window.location.href,
         });
       } else {
         // Fallback for browsers that don't support Web Share API
         await navigator.clipboard.writeText(window.location.href);
-        alert('Portfolio link copied to clipboard!');
+        alert("Portfolio link copied to clipboard!");
       }
     } catch (error) {
-      console.error('Share failed:', error);
-      alert('Share failed. Please try again.');
+      console.error("Share failed:", error);
+      alert("Share failed. Please try again.");
     }
   };
 
   const exportOptions = [
     {
-      label: 'Export PDF',
+      label: "Export PDF",
       icon: FaFilePdf,
-      color: 'bg-red-500 hover:bg-red-600',
-      textColor: 'text-red-600',
-      bgColor: 'bg-red-50',
+      color: "bg-red-500 hover:bg-red-600",
+      textColor: "text-red-600",
+      bgColor: "bg-red-50",
       onClick: handleExportPDF,
-      description: 'Download a comprehensive PDF report'
+      description: "Download professional CV in PDF format",
     },
     {
-      label: 'Export Excel',
+      label: "Export Excel",
       icon: FaFileExcel,
-      color: 'bg-green-500 hover:bg-green-600',
-      textColor: 'text-green-600',
-      bgColor: 'bg-green-50',
+      color: "bg-green-500 hover:bg-green-600",
+      textColor: "text-green-600",
+      bgColor: "bg-green-50",
       onClick: handleExportExcel,
-      description: 'Download data in Excel format'
+      description: "Download data in Excel format",
     },
     {
-      label: 'Print',
+      label: "Print",
       icon: FaPrint,
-      color: 'bg-gray-500 hover:bg-gray-600',
-      textColor: 'text-gray-600',
-      bgColor: 'bg-gray-50',
+      color: "bg-gray-500 hover:bg-gray-600",
+      textColor: "text-gray-600",
+      bgColor: "bg-gray-50",
       onClick: handlePrint,
-      description: 'Print your portfolio'
+      description: "Print your portfolio",
     },
     {
-      label: 'Share',
+      label: "Share",
       icon: FaShare,
-      color: 'bg-blue-500 hover:bg-blue-600',
-      textColor: 'text-blue-600',
-      bgColor: 'bg-blue-50',
+      color: "bg-blue-500 hover:bg-blue-600",
+      textColor: "text-blue-600",
+      bgColor: "bg-blue-50",
       onClick: handleShare,
-      description: 'Share your portfolio link'
-    }
+      description: "Share your portfolio link",
+    },
   ];
 
   return (
@@ -142,9 +246,7 @@ const ExportActions: React.FC<ExportActionsProps> = ({ portfolioData }) => {
                   {option.label}
                 </span>
               </div>
-              <p className="text-xs text-gray-500">
-                {option.description}
-              </p>
+              <p className="text-xs text-gray-500">{option.description}</p>
             </button>
           );
         })}
@@ -163,7 +265,9 @@ const ExportActions: React.FC<ExportActionsProps> = ({ portfolioData }) => {
 
       {/* Portfolio Statistics for Export */}
       <div className="mt-6 pt-6 border-t border-gray-100">
-        <h3 className="text-sm font-medium text-gray-700 mb-3">Portfolio Summary</h3>
+        <h3 className="text-sm font-medium text-gray-700 mb-3">
+          Portfolio Summary
+        </h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
           <div className="bg-white border border-gray-200 rounded-lg p-3">
             <div className="text-lg font-bold text-gray-900">
@@ -175,22 +279,30 @@ const ExportActions: React.FC<ExportActionsProps> = ({ portfolioData }) => {
             <div className="text-lg font-bold text-gray-900">
               {portfolioData.tpqiCareers.length}
             </div>
-            <div className="text-xs text-gray-500 font-medium">TPQI Careers</div>
+            <div className="text-xs text-gray-500 font-medium">
+              TPQI Careers
+            </div>
           </div>
           <div className="bg-white border border-gray-200 rounded-lg p-3">
             <div className="text-lg font-bold text-gray-900">
               {Math.round(portfolioData.overallStats.averageSfiaProgress)}%
             </div>
-            <div className="text-xs text-gray-500 font-medium">Avg SFIA Progress</div>
+            <div className="text-xs text-gray-500 font-medium">
+              Avg SFIA Progress
+            </div>
           </div>
           <div className="bg-white border border-gray-200 rounded-lg p-3">
             <div className="text-lg font-bold text-gray-900">
               {Math.round(
-                (portfolioData.overallStats.averageTpqiSkillProgress + 
-                 portfolioData.overallStats.averageTpqiKnowledgeProgress) / 2
-              )}%
+                (portfolioData.overallStats.averageTpqiSkillProgress +
+                  portfolioData.overallStats.averageTpqiKnowledgeProgress) /
+                  2
+              )}
+              %
             </div>
-            <div className="text-xs text-gray-500 font-medium">Avg TPQI Progress</div>
+            <div className="text-xs text-gray-500 font-medium">
+              Avg TPQI Progress
+            </div>
           </div>
         </div>
       </div>

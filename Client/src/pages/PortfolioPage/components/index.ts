@@ -14,7 +14,7 @@ export * from './charts';
 export * from './ui';
 
 // Re-export all components for backward compatibility
-export { PortfolioLayout, PortfolioHeader, PortfolioHeaderWithRefresh } from './layout';
+export { PortfolioLayout, PortfolioHeader } from './layout';
 export { LoadingState, ErrorState, NoDataState } from './states';
 export { SfiaSection, TpqiSection, PortfolioContent, NavigationTabs } from './sections';
 export { ProgressChart, PortfolioStats } from './charts';

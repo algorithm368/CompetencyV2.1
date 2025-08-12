@@ -26,43 +26,53 @@ const ProgressChart: React.FC<ProgressChartProps> = ({ portfolioData }) => {
   }));
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 border border-gray-100">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Progress Analytics</h2>
-        <div className="bg-teal-100 rounded-lg p-3">
-          <FaChartBar className="h-6 w-6 text-teal-600" />
+    <div className="bg-white rounded-2xl shadow-sm p-8 border border-slate-200">
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex-1">
+          <h2 className="text-2xl font-light text-slate-800 mb-2">
+            Progress Analytics
+          </h2>
+          <p className="text-slate-600 font-light">
+            Visual representation of your competency development journey
+          </p>
+        </div>
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200">
+          <FaChartBar className="h-6 w-6 text-blue-600" />
         </div>
       </div>
 
       {/* Overall Progress Summary */}
-      <div className="bg-gray-50 rounded-lg p-6 mb-6 border border-gray-100">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-gray-900">
+      <div className="bg-gradient-to-r from-slate-50 to-gray-50 rounded-2xl p-8 mb-8 border border-slate-200">
+        <div className="flex items-center justify-between mb-8">
+          <h3 className="text-xl font-medium text-slate-800">
             Competency Overview
           </h3>
-          <FaChartPie className="h-6 w-6 text-teal-600" />
+          <div className="bg-white rounded-xl p-3 border border-slate-200">
+            <FaChartPie className="h-5 w-5 text-slate-600" />
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
           {/* SFIA Overall */}
-          <div className="text-center bg-white rounded-lg p-6 border border-gray-200">
-            <div className="relative w-32 h-32 mx-auto mb-4">
+          <div className="text-center bg-white rounded-2xl p-8 border border-slate-200 shadow-sm">
+            <div className="relative w-36 h-36 mx-auto mb-6">
               <svg
-                className="w-32 h-32 transform -rotate-90"
+                className="w-36 h-36 transform -rotate-90"
                 viewBox="0 0 36 36"
               >
                 <path
-                  className="text-gray-200"
+                  className="text-slate-200"
                   stroke="currentColor"
-                  strokeWidth="3"
+                  strokeWidth="2.5"
                   fill="transparent"
                   d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                 />
                 <path
                   className="text-blue-500"
                   stroke="currentColor"
-                  strokeWidth="3"
+                  strokeWidth="2.5"
                   fill="transparent"
+                  strokeLinecap="round"
                   strokeDasharray={`${
                     (overallStats.averageSfiaProgress * 100) / 100
                   }, 100`}
@@ -70,38 +80,47 @@ const ProgressChart: React.FC<ProgressChartProps> = ({ portfolioData }) => {
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-xl font-bold text-blue-600">
-                  {Math.round(overallStats.averageSfiaProgress)}%
-                </span>
+                <div className="text-center">
+                  <span className="text-2xl font-light text-blue-600">
+                    {Math.round(overallStats.averageSfiaProgress)}%
+                  </span>
+                  <div className="text-xs text-slate-500 font-medium">Average</div>
+                </div>
               </div>
             </div>
-            <h4 className="text-lg font-semibold text-gray-900">
+            <h4 className="text-lg font-medium text-slate-800 mb-2">
               SFIA Framework
             </h4>
-            <p className="text-sm text-gray-500 font-medium">
+            <p className="text-sm text-slate-600 font-light">
               {overallStats.totalSfiaSkills} skills assessed
             </p>
+            <div className="mt-4 bg-blue-50 rounded-xl p-3 border border-blue-100">
+              <div className="text-sm font-medium text-blue-700">
+                Professional Skills Development
+              </div>
+            </div>
           </div>
 
           {/* TPQI Overall (Combined Skills + Knowledge) */}
-          <div className="text-center bg-white rounded-lg p-6 border border-gray-200">
-            <div className="relative w-32 h-32 mx-auto mb-4">
+          <div className="text-center bg-white rounded-2xl p-8 border border-slate-200 shadow-sm">
+            <div className="relative w-36 h-36 mx-auto mb-6">
               <svg
-                className="w-32 h-32 transform -rotate-90"
+                className="w-36 h-36 transform -rotate-90"
                 viewBox="0 0 36 36"
               >
                 <path
-                  className="text-gray-200"
+                  className="text-slate-200"
                   stroke="currentColor"
-                  strokeWidth="3"
+                  strokeWidth="2.5"
                   fill="transparent"
                   d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                 />
                 <path
-                  className="text-green-500"
+                  className="text-emerald-500"
                   stroke="currentColor"
-                  strokeWidth="3"
+                  strokeWidth="2.5"
                   fill="transparent"
+                  strokeLinecap="round"
                   strokeDasharray={`${
                     (overallStats.averageTpqiSkillProgress +
                       overallStats.averageTpqiKnowledgeProgress) /
@@ -111,54 +130,66 @@ const ProgressChart: React.FC<ProgressChartProps> = ({ portfolioData }) => {
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-xl font-bold text-green-600">
-                  {Math.round(
-                    (overallStats.averageTpqiSkillProgress +
-                      overallStats.averageTpqiKnowledgeProgress) /
-                      2
-                  )}
-                  %
-                </span>
+                <div className="text-center">
+                  <span className="text-2xl font-light text-emerald-600">
+                    {Math.round(
+                      (overallStats.averageTpqiSkillProgress +
+                        overallStats.averageTpqiKnowledgeProgress) /
+                        2
+                    )}%
+                  </span>
+                  <div className="text-xs text-slate-500 font-medium">Combined</div>
+                </div>
               </div>
             </div>
-            <h4 className="text-lg font-semibold text-gray-900">
+            <h4 className="text-lg font-medium text-slate-800 mb-2">
               TPQI Framework
             </h4>
-            <p className="text-sm text-gray-500 font-medium">
+            <p className="text-sm text-slate-600 font-light">
               {overallStats.totalTpqiCareers} career paths
             </p>
+            <div className="mt-4 bg-emerald-50 rounded-xl p-3 border border-emerald-100">
+              <div className="text-sm font-medium text-emerald-700">
+                Career Pathway Assessment
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* SFIA Skills Detailed Chart */}
       {sfiaChartData.length > 0 && (
-        <div className="bg-gray-50 rounded-lg p-6 mb-6 border border-gray-100">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-900">
+        <div className="bg-gradient-to-r from-slate-50 to-gray-50 rounded-2xl p-8 mb-8 border border-slate-200">
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="text-xl font-medium text-slate-800">
               SFIA Skills Progress
             </h3>
-            <FaChartBar className="h-6 w-6 text-blue-600" />
+            <div className="bg-white rounded-xl p-3 border border-slate-200">
+              <FaChartBar className="h-5 w-5 text-blue-600" />
+            </div>
           </div>
           <div className="space-y-4">
             {sfiaChartData.map((skill) => (
-              <div key={skill.code} className="bg-white rounded-lg p-4 border border-gray-200">
-                <div className="flex items-center space-x-4">
-                  <div className="w-32 text-sm font-medium text-gray-700 truncate">
+              <div key={skill.code} className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300">
+                <div className="flex items-center space-x-6">
+                  <div className="w-40 text-sm font-medium text-slate-800 truncate">
                     {skill.name}
                   </div>
-                  <div className="flex-1 bg-gray-100 rounded-full h-4 relative">
+                  <div className="flex-1 bg-slate-100 rounded-full h-3 relative shadow-inner">
                     <div
-                      className="bg-blue-500 h-4 rounded-full transition-all duration-500 shadow-sm"
+                      className="bg-gradient-to-r from-blue-500 to-blue-400 h-3 rounded-full transition-all duration-700 shadow-sm"
                       style={{ width: `${Math.min(skill.progress, 100)}%` }}
                     ></div>
-                    <span className="absolute right-2 top-0 text-xs text-gray-600 leading-4 font-medium">
+                    <span className="absolute right-3 top-0 text-xs text-slate-600 leading-3 font-medium">
                       {Math.round(skill.progress)}%
                     </span>
                   </div>
-                  <div className="w-20 text-xs text-gray-500 text-right font-medium">
-                    {skill.level}
-                  </div>
+                  <div className="w-24 text-xs text-slate-600 text-right font-medium">{skill.level}</div>
+                </div>
+                <div className="mt-3 flex items-center space-x-3">
+                  <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-medium border border-blue-200">
+                    {skill.code}
+                  </span>
                 </div>
               </div>
             ))}
@@ -168,46 +199,45 @@ const ProgressChart: React.FC<ProgressChartProps> = ({ portfolioData }) => {
 
       {/* TPQI Careers Detailed Chart */}
       {tpqiChartData.length > 0 && (
-        <div className="bg-gray-50 rounded-lg p-6 border border-gray-100">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-900">
+        <div className="bg-gradient-to-r from-slate-50 to-gray-50 rounded-2xl p-8 border border-slate-200">
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="text-xl font-medium text-slate-800">
               TPQI Career Progress
             </h3>
-            <FaChartBar className="h-6 w-6 text-green-600" />
+            <div className="bg-white rounded-xl p-3 border border-slate-200">
+              <FaChartBar className="h-5 w-5 text-emerald-600" />
+            </div>
           </div>
-          <div className="space-y-4">
-            {tpqiChartData.map((career) => (
-              <div key={career.name} className="bg-white border border-gray-200 rounded-lg p-4">
-                <h4 className="font-medium text-gray-900 mb-3">
-                  {career.name}
-                </h4>
-                <div className="space-y-3">
+          <div className="space-y-6">
+            {tpqiChartData.map((career, index) => (
+              <div key={index} className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300">
+                <div className="mb-4">
+                  <h4 className="text-lg font-medium text-slate-800 mb-2">{career.name}</h4>
+                  <span className="text-sm text-slate-600 font-light">{career.level}</span>
+                </div>
+                <div className="space-y-4">
                   {/* Skills Progress */}
                   <div className="flex items-center space-x-4">
-                    <div className="w-20 text-sm text-gray-600 font-medium">Skills</div>
-                    <div className="flex-1 bg-gray-100 rounded-full h-3 relative">
+                    <div className="w-20 text-sm font-medium text-slate-700">Skills</div>
+                    <div className="flex-1 bg-slate-100 rounded-full h-3 relative shadow-inner">
                       <div
-                        className="bg-green-500 h-3 rounded-full transition-all duration-500 shadow-sm"
-                        style={{
-                          width: `${Math.min(career.skillProgress, 100)}%`,
-                        }}
+                        className="bg-gradient-to-r from-emerald-500 to-emerald-400 h-3 rounded-full transition-all duration-700 shadow-sm"
+                        style={{ width: `${Math.min(career.skillProgress, 100)}%` }}
                       ></div>
-                      <span className="absolute right-2 top-0 text-xs text-gray-600 leading-3 font-medium">
+                      <span className="absolute right-3 top-0 text-xs text-slate-600 leading-3 font-medium">
                         {Math.round(career.skillProgress)}%
                       </span>
                     </div>
                   </div>
                   {/* Knowledge Progress */}
                   <div className="flex items-center space-x-4">
-                    <div className="w-20 text-sm text-gray-600 font-medium">Knowledge</div>
-                    <div className="flex-1 bg-gray-100 rounded-full h-3 relative">
+                    <div className="w-20 text-sm font-medium text-slate-700">Knowledge</div>
+                    <div className="flex-1 bg-slate-100 rounded-full h-3 relative shadow-inner">
                       <div
-                        className="bg-purple-500 h-3 rounded-full transition-all duration-500 shadow-sm"
-                        style={{
-                          width: `${Math.min(career.knowledgeProgress, 100)}%`,
-                        }}
+                        className="bg-gradient-to-r from-amber-500 to-amber-400 h-3 rounded-full transition-all duration-700 shadow-sm"
+                        style={{ width: `${Math.min(career.knowledgeProgress, 100)}%` }}
                       ></div>
-                      <span className="absolute right-2 top-0 text-xs text-gray-600 leading-3 font-medium">
+                      <span className="absolute right-3 top-0 text-xs text-slate-600 leading-3 font-medium">
                         {Math.round(career.knowledgeProgress)}%
                       </span>
                     </div>

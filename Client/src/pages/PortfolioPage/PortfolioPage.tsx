@@ -9,7 +9,7 @@ import LoadingState from "./components/states/LoadingState";
 import ErrorState from "./components/states/ErrorState";
 import NoDataState from "./components/states/NoDataState";
 import PortfolioLayout from "./components/layout/PortfolioLayout";
-import PortfolioHeaderWithRefresh from "./components/layout/PortfolioHeaderWithRefresh";
+import PortfolioHeader from "./components/layout/PortfolioHeader";
 import RecommendationsPanel from "./components/ui/RecommendationsPanel";
 import NavigationTabs, { TabType } from "./components/sections/NavigationTabs";
 import PortfolioContent from "./components/sections/PortfolioContent";
@@ -79,28 +79,48 @@ const PortfolioPage: React.FC = () => {
   // Main portfolio view
   return (
     <PortfolioLayout>
-      <PortfolioHeaderWithRefresh
-        userEmail={portfolioData?.userEmail || user?.email || ""}
-        isDataStale={isDataStale}
-        loading={loading}
-        onRefresh={handleRefresh}
-        lastUpdated={lastFetched}
-      />
+      <div className="space-y-4 sm:space-y-6 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 mt-6 sm:mt-4">
+        {/* Header Section */}
+        <div className="w-full">
+          <PortfolioHeader
+            userEmail={portfolioData?.userEmail || user?.email || ""}
+            isDataStale={isDataStale}
+            loading={loading}
+            onRefresh={handleRefresh}
+            lastUpdated={lastFetched}
+          />
+        </div>
 
-      <RecommendationsPanel recommendations={recommendations} />
+        {/* Recommendations Section */}
+        <div className="w-full">
+          <RecommendationsPanel recommendations={recommendations} />
+        </div>
 
-      <NavigationTabs
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        sfiaSkillsCount={portfolioData?.sfiaSkills.length || 0}
-        tpqiCareersCount={portfolioData?.tpqiCareers.length || 0}
-      />
+        {/* Navigation Section */}
+        <div className="w-full overflow-x-auto">
+          <NavigationTabs
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            sfiaSkillsCount={portfolioData?.sfiaSkills.length || 0}
+            tpqiCareersCount={portfolioData?.tpqiCareers.length || 0}
+          />
+        </div>
 
-      {portfolioData && (
-        <PortfolioContent activeTab={activeTab} portfolioData={portfolioData} />
-      )}
+        {/* Content Section */}
+        <div className="w-full min-h-[300px] sm:min-h-[400px] lg:min-h-[500px]">
+          {portfolioData && (
+            <PortfolioContent
+              activeTab={activeTab}
+              portfolioData={portfolioData}
+            />
+          )}
+        </div>
 
-      <LastUpdatedFooter lastFetched={lastFetched} />
+        {/* Footer Section */}
+        <div className="w-full">
+          <LastUpdatedFooter lastFetched={lastFetched} />
+        </div>
+      </div>
     </PortfolioLayout>
   );
 };

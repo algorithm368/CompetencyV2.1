@@ -10,8 +10,10 @@ const PortfolioLayout: React.FC<PortfolioLayoutProps> = ({ children }) => {
   return (
     <Layout>
       <WhiteTealBackground>
-        <div className="pt-20 pb-16">
-          {children}
+        <div className="min-h-screen py-16 sm:py-20">
+          <div className="container mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
+            {children}
+          </div>
         </div>
       </WhiteTealBackground>
     </Layout>

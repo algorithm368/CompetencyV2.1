@@ -47,3 +47,5 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
     </div>
   );
 };
+
+export default ProfileHeader;

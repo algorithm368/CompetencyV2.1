@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@Contexts/AuthContext";
+import Layout from "@Layouts/Layout";
+import { WhiteTealBackground } from "@Components/Common/Background/WhiteTealBackground";
 
 // Import portfolio-specific hook
 import { usePortfolio } from "./hooks";
@@ -42,6 +44,38 @@ const PortfolioPage: React.FC = () => {
       fetchPortfolioData(user.email);
     }
   }, [user?.email, accessToken, fetchPortfolioData]);
+
+  // AuthStates component for PortfolioPage
+  const AuthStates: React.FC = () => {
+    return (
+      <Layout>
+        <WhiteTealBackground>
+          <div className="container mx-auto px-4 py-16">
+            <div className="flex justify-center items-center py-20">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 max-w-md">
+                <div className="flex items-center space-x-3">
+                  <i className="fas fa-exclamation-circle text-yellow-500 text-xl"></i>
+                  <div>
+                    <h3 className="text-yellow-800 font-medium">
+                      กรุณาเข้าสู่ระบบ
+                    </h3>
+                    <p className="text-yellow-600 text-sm">
+                      คุณจำเป็นต้องเข้าสู่ระบบเพื่อเข้าถึงหน้าพอร์ตโฟลิโอของคุณ
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </WhiteTealBackground>
+      </Layout>
+    );
+  };
+
+  // AuthStates for PortfolioPage
+  if (!user || !accessToken) {
+    return <AuthStates />;
+  }
 
   // Handle refresh
   const handleRefresh = () => {

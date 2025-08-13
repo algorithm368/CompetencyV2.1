@@ -48,7 +48,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     }
 
     // ดึง permissions keys
-    const permissions = user.userRoles.flatMap((ur) => ur.role?.rolePermissions?.map((rp) => rp.permission.key) || []);
+    const permissions = user.userRoles.flatMap((ur) => ur.role?.rolePermissions?.map((rp) => rp.permission.id.toString()) || []);
 
     const role = user.userRoles[0]?.role?.name || null;
 

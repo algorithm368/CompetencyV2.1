@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import RbacService from "@Services/competency/rbacService";
+import RbacService from "@Services/admin/rbacService";
 import { Permission } from "@Types/competency/rbacTypes";
 
 type ToastCallback = (message: string, type?: "success" | "error" | "info") => void;

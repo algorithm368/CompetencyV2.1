@@ -1,4 +1,4 @@
-import { PrismaClient, User, UserRole, Role, RolePermission, Permission, RefreshToken } from "@prisma/client_competency";
+import { PrismaClient, User, UserRole, Role, RolePermission, Permission, Session } from "@prisma/client_competency";
 import { generateToken, generateRefreshToken, verifyRefreshToken } from "@Utils/tokenUtils";
 import { OAuth2Client } from "google-auth-library";
 
@@ -78,17 +78,19 @@ class AuthService {
     const accessToken = generateToken({ userId: user.id, email: user.email, role: primaryRole });
     const refreshToken = generateRefreshToken({ userId: user.id });
 
-    // Store or update refresh token in DB
     const now = new Date();
-    const existingToken = await prisma.refreshToken.findFirst({ where: { userId: user.id } });
-    if (existingToken) {
-      await prisma.refreshToken.update({
-        where: { id: existingToken.id },
-        data: { token: refreshToken, updatedAt: now },
+    const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days expiry example
+
+    // Store session with accessToken and refreshToken
+    const existingSession = await prisma.session.findFirst({ where: { userId: user.id } });
+    if (existingSession) {
+      await prisma.session.update({
+        where: { id: existingSession.id },
+        data: { accessToken, refreshToken, updatedAt: now, expiresAt },
       });
     } else {
-      await prisma.refreshToken.create({
-        data: { userId: user.id, token: refreshToken, createdAt: now, updatedAt: now },
+      await prisma.session.create({
+        data: { userId: user.id, accessToken, refreshToken, createdAt: now, updatedAt: now, expiresAt },
       });
     }
 
@@ -108,23 +110,18 @@ class AuthService {
 
   async logout(refreshToken: string) {
     if (!refreshToken) throw new Error("Refresh token required");
-    await prisma.refreshToken.deleteMany({ where: { token: refreshToken } });
+    await prisma.session.deleteMany({ where: { refreshToken } });
   }
 
   async refreshToken(oldRefreshToken: string) {
     if (!oldRefreshToken) throw new Error("Refresh token required");
+
     const payload = verifyRefreshToken(oldRefreshToken);
 
-    const storedToken = await prisma.refreshToken.findFirst({ where: { userId: payload.userId } });
-    if (!storedToken || storedToken.token !== oldRefreshToken) throw new Error("Invalid refresh token");
+    const storedSession = await prisma.session.findFirst({ where: { userId: payload.userId } });
+    if (!storedSession || storedSession.refreshToken !== oldRefreshToken) throw new Error("Invalid refresh token");
 
-    const newRefreshToken = generateRefreshToken({ userId: payload.userId });
-    await prisma.refreshToken.update({
-      where: { id: storedToken.id },
-      data: { token: newRefreshToken },
-    });
-
-    const userWithRoles = (await prisma.user.findUnique({
+    const userWithRoles = await prisma.user.findUnique({
       where: { id: payload.userId },
       include: {
         userRoles: {
@@ -135,11 +132,26 @@ class AuthService {
           },
         },
       },
-    })) as UserWithRoles | null;
+    });
     if (!userWithRoles) throw new Error("User not found");
 
     const primaryRole = userWithRoles.userRoles[0]?.role.name ?? DEFAULT_USER_ROLE;
-    const accessToken = generateToken({ userId: userWithRoles.id, email: userWithRoles.email, role: primaryRole });
+
+    const newRefreshToken = generateRefreshToken({ userId: payload.userId });
+
+    const accessToken = generateToken({
+      userId: userWithRoles.id,
+      email: userWithRoles.email,
+      role: primaryRole,
+    });
+
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days expiry
+
+    await prisma.session.update({
+      where: { id: storedSession.id },
+      data: { refreshToken: newRefreshToken, accessToken, updatedAt: now, expiresAt },
+    });
 
     return { accessToken, refreshToken: newRefreshToken };
   }
@@ -162,7 +174,7 @@ class AuthService {
 
     if (!userWithRoles) throw new Error("User not found");
 
-    const permissions = userWithRoles.userRoles.flatMap((ur) => ur.role.rolePermissions?.map((rp) => rp.permission.key) ?? []);
+    const permissions = userWithRoles.userRoles.flatMap((ur) => ur.role.rolePermissions?.map((rp) => rp.permission.id.toString()) ?? []);
     const primaryRole = userWithRoles.userRoles[0]?.role.name ?? DEFAULT_USER_ROLE;
 
     return {

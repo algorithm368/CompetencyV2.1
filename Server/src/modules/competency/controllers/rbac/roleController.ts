@@ -8,6 +8,21 @@ interface AuthenticatedRequest extends Request {
   user?: { userId?: string };
 }
 
+function RoleView(role: any) {
+  return {
+    id: role.id,
+    name: role.name,
+    description: role.description,
+    parentRoleId: role.parentRoleId,
+    createdAt: role.createdAt,
+    updatedAt: role.updatedAt,
+  };
+}
+
+function RoleListView(roles: any[]) {
+  return roles.map(RoleView);
+}
+
 export class RoleController {
   static async getAll(req: Request, res: Response, next: NextFunction) {
     try {
@@ -17,8 +32,11 @@ export class RoleController {
       const page = pageRaw && !isNaN(+pageRaw) ? parseInt(pageRaw as string, 10) : undefined;
       const perPage = perPageRaw && !isNaN(+perPageRaw) ? parseInt(perPageRaw as string, 10) : undefined;
 
-      const items = await service.getAll(search, page, perPage);
-      res.json(items);
+      const result = await service.getAll(search, page, perPage);
+      res.json({
+        total: result.total,
+        data: RoleListView(result.data),
+      });
     } catch (err) {
       next(err);
     }
@@ -36,7 +54,7 @@ export class RoleController {
         res.status(StatusCodes.NOT_FOUND).json({ message: `Role with id ${id} not found` });
         return;
       }
-      res.json(role);
+      res.json(RoleView(role));
     } catch (err) {
       next(err);
     }
@@ -51,7 +69,7 @@ export class RoleController {
         return;
       }
       const newRole = await service.createRole(name.trim(), description, actor);
-      res.status(StatusCodes.CREATED).json(newRole);
+      res.status(StatusCodes.CREATED).json(RoleView(newRole));
     } catch (err) {
       next(err);
     }
@@ -67,7 +85,7 @@ export class RoleController {
       }
       const { name, description } = req.body;
       const updated = await service.update(id, { name, description }, actor);
-      res.json(updated);
+      res.json(RoleView(updated));
     } catch (err) {
       next(err);
     }

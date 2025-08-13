@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { FiPlus, FiSearch, FiSettings } from "react-icons/fi";
 import { RowActions, Button, Input, Toast, DataTable } from "@Components/Common/ExportComponent";
-import { useRoleManager } from "@Hooks/competency/rbac/useRoleManager";
+import { useRoleManager } from "@Hooks/admin/rbac/useRoleManager";
 import { Role, CreateRoleDto, UpdateRoleDto } from "@Types/competency/rbacTypes";
 import { AddEditRoleModal, DeleteRoleModal } from "./AddEditRoleModal";
 

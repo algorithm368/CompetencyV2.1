@@ -1,54 +1,83 @@
 import express from "express";
+import { AssetInstanceController } from "@Competency/controllers/rbac/assetInstanceController";
+import { AssetController } from "@Competency/controllers/rbac/assetController";
+import { LogController } from "@Competency/controllers/rbac/logController";
+import { OperationController } from "@Competency/controllers/rbac/operationController";
 import { PermissionController } from "@Competency/controllers/rbac/permissionController";
 import { RoleController } from "@Competency/controllers/rbac/roleController";
 import { RolePermissionController } from "@Competency/controllers/rbac/rolePermissionController";
-import { UserRoleController } from "@Competency/controllers/rbac/userRoleController";
-import { AssetController } from "@Competency/controllers/rbac/assetController";
-import { AssetPermissionController } from "@Competency/controllers/rbac/assetPermissionController";
-// import { authenticate } from "@Middlewares/authMiddleware";
+import { SessionController } from "@Competency/controllers/rbac/sessionController";
+import { UserController } from "@Competency/controllers/rbac/userController";
+import { UserRoleController } from "@Competency/controllers/rbac/userRoleController ";
 
 export const rbacRoutes = express.Router();
 
-rbacRoutes.get("/", (req, res) => {
-  res.send("Hello from RBAC API");
-});
+rbacRoutes.get("/", (req, res) => res.send("Hello from RBAC API"));
 
-// Roles routes
-rbacRoutes.post("/roles" /*, authenticate*/, RoleController.create);
+// --- AssetInstance routes ---
+rbacRoutes.post("/asset-instances", AssetInstanceController.createInstance);
+rbacRoutes.delete("/asset-instances/:id", AssetInstanceController.deleteInstanceById);
+rbacRoutes.delete("/asset-instances", AssetInstanceController.deleteInstance);
+rbacRoutes.get("/asset-instances/asset/:assetId", AssetInstanceController.getInstancesByAsset);
+rbacRoutes.get("/asset-instances/:id", AssetInstanceController.getInstanceById);
+rbacRoutes.put("/asset-instances/:id", AssetInstanceController.updateInstanceRecord);
+
+// --- Asset routes ---
+rbacRoutes.post("/assets", AssetController.createAsset);
+rbacRoutes.get("/assets/name/:tableName", AssetController.getAssetByName);
+rbacRoutes.put("/assets/:id", AssetController.updateAsset);
+rbacRoutes.delete("/assets/:id", AssetController.deleteAsset);
+
+// --- Log routes ---
+rbacRoutes.post("/logs", LogController.createLog);
+rbacRoutes.get("/logs", LogController.getLogs);
+rbacRoutes.get("/logs/:id", LogController.getLogById);
+
+// --- Operation routes ---
+rbacRoutes.post("/operations", OperationController.createOperation);
+rbacRoutes.get("/operations", OperationController.getOperations);
+rbacRoutes.get("/operations/:id", OperationController.getOperationById);
+rbacRoutes.put("/operations/:id", OperationController.updateOperation);
+rbacRoutes.delete("/operations/:id", OperationController.deleteOperation);
+
+// --- Permission routes ---
+rbacRoutes.get("/permissions", PermissionController.getAll);
+rbacRoutes.get("/permissions/:permissionId", PermissionController.getById);
+rbacRoutes.post("/permissions", PermissionController.create);
+rbacRoutes.put("/permissions/:permissionId", PermissionController.update);
+rbacRoutes.delete("/permissions/:permissionId", PermissionController.delete);
+
+// --- Role routes ---
 rbacRoutes.get("/roles", RoleController.getAll);
 rbacRoutes.get("/roles/:roleId", RoleController.getById);
-rbacRoutes.put("/roles/:roleId" /*, authenticate*/, RoleController.update);
-rbacRoutes.delete("/roles/:roleId" /*, authenticate*/, RoleController.delete);
+rbacRoutes.post("/roles", RoleController.create);
+rbacRoutes.put("/roles/:roleId", RoleController.update);
+rbacRoutes.delete("/roles/:roleId", RoleController.delete);
 
-// Permissions routes
-rbacRoutes.post("/permissions" /*, authenticate*/, PermissionController.create);
-rbacRoutes.get("/permissions" /*, authenticate*/, PermissionController.getAll);
-rbacRoutes.get("/permissions/:permissionId" /*, authenticate*/, PermissionController.getById);
-rbacRoutes.put("/permissions/:permissionId" /*, authenticate*/, PermissionController.update);
-rbacRoutes.delete("/permissions/:permissionId" /*, authenticate*/, PermissionController.delete);
+// --- RolePermission routes ---
+rbacRoutes.post("/role-permissions", RolePermissionController.assignPermission);
+rbacRoutes.delete("/role-permissions", RolePermissionController.revokePermission);
+rbacRoutes.get("/role-permissions/role/:roleId", RolePermissionController.getPermissionsByRole);
 
-// UserRoles routes
-rbacRoutes.post("/user/:userId/assign-role" /*, authenticate */, UserRoleController.assignRole);
-rbacRoutes.delete("/user/:userId/revoke-role" /*, authenticate */, UserRoleController.revokeRole);
-rbacRoutes.get("/user/:userId/roles", UserRoleController.getRoles);
-rbacRoutes.get("/users", UserRoleController.getAll);
+// --- Session routes ---
+rbacRoutes.post("/sessions", SessionController.createSession);
+rbacRoutes.get("/sessions/:id", SessionController.getSessionById);
+rbacRoutes.get("/sessions/by-access-token", SessionController.getSessionByAccessToken);
+rbacRoutes.get("/sessions/by-refresh-token", SessionController.getSessionByRefreshToken);
+rbacRoutes.delete("/sessions/:id", SessionController.deleteSessionById);
+rbacRoutes.delete("/sessions/user/:userId", SessionController.deleteSessionsByUserId);
+rbacRoutes.get("/sessions/:id/expired", SessionController.isSessionExpired);
 
-// RolePermissions routes
-rbacRoutes.post("/role/:roleId/assign-permission" /*, authenticate*/, RolePermissionController.assignPermission);
-rbacRoutes.delete("/role/:roleId/revoke-permission" /*, authenticate*/, RolePermissionController.revokePermission);
-rbacRoutes.get("/role/:roleId/permissions" /*, authenticate*/, RolePermissionController.getPermissions);
+// --- User routes ---
+rbacRoutes.get("/users", UserController.getAll);
+rbacRoutes.get("/users/:id", UserController.getUserById);
+rbacRoutes.get("/users/by-email", UserController.getUserByEmail);
+rbacRoutes.post("/users", UserController.createUser);
+rbacRoutes.put("/users/:id", UserController.updateUser);
+rbacRoutes.delete("/users/:id", UserController.deleteUser);
 
-// Assets routes
-rbacRoutes.post("/assets" /*, authenticate*/, AssetController.create);
-rbacRoutes.get("/assets", AssetController.getAll);
-rbacRoutes.get("/assets/:assetId", AssetController.getById);
-rbacRoutes.put("/assets/:assetId" /*, authenticate*/, AssetController.update);
-rbacRoutes.delete("/assets/:assetId" /*, authenticate*/, AssetController.delete);
-
-// AssetPermissions routes
-rbacRoutes.get("/assets/:assetId/permissions", AssetPermissionController.getPermissions);
-rbacRoutes.post("/assets/:assetId/permissions", AssetPermissionController.assignPermission);
-rbacRoutes.delete("/assets/:assetId/permissions", AssetPermissionController.revokePermission);
-rbacRoutes.get("/assets/:assetId/role-permissions", AssetPermissionController.getRolePermissionsForAsset);
+rbacRoutes.post("/user-roles", UserRoleController.assignRole);
+rbacRoutes.delete("/user-roles", UserRoleController.revokeRole);
+rbacRoutes.get("/user-roles/user/:userId", UserRoleController.getRolesByUser);
 
 export default rbacRoutes;

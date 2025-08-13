@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useUserRoleManager } from "@Hooks/competency/rbac/useUserRoleManager";
+import { useUserRoleManager } from "@Hooks/admin/rbac/useUserRoleManager";
 import { useUsers } from "@Hooks/competency/rbac/useUsers";
 import { useRoles } from "@Hooks/competency/rbac";
 import { User, Role } from "@Types/competency/rbacTypes";

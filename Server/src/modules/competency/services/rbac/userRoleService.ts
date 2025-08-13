@@ -30,7 +30,7 @@ export class UserRoleService extends BaseService<UserRole, keyof UserRole> {
   async getRolesForUser(userId: string) {
     return this.repo.findMany({
       where: { userId },
-      include: { role: true }, // include role entity
+      include: { role: true },
     });
   }
 }

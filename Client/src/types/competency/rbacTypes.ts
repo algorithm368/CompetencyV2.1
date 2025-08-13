@@ -2,7 +2,8 @@
 export interface Role {
   id: number;
   name: string;
-  description?: string;
+  description?: string | null;
+  parentRoleId?: number | null;
   createdAt: string; // ISO date string
   updatedAt: string; // ISO date string
 }
@@ -15,20 +16,32 @@ export interface RolePageResult {
 export interface CreateRoleDto {
   name: string;
   description?: string;
+  parentRoleId?: number;
 }
 
 export interface UpdateRoleDto {
   name?: string;
   description?: string;
+  parentRoleId?: number;
 }
 
 // --- Permission ---
 export interface Permission {
   id: number;
-  key: string;
-  description?: string;
+  operationId: number;
+  assetId: number;
   createdAt: string;
   updatedAt: string;
+  operation?: {
+    id: number;
+    name: string;
+    description?: string | null;
+  };
+  asset?: {
+    id: number;
+    tableName: string;
+    description?: string | null;
+  };
 }
 
 export interface PermissionPageResult {
@@ -37,18 +50,18 @@ export interface PermissionPageResult {
 }
 
 export interface CreatePermissionDto {
-  key: string;
-  description?: string;
+  operationId: number;
+  assetId: number;
 }
 
 export interface UpdatePermissionDto {
-  key?: string;
-  description?: string;
+  operationId?: number;
+  assetId?: number;
 }
 
 // --- UserRole ---
 export interface UserRoleAssignmentDto {
-  userId: number;
+  userId: string;
   roles: Role[];
 }
 
@@ -56,8 +69,7 @@ export interface UserRoleAssignmentDto {
 export interface Asset {
   id: number;
   tableName: string;
-  description?: string;
-  createdAt: string;
+  description?: string | null;
   updatedAt: string;
 }
 
@@ -67,19 +79,16 @@ export interface AssetPageResult {
 }
 
 export interface CreateAssetDto {
-  name: string;
+  tableName: string;
   description?: string;
 }
 
 export interface UpdateAssetDto {
-  name?: string;
+  tableName?: string;
   description?: string;
 }
 
-export interface AssetPermissionPagePageProps {
-  initialSelectedAssetId?: number | null;
-}
-
+// --- RolePermission ---
 export interface RolePermission {
   id: number;
   roleId: number;
@@ -94,7 +103,56 @@ export interface RolePermission {
 
   permission?: {
     id: number;
-    key: string;
-    description?: string | null;
+    operationId: number;
+    assetId: number;
+    createdAt: string;
+    updatedAt: string;
   };
+}
+
+// --- Session ---
+export interface Session {
+  id: string;
+  userId: string;
+  accessToken: string;
+  refreshToken: string;
+  expiresAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// --- User ---
+export interface User {
+  id: string;
+  email: string;
+  profileImage?: string;
+  firstNameTH?: string;
+  lastNameTH?: string;
+  firstNameEN?: string;
+  lastNameEN?: string;
+  phone?: string;
+  line?: string;
+  address?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// --- Log ---
+export enum LogAction {
+  CREATE = "CREATE",
+  UPDATE = "UPDATE",
+  DELETE = "DELETE",
+  LOGIN = "LOGIN",
+  LOGOUT = "LOGOUT",
+}
+
+export interface Log {
+  id: number;
+  action: LogAction;
+  databaseName: string;
+  tableName: string;
+  recordId?: string;
+  userId?: string;
+  timestamp?: string;
+  parameters?: string;
 }

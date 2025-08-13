@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import { StatusCodes } from "http-status-codes";
 import { RolePermissionService } from "@Competency/services/rbac/rolePermissionService";
+import type { RolePermission } from "@prisma/client_competency";
 
 const service = new RolePermissionService();
 
@@ -8,68 +8,75 @@ interface AuthenticatedRequest extends Request {
   user?: { userId?: string };
 }
 
-export class RolePermissionController {
-  static async getAll(req: Request, res: Response, next: NextFunction) {
-    try {
-      const search = typeof req.query.search === "string" ? req.query.search : undefined;
-      const pageRaw = req.query.page;
-      const perPageRaw = req.query.perPage;
-      const page = pageRaw && !isNaN(+pageRaw) ? parseInt(pageRaw as string, 10) : undefined;
-      const perPage = perPageRaw && !isNaN(+perPageRaw) ? parseInt(perPageRaw as string, 10) : undefined;
+function RolePermissionView(rp: RolePermission & { permission?: any }) {
+  return {
+    id: rp.id,
+    roleId: rp.roleId,
+    permissionId: rp.permissionId,
+    grantedAt: rp.grantedAt,
+    permission: rp.permission
+      ? {
+          id: rp.permission.id,
+          operationId: rp.permission.operationId,
+          assetId: rp.permission.assetId,
+          createdAt: rp.permission.createdAt,
+          updatedAt: rp.permission.updatedAt,
+        }
+      : undefined,
+  };
+}
 
-      const items = await service.getAll(search, page, perPage);
-      res.json(items);
-    } catch (err) {
-      next(err);
-    }
-  }
+function RolePermissionListView(items: (RolePermission & { permission?: any })[]) {
+  return items.map(RolePermissionView);
+}
+
+export class RolePermissionController {
+  // มอบสิทธิ์ให้ role
   static async assignPermission(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
-      const actor = req.user?.userId ?? "system";
-      const roleId = Number(req.params.roleId);
-      const permissionId = Number(req.body.permissionId);
+      const { roleId, permissionId } = req.body;
+      const actor = req.user?.userId || "system";
 
-      if (isNaN(roleId) || isNaN(permissionId)) {
-        res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid roleId or permissionId" });
-        return;
+      if (typeof roleId !== "number" || typeof permissionId !== "number") {
+        return res.status(400).json({ error: "roleId and permissionId must be numbers" });
       }
 
-      const result = await service.assignPermissionToRole(roleId, permissionId, actor);
-      res.status(StatusCodes.CREATED).json(result);
-    } catch (err) {
-      next(err);
+      const assigned = await service.assignPermissionToRole(roleId, permissionId, actor);
+      return res.status(201).json(RolePermissionView(assigned));
+    } catch (error) {
+      next(error);
     }
   }
 
+  // ยกเลิกสิทธิ์ของ role
   static async revokePermission(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
-      const actor = req.user?.userId ?? "system";
-      const roleId = Number(req.params.roleId);
-      const permissionId = Number(req.body.permissionId);
+      const { roleId, permissionId } = req.body;
+      const actor = req.user?.userId || "system";
 
-      if (isNaN(roleId) || isNaN(permissionId)) {
-        res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid roleId or permissionId" });
-        return;
+      if (typeof roleId !== "number" || typeof permissionId !== "number") {
+        return res.status(400).json({ error: "roleId and permissionId must be numbers" });
       }
 
-      await service.revokePermissionFromRole(roleId, permissionId, actor);
-      res.status(StatusCodes.NO_CONTENT).send();
-    } catch (err) {
-      next(err);
+      const revoked = await service.revokePermissionFromRole(roleId, permissionId, actor);
+      return res.status(200).json(RolePermissionView(revoked));
+    } catch (error) {
+      next(error);
     }
   }
 
-  static async getPermissions(req: Request, res: Response, next: NextFunction) {
+  // ดึงสิทธิ์ทั้งหมดของ role
+  static async getPermissionsByRole(req: Request, res: Response, next: NextFunction) {
     try {
       const roleId = Number(req.params.roleId);
       if (isNaN(roleId)) {
-        res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid role ID" });
-        return;
+        return res.status(400).json({ error: "Invalid roleId" });
       }
+
       const permissions = await service.getPermissionsForRole(roleId);
-      res.json(permissions);
-    } catch (err) {
-      next(err);
+      return res.status(200).json(RolePermissionListView(permissions));
+    } catch (error) {
+      next(error);
     }
   }
 }

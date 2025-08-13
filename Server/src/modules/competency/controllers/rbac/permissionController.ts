@@ -8,6 +8,16 @@ interface AuthenticatedRequest extends Request {
   user?: { userId?: string };
 }
 
+function PermissionView(permission: any) {
+  return {
+    id: permission.id,
+    operationId: permission.operationId,
+    assetId: permission.assetId,
+    createdAt: permission.createdAt,
+    updatedAt: permission.updatedAt,
+  };
+}
+
 export class PermissionController {
   static async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
@@ -34,7 +44,7 @@ export class PermissionController {
         res.status(StatusCodes.NOT_FOUND).json({ message: `Permission with id ${id} not found` });
         return;
       }
-      res.json(permission);
+      res.json(PermissionView(permission));
     } catch (err) {
       next(err);
     }
@@ -44,16 +54,16 @@ export class PermissionController {
     const reqAuth = req as AuthenticatedRequest;
     try {
       const actor = reqAuth.user?.userId ?? "system";
-      const { key: permissionKey, description } = req.body;
-      if (!permissionKey?.trim()) {
-        console.warn(`[PermissionController][create] Validation failed: Permission key is missing or empty.`);
-        res.status(StatusCodes.BAD_REQUEST).json({ message: "Permission key is required" });
+      const { operationId, assetId } = req.body;
+
+      if (typeof operationId !== "number" || typeof assetId !== "number") {
+        res.status(StatusCodes.BAD_REQUEST).json({ message: "operationId and assetId must be numbers" });
         return;
       }
-      const newPermission = await service.createPermission(permissionKey.trim(), description, actor);
-      res.status(StatusCodes.CREATED).json(newPermission);
+
+      const newPermission = await service.createPermission(operationId, assetId, actor);
+      res.status(StatusCodes.CREATED).json(PermissionView(newPermission));
     } catch (err) {
-      console.error(`[PermissionController][create] Error during permission creation:`, err);
       next(err);
     }
   }
@@ -67,9 +77,15 @@ export class PermissionController {
         res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid permission ID" });
         return;
       }
-      const { permissionKey, description } = req.body;
-      const updated = await service.update(id, { key: permissionKey, description }, actor);
-      res.json(updated);
+      const { operationId, assetId } = req.body;
+
+      // อัปเดตต้องรองรับ field ที่ service อนุญาต
+      const updates: Partial<{ operationId: number; assetId: number }> = {};
+      if (typeof operationId === "number") updates.operationId = operationId;
+      if (typeof assetId === "number") updates.assetId = assetId;
+
+      const updated = await service.update(id, updates, actor);
+      res.json(PermissionView(updated));
     } catch (err) {
       next(err);
     }

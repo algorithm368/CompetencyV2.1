@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { FiPlus, FiSearch, FiSettings } from "react-icons/fi";
 import { RowActions, Button, Input, Toast, DataTable } from "@Components/Common/ExportComponent";
-import { useAssetManager } from "@Hooks/competency/rbac/useAssetManager";
+import { useAssetManager } from "@Hooks/admin/rbac/useAssetManager";
 import { Asset, CreateAssetDto, UpdateAssetDto } from "@Types/competency/rbacTypes";
 import { AddEditAssetModal, DeleteAssetModal } from "./AssetModal";
 

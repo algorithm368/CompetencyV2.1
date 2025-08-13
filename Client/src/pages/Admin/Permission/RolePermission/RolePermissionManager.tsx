@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useRolePermissionManager } from "@Hooks/competency/rbac/useRolePermissionManager";
-import { usePermissionManager } from "@Hooks/competency/rbac/usePermissionManager";
+import { useRolePermissionManager } from "@Hooks/admin/rbac/useRolePermissionManager";
+import { usePermissionManager } from "@Hooks/admin/rbac/usePermissionManager";
 import { Role, Permission } from "@Types/competency/rbacTypes";
 import { Checkbox, Spinner, Toast } from "@Components/Common/ExportComponent";
 

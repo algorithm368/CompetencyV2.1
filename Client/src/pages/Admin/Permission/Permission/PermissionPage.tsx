@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { FiPlus, FiSearch, FiSettings } from "react-icons/fi";
 import { RowActions, Button, Input, Toast, DataTable } from "@Components/Common/ExportComponent";
-import { usePermissionManager } from "@Hooks/competency/rbac/usePermissionManager";
+import { usePermissionManager } from "@Hooks/admin/rbac/usePermissionManager";
 import { Permission, CreatePermissionDto, UpdatePermissionDto } from "@Types/competency/rbacTypes";
 import { AddEditPermissionModal, DeletePermissionModal } from "./PermissionModals";
 

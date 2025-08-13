@@ -1,90 +1,102 @@
 import { Request, Response, NextFunction } from "express";
-import { StatusCodes } from "http-status-codes";
 import { AssetService } from "@Competency/services/rbac/assetService";
-
+import type { Asset } from "@prisma/client_competency";
+import { assetEditableFields } from "@Configs/assetFields";
 const service = new AssetService();
 
+type AllowedField = (typeof assetEditableFields)[number];
 interface AuthenticatedRequest extends Request {
   user?: { userId?: string };
 }
 
+// แปลงข้อมูล Asset ก่อนส่ง response
+function AssetView(asset: Asset) {
+  return {
+    id: asset.id,
+    tableName: asset.tableName,
+    description: asset.description,
+    updatedAt: asset.updatedAt,
+  };
+}
+
+function AssetListView(assets: Asset[]) {
+  return assets.map(AssetView);
+}
+
 export class AssetController {
-  static async getAll(req: Request, res: Response, next: NextFunction) {
+  // สร้าง Asset ใหม่
+  static async createAsset(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
-      const search = typeof req.query.search === "string" ? req.query.search : undefined;
-      const pageRaw = req.query.page;
-      const perPageRaw = req.query.perPage;
-      const page = pageRaw && !isNaN(+pageRaw) ? parseInt(pageRaw as string, 10) : undefined;
-      const perPage = perPageRaw && !isNaN(+perPageRaw) ? parseInt(perPageRaw as string, 10) : undefined;
+      const { tableName, description } = req.body;
+      const actor = req.user?.userId || "system";
 
-      const items = await service.getAll(search, page, perPage);
-      res.json(items);
-    } catch (err) {
-      next(err);
+      if (!tableName) {
+        return res.status(400).json({ error: "tableName is required" });
+      }
+
+      const asset = await service.createAsset(tableName, description, actor);
+      return res.status(201).json(AssetView(asset));
+    } catch (error) {
+      next(error);
     }
   }
 
-  static async getById(req: Request, res: Response, next: NextFunction) {
+  // ดึง Asset ตามชื่อ tableName
+  static async getAssetByName(req: Request, res: Response, next: NextFunction) {
     try {
-      const id = Number(req.params.assetId);
-      if (isNaN(id)) {
-        res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid asset ID" });
-        return;
+      const tableName = req.params.tableName;
+      if (!tableName) {
+        return res.status(400).json({ error: "tableName parameter is required" });
       }
-      const asset = await service.getById(id);
+
+      const asset = await service.getAssetByName(tableName);
       if (!asset) {
-        res.status(StatusCodes.NOT_FOUND).json({ message: `Asset with id ${id} not found` });
-        return;
+        return res.status(404).json({ error: "Asset not found" });
       }
-      res.json(asset);
-    } catch (err) {
-      next(err);
+      return res.status(200).json(AssetView(asset));
+    } catch (error) {
+      next(error);
     }
   }
 
-  static async create(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  // อัปเดต Asset ตาม id
+  static async updateAsset(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
-      const actor = req.user?.userId ?? "system";
-      const { tableName, description } = req.body;
-      if (!tableName?.trim()) {
-        res.status(StatusCodes.BAD_REQUEST).json({ message: "tableName is required" });
-        return;
-      }
-      const newAsset = await service.createAsset(tableName.trim(), description, actor);
-      res.status(StatusCodes.CREATED).json(newAsset);
-    } catch (err) {
-      next(err);
-    }
-  }
+      const id = Number(req.params.id);
+      const updates = req.body;
+      const actor = req.user?.userId || "system";
 
-  static async update(req: AuthenticatedRequest, res: Response, next: NextFunction) {
-    try {
-      const actor = req.user?.userId ?? "system";
-      const id = Number(req.params.assetId);
       if (isNaN(id)) {
-        res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid asset ID" });
-        return;
+        return res.status(400).json({ error: "Invalid id" });
       }
-      const { tableName, description } = req.body;
-      const updated = await service.update(id, { tableName, description }, actor);
-      res.json(updated);
-    } catch (err) {
-      next(err);
+
+      const filteredUpdates: Partial<Omit<Asset, "id" | "updatedAt">> = {};
+      for (const key of assetEditableFields) {
+        if (key in updates) {
+          filteredUpdates[key] = updates[key as AllowedField];
+        }
+      }
+      const updatedAsset = await service.updateAsset(id, filteredUpdates, actor);
+      return res.status(200).json(AssetView(updatedAsset));
+    } catch (error) {
+      next(error);
     }
   }
 
-  static async delete(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  // ลบ Asset ตาม id
+  static async deleteAsset(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
-      const actor = req.user?.userId ?? "system";
-      const id = Number(req.params.assetId);
+      const id = Number(req.params.id);
+      const actor = req.user?.userId || "system";
+
       if (isNaN(id)) {
-        res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid asset ID" });
-        return;
+        return res.status(400).json({ error: "Invalid id" });
       }
-      await service.delete(id, actor);
-      res.status(StatusCodes.NO_CONTENT).send();
-    } catch (err) {
-      next(err);
+
+      const deleted = await service.deleteAsset(id, actor);
+      return res.status(200).json(AssetView(deleted));
+    } catch (error) {
+      next(error);
     }
   }
 }

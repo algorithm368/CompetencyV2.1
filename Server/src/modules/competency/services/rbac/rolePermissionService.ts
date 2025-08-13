@@ -4,7 +4,8 @@ import { BaseService } from "@Utils/BaseService";
 
 export class RolePermissionService extends BaseService<RolePermission, keyof RolePermission> {
   constructor() {
-    super(new RolePermissionsRepository(), ["roleId"], "id");
+    super(new RolePermissionsRepository(), ["roleId", "permissionId"], "id");
+    // เพิ่ม "permissionId" ใน searchFields เพื่อให้การค้นหาแบบ OR ครอบคลุมทั้ง roleId และ permissionId
   }
 
   /**

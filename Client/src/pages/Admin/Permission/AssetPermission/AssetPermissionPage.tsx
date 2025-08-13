@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { DataTable, Spinner, Toast, Checkbox, Select } from "@Components/Common/ExportComponent";
-import { useAssetManager } from "@Hooks/competency/rbac/useAssetManager";
-import { usePermissionManager } from "@Hooks/competency/rbac/usePermissionManager";
-import { useRoleManager } from "@Hooks/competency/rbac/useRoleManager";
-import RbacService from "@Services/competency/rbacService";
+import { useAssetManager } from "@Hooks/admin/rbac/useAssetManager";
+import { usePermissionManager } from "@Hooks/admin/rbac/usePermissionManager";
+import { useRoleManager } from "@Hooks/admin/rbac/useRoleManager";
+import RbacService from "@Services/admin/rbacService";
 import type { Permission, Role } from "@Types/competency/rbacTypes";
 
 interface Asset {

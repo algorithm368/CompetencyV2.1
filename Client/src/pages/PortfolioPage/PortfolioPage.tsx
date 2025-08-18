@@ -17,6 +17,33 @@ import NavigationTabs, { TabType } from "./components/sections/NavigationTabs";
 import PortfolioContent from "./components/sections/PortfolioContent";
 import LastUpdatedFooter from "./components/ui/LastUpdatedFooter";
 
+// AuthStates component for PortfolioPage
+const AuthStates: React.FC = () => {
+  return (
+    <Layout>
+      <WhiteTealBackground>
+        <div className="container mx-auto px-4 py-16">
+          <div className="flex justify-center items-center py-20">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 max-w-md">
+              <div className="flex items-center space-x-3">
+                <i className="fas fa-exclamation-circle text-yellow-500 text-xl"></i>
+                <div>
+                  <h3 className="text-yellow-800 font-medium">
+                    กรุณาเข้าสู่ระบบ
+                  </h3>
+                  <p className="text-yellow-600 text-sm">
+                    คุณจำเป็นต้องเข้าสู่ระบบเพื่อเข้าถึงหน้าพอร์ตโฟลิโอของคุณ
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </WhiteTealBackground>
+    </Layout>
+  );
+};
+
 const PortfolioPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>("overview");
   const { user, accessToken } = useAuth();
@@ -44,33 +71,6 @@ const PortfolioPage: React.FC = () => {
       fetchPortfolioData(user.email);
     }
   }, [user?.email, accessToken, fetchPortfolioData]);
-
-  // AuthStates component for PortfolioPage
-  const AuthStates: React.FC = () => {
-    return (
-      <Layout>
-        <WhiteTealBackground>
-          <div className="container mx-auto px-4 py-16">
-            <div className="flex justify-center items-center py-20">
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 max-w-md">
-                <div className="flex items-center space-x-3">
-                  <i className="fas fa-exclamation-circle text-yellow-500 text-xl"></i>
-                  <div>
-                    <h3 className="text-yellow-800 font-medium">
-                      กรุณาเข้าสู่ระบบ
-                    </h3>
-                    <p className="text-yellow-600 text-sm">
-                      คุณจำเป็นต้องเข้าสู่ระบบเพื่อเข้าถึงหน้าพอร์ตโฟลิโอของคุณ
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </WhiteTealBackground>
-      </Layout>
-    );
-  };
 
   // AuthStates for PortfolioPage
   if (!user || !accessToken) {

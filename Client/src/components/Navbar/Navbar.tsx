@@ -10,7 +10,15 @@ import { useNavigation } from "./hooks/useNavigation";
 import { useAuth } from "./hooks/useAuth";
 
 const Navbar: React.FC = () => {
-  const { auth, isLoggedIn, loginOpen, handleLogin, handleLogout, openLogin, closeLogin } = useAuth();
+  const {
+    auth,
+    isLoggedIn,
+    loginOpen,
+    handleLogin,
+    handleLogout,
+    openLogin,
+    closeLogin,
+  } = useAuth();
   const { NAV_ITEMS, isActiveNavItem } = useNavigation(isLoggedIn);
   const { menuOpen, toggleMenu, closeMenu } = useMobileMenu();
 

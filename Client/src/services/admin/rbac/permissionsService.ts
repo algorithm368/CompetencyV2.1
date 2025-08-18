@@ -9,26 +9,26 @@ export const PermissionsService = {
     if (perPage !== undefined) params.append("perPage", String(perPage));
     if (search) params.append("search", search);
 
-    const res: AxiosResponse<PermissionPageResult> = await api.get("/competency/rbac/permissions", { params });
+    const res: AxiosResponse<PermissionPageResult> = await api.get("/admin/rbac/permissions", { params });
     return res.data;
   },
 
   getPermissionById: async (id: number): Promise<Permission> => {
-    const res: AxiosResponse<Permission> = await api.get(`/competency/rbac/permissions/${id}`);
+    const res: AxiosResponse<Permission> = await api.get(`/admin/rbac/permissions/${id}`);
     return res.data;
   },
 
   createPermission: async (payload: CreatePermissionDto): Promise<Permission> => {
-    const res: AxiosResponse<Permission> = await api.post("/competency/rbac/permissions", payload);
+    const res: AxiosResponse<Permission> = await api.post("/admin/rbac/permissions", payload);
     return res.data;
   },
 
   updatePermission: async (id: number, payload: UpdatePermissionDto): Promise<Permission> => {
-    const res: AxiosResponse<Permission> = await api.put(`/competency/rbac/permissions/${id}`, payload);
+    const res: AxiosResponse<Permission> = await api.put(`/admin/rbac/permissions/${id}`, payload);
     return res.data;
   },
 
   deletePermission: async (id: number): Promise<void> => {
-    await api.delete(`/competency/rbac/permissions/${id}`);
+    await api.delete(`/admin/rbac/permissions/${id}`);
   },
 };

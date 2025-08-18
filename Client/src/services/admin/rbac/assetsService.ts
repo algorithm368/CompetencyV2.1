@@ -10,31 +10,31 @@ export const AssetsService = {
     if (perPage !== undefined) params.append("perPage", String(perPage));
     if (search) params.append("search", search);
 
-    const res: AxiosResponse<AssetPageResult> = await api.get("/competency/rbac/assets", { params });
+    const res: AxiosResponse<AssetPageResult> = await api.get("/admin/rbac/assets", { params });
     return res.data;
   },
 
   getAssetById: async (id: number): Promise<Asset> => {
-    const res: AxiosResponse<Asset> = await api.get(`/competency/rbac/assets/${id}`);
+    const res: AxiosResponse<Asset> = await api.get(`/admin/rbac/assets/${id}`);
     return res.data;
   },
 
   createAsset: async (payload: CreateAssetDto): Promise<Asset> => {
-    const res: AxiosResponse<Asset> = await api.post("/competency/rbac/assets", payload);
+    const res: AxiosResponse<Asset> = await api.post("/admin/rbac/assets", payload);
     return res.data;
   },
 
   updateAsset: async (id: number, payload: UpdateAssetDto): Promise<Asset> => {
-    const res: AxiosResponse<Asset> = await api.put(`/competency/rbac/assets/${id}`, payload);
+    const res: AxiosResponse<Asset> = await api.put(`/admin/rbac/assets/${id}`, payload);
     return res.data;
   },
 
   deleteAsset: async (id: number): Promise<void> => {
-    await api.delete(`/competency/rbac/assets/${id}`);
+    await api.delete(`/admin/rbac/assets/${id}`);
   },
 
   getRolePermissionsForAsset: async (assetId: number): Promise<RolePermission[]> => {
-    const res: AxiosResponse<RolePermission[]> = await api.get(`/competency/rbac/assets/${assetId}/role-permissions`);
+    const res: AxiosResponse<RolePermission[]> = await api.get(`/admin/rbac/assets/${assetId}/role-permissions`);
     return res.data;
   },
 };

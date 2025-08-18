@@ -1,14 +1,14 @@
 import express from "express";
-import { AssetInstanceController } from "@Competency/controllers/rbac/assetInstanceController";
-import { AssetController } from "@Competency/controllers/rbac/assetController";
-import { LogController } from "@Competency/controllers/rbac/logController";
-import { OperationController } from "@Competency/controllers/rbac/operationController";
-import { PermissionController } from "@Competency/controllers/rbac/permissionController";
-import { RoleController } from "@Competency/controllers/rbac/roleController";
-import { RolePermissionController } from "@Competency/controllers/rbac/rolePermissionController";
-import { SessionController } from "@Competency/controllers/rbac/sessionController";
-import { UserController } from "@Competency/controllers/rbac/userController";
-import { UserRoleController } from "@Competency/controllers/rbac/userRoleController ";
+import { AssetInstanceController } from "@/modules/admin/controllers/rbac/assetInstanceController";
+import { AssetController } from "@/modules/admin/controllers/rbac/assetController";
+import { LogController } from "@/modules/admin/controllers/rbac/logController";
+import { OperationController } from "@/modules/admin/controllers/rbac/operationController";
+import { PermissionController } from "@/modules/admin/controllers/rbac/permissionController";
+import { RoleController } from "@/modules/admin/controllers/rbac/roleController";
+import { RolePermissionController } from "@/modules/admin/controllers/rbac/rolePermissionController";
+import { SessionController } from "@/modules/admin/controllers/rbac/sessionController";
+import { UserController } from "@/modules/admin/controllers/rbac/userController";
+import { UserRoleController } from "@/modules/admin/controllers/rbac/userRoleController ";
 
 export const rbacRoutes = express.Router();
 

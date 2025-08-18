@@ -1,5 +1,5 @@
 export class BaseService<T extends Record<string, any>, K extends keyof T> {
-  constructor(protected readonly repo: any, private readonly searchFields: string[], private readonly pkField: keyof T, protected readonly includes?: Record<string, boolean>) {}
+  constructor(protected readonly repo: any, protected readonly searchFields: string[], private readonly pkField: keyof T, protected readonly includes?: Record<string, boolean>) {}
 
   async getAll(search?: string, page?: number, perPage?: number): Promise<{ data: T[]; total: number }> {
     const where: any = {};

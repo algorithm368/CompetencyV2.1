@@ -5,16 +5,16 @@ import { Permission } from "@Types/admin/rbac/permissionTypes";
 
 export const RolePermissionsService = {
   assignPermissionToRole: async (roleId: number, permissionId: number): Promise<RolePermission> => {
-    const res: AxiosResponse<RolePermission> = await api.post("/competency/rbac/role-permissions", { roleId, permissionId });
+    const res: AxiosResponse<RolePermission> = await api.post("/admin/rbac/role-permissions", { roleId, permissionId });
     return res.data;
   },
 
   revokePermissionFromRole: async (roleId: number, permissionId: number): Promise<void> => {
-    await api.delete("/competency/rbac/role-permissions", { data: { roleId, permissionId } });
+    await api.delete("/admin/rbac/role-permissions", { data: { roleId, permissionId } });
   },
 
   getRolePermissions: async (roleId: number): Promise<Permission[]> => {
-    const res: AxiosResponse<Permission[]> = await api.get(`/competency/rbac/role-permissions/role/${roleId}`);
+    const res: AxiosResponse<Permission[]> = await api.get(`/admin/rbac/role-permissions/role/${roleId}`);
     return res.data;
   },
 };

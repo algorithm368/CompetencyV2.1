@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import RolePage from "./Role/RolePage";
 import { RolePermissionManager } from "./RolePermission/RolePermissionManager";
 // import UserRoleAssignmentPage from "./UserRole/UserRoleAssignment";
-import { AssetPermissionPage } from "./AssetPermission/AssetPermissionPage";
 import PermissionPage from "./Permission/PermissionPage";
 import { AdminLayout } from "@Layouts/AdminLayout";
 import AssetPage from "./Asset/AssetPage";
@@ -61,7 +60,6 @@ const AdminRbacPage: React.FC = () => {
           )}
           {/* {activeTab === "userRoles" && <UserRoleAssignmentPage />}
            */}
-          {activeTab === "assets" && <AssetPermissionPage />}
           {activeTab === "permissions" && <PermissionPage />}
           {activeTab === "assetPage" && <AssetPage />}
         </div>

@@ -11,12 +11,19 @@ interface AdminNavbarProps {
 
 const AdminNavbar: React.FC<AdminNavbarProps> = ({ collapsed, onToggleSidebar }) => {
   const auth = useContext(AuthContext);
-  const isLoggedIn = !!auth?.user;
+  const { user, loading, login } = auth!;
+  const isLoggedIn = !!user;
   const [loginOpen, setLoginOpen] = useState(false);
 
   const handleLoginOpen = () => setLoginOpen(true);
   const handleLoginClose = () => setLoginOpen(false);
-
+  const handleLogout = async () => {
+    try {
+      await auth?.logout();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
   return (
     <>
       <header className={`fixed top-0 left-0 right-0 h-18 bg-white shadow-sm z-10 flex items-center px-4 md:px-6 transition-all duration-200 ${collapsed ? "md:pl-4" : "md:pl-64"}`}>
@@ -36,9 +43,11 @@ const AdminNavbar: React.FC<AdminNavbarProps> = ({ collapsed, onToggleSidebar })
           </button>
 
           {/* Profile or Login */}
-          {isLoggedIn ? (
+          {loading ? (
+            <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse" />
+          ) : isLoggedIn ? (
             <div className="mt-[6px]">
-              <ProfileDisplay profile={auth!.user!} onLogout={auth!.logout!} />
+              <ProfileDisplay profile={user} onLogout={handleLogout} />
             </div>
           ) : (
             <>
@@ -49,7 +58,7 @@ const AdminNavbar: React.FC<AdminNavbarProps> = ({ collapsed, onToggleSidebar })
                 open={loginOpen}
                 onClose={handleLoginClose}
                 handleLogin={async (resp) => {
-                  await auth?.login(resp.credential!);
+                  await login(resp.credential!);
                   setLoginOpen(false);
                 }}
               />

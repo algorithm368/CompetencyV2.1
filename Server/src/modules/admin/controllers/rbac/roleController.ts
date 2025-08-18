@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
-import { RoleService } from "@Competency/services/rbac/roleService";
+import { RoleService } from "@/modules/admin/services/rbac/roleService";
 
 const service = new RoleService();
 

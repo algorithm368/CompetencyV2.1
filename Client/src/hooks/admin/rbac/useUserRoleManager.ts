@@ -1,32 +1,34 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import RbacService from "@Services/admin/rbacService";
-import { Role } from "@Types/competency/rbacTypes";
+import { UserRoleService } from "@Services/admin/rbac/userRoleService";
+import { UserRole } from "@Types/admin/rbac/userRoleTypes";
+import { Role } from "@Types/admin/rbac/roleTypes";
+import { UserRoleAssignmentDto } from "@Types/admin/rbac/userRoleTypes";
 
 type ToastCallback = (message: string, type?: "success" | "error" | "info") => void;
 
 export function useUserRoleManager(userId: string, onToast?: ToastCallback) {
   const queryClient = useQueryClient();
 
-  // ดึง roles ของ user ตาม userId
-  const userRolesQuery = useQuery<Role[], Error>({
-    queryKey: ["userRoles", userId] as const,
-    queryFn: () => RbacService.getUserRoles(userId),
+  // ดึง roles ของ user ตาม userId (UserRole[])
+  const userRolesQuery = useQuery<UserRole[], Error>({
+    queryKey: ["userRoles", userId],
+    queryFn: () => UserRoleService.getUserRoles(userId),
     enabled: !!userId,
   });
 
-  // assign role
-  const assignRoleToUser = useMutation<void, Error, number>({
-    mutationFn: (roleId: number) => RbacService.assignRoleToUser(userId, roleId),
+  // assign roles (รองรับหลาย role)
+  const assignRolesToUser = useMutation<void, Error, Role[]>({
+    mutationFn: (roles: Role[]) => UserRoleService.assignRolesToUser({ userId, roles } as UserRoleAssignmentDto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["userRoles", userId] });
-      onToast?.("Role assigned to user successfully", "success");
+      onToast?.("Roles assigned to user successfully", "success");
     },
-    onError: () => onToast?.("Failed to assign role to user", "error"),
+    onError: () => onToast?.("Failed to assign roles to user", "error"),
   });
 
-  // revoke role
+  // revoke role (เฉพาะ role เดียว)
   const revokeRoleFromUser = useMutation<void, Error, number>({
-    mutationFn: (roleId: number) => RbacService.revokeRoleFromUser(userId, roleId),
+    mutationFn: (roleId: number) => UserRoleService.revokeRoleFromUser(userId, roleId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["userRoles", userId] });
       onToast?.("Role revoked from user successfully", "success");
@@ -36,7 +38,7 @@ export function useUserRoleManager(userId: string, onToast?: ToastCallback) {
 
   return {
     userRolesQuery,
-    assignRoleToUser,
+    assignRolesToUser,
     revokeRoleFromUser,
   };
 }

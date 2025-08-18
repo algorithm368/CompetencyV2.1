@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { AssetInstanceService } from "@Competency/services/rbac/assetInstanceService";
+import { AssetInstanceService } from "@/modules/admin/services/rbac/assetInstanceService";
 import type { AssetInstance } from "@prisma/client_competency";
 
 const service = new AssetInstanceService();

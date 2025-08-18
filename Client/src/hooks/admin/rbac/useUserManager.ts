@@ -1,19 +1,70 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueries, useMutation, useQueryClient } from "@tanstack/react-query";
 import { UsersService } from "@Services/admin/rbac/usersService";
 import { User } from "@Types/admin/rbac/userTypes";
 import { Role } from "@Types/admin/rbac/roleTypes";
 
 type ToastCallback = (message: string, type?: "success" | "error" | "info") => void;
 
-export function useUserManager(onToast?: ToastCallback) {
+export function useUserManager(options?: { id?: string | null; search?: string; page?: number; perPage?: number; initialPrefetchPages?: number }, onToast?: ToastCallback) {
+  const { id = null, search = "", page = 1, perPage = 10, initialPrefetchPages = 3 } = options || {};
   const queryClient = useQueryClient();
 
-  const usersQuery = useQuery<User[], Error>({
-    queryKey: ["users"],
-    queryFn: UsersService.getAllUsers,
-    staleTime: 5 * 60 * 1000,
+  // Fetch a page of users
+  const fetchPage = async (pageIndex: number, pageSize: number): Promise<{ data: User[]; total: number }> => {
+    const pageNumber = pageIndex + 1;
+    const result = await UsersService.getAllUsers(search, pageNumber, pageSize);
+    return {
+      data: result.data ?? [],
+      total: result.total ?? 0,
+    };
+  };
+
+  // Prefetch first N pages
+  const prefetchQueries = useQueries({
+    queries: Array.from({ length: initialPrefetchPages }, (_, i) => ({
+      queryKey: ["users", search, i + 1, perPage] as const,
+      queryFn: () => fetchPage(i, perPage),
+      staleTime: 5 * 60 * 1000,
+      enabled: true,
+    })),
   });
 
+  // Current page query
+  const currentPageQuery = useQuery<{ data: User[]; total: number }, Error>({
+    queryKey: ["users", search, page, perPage] as const,
+    queryFn: () => fetchPage(page - 1, perPage),
+    enabled: page > initialPrefetchPages,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
+
+  const mergedData: { data: User[]; total: number } | undefined = page <= initialPrefetchPages ? prefetchQueries[page - 1]?.data : currentPageQuery.data;
+
+  const isLoading = prefetchQueries.some((q) => q.isLoading) || (page > initialPrefetchPages && currentPageQuery.isLoading);
+  const isError = prefetchQueries.some((q) => q.isError) || (page > initialPrefetchPages && currentPageQuery.isError);
+  const error = prefetchQueries.find((q) => q.error)?.error || (page > initialPrefetchPages && currentPageQuery.error);
+
+  // Single user query
+  const userQuery = useQuery<User, Error>({
+    queryKey: ["user", id] as const,
+    queryFn: async () => {
+      if (!id) throw new Error("User id is null");
+      return UsersService.getUserById(id);
+    },
+    enabled: id !== null,
+  });
+
+  // User roles query
+  const userRolesQuery = useQuery<Role[], Error>({
+    queryKey: ["userRoles", id] as const,
+    queryFn: async () => {
+      if (!id) return [];
+      return UsersService.getUserRoles(id);
+    },
+    enabled: id !== null,
+  });
+
+  // Mutations
   const createUser = useMutation<User, Error, User>({
     mutationFn: (payload: User) => UsersService.createUser(payload),
     onSuccess: (created: User) => {
@@ -35,10 +86,10 @@ export function useUserManager(onToast?: ToastCallback) {
   });
 
   const deleteUser = useMutation<void, Error, string>({
-    mutationFn: (id: string) => UsersService.deleteUser(id),
-    onSuccess: (_: void, id: string) => {
+    mutationFn: (userId: string) => UsersService.deleteUser(userId),
+    onSuccess: (_data: void, userId: string) => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
-      queryClient.invalidateQueries({ queryKey: ["user", id] });
+      queryClient.invalidateQueries({ queryKey: ["user", userId] });
       onToast?.("User deleted successfully", "success");
     },
     onError: () => onToast?.("Failed to delete user", "error"),
@@ -63,33 +114,20 @@ export function useUserManager(onToast?: ToastCallback) {
   });
 
   return {
-    usersQuery,
+    usersQuery: {
+      data: mergedData,
+      isLoading,
+      isError,
+      error,
+      refetch: currentPageQuery.refetch,
+    },
+    fetchPage,
+    userQuery,
+    userRolesQuery,
     createUser,
     updateUser,
     deleteUser,
     assignRole,
     revokeRole,
   };
-}
-
-export function useUserQuery(userId: string | null) {
-  return useQuery<User, Error>({
-    queryKey: ["user", userId],
-    queryFn: async () => {
-      if (!userId) throw new Error("User id is null");
-      return UsersService.getUserById(userId);
-    },
-    enabled: !!userId,
-  });
-}
-
-export function useUserRolesQuery(userId: string | null) {
-  return useQuery<Role[], Error>({
-    queryKey: ["userRoles", userId],
-    queryFn: async () => {
-      if (!userId) throw new Error("User id is null");
-      return UsersService.getUserRoles(userId);
-    },
-    enabled: !!userId,
-  });
 }

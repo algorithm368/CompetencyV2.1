@@ -2,47 +2,62 @@ import { AxiosResponse } from "axios";
 import api from "@Services/api";
 import { User } from "@Types/admin/rbac/userTypes";
 import { Role } from "@Types/admin/rbac/roleTypes";
+import { Session } from "@Types/admin/rbac/sessionTypes";
+
+export interface UserWithStatus extends User {
+  sessions?: Session[];
+  status: "online" | "offline";
+}
+export interface UserPageResult {
+  data: User[];
+  total: number;
+}
 
 export const UsersService = {
-  getAllUsers: async (): Promise<User[]> => {
-    const res: AxiosResponse<User[]> = await api.get("/competency/rbac/users");
+  getAllUsers: async (search?: string, page?: number, perPage?: number): Promise<UserPageResult> => {
+    const params = new URLSearchParams();
+    if (page !== undefined) params.append("page", String(page));
+    if (perPage !== undefined) params.append("perPage", String(perPage));
+    if (search) params.append("search", search);
+
+    const res: AxiosResponse<UserPageResult> = await api.get("/admin/rbac/users", { params });
     return res.data;
   },
 
   getUserById: async (id: string): Promise<User> => {
-    const res: AxiosResponse<User> = await api.get(`/competency/rbac/users/${id}`);
+    const res: AxiosResponse<User> = await api.get(`/admin/rbac/users/${id}`);
     return res.data;
   },
 
   getUserByEmail: async (email: string): Promise<User> => {
-    const res: AxiosResponse<User> = await api.get("/competency/rbac/users/by-email", { params: { email } });
+    const res: AxiosResponse<User> = await api.get("/admin/rbac/users/by-email", { params: { email } });
     return res.data;
   },
 
   createUser: async (payload: User): Promise<User> => {
-    const res: AxiosResponse<User> = await api.post("/competency/rbac/users", payload);
+    const res: AxiosResponse<User> = await api.post("/admin/rbac/users", payload);
     return res.data;
   },
 
   updateUser: async (id: string, payload: Partial<User>): Promise<User> => {
-    const res: AxiosResponse<User> = await api.put(`/competency/rbac/users/${id}`, payload);
+    const res: AxiosResponse<User> = await api.put(`/admin/rbac/users/${id}`, payload);
     return res.data;
   },
 
   deleteUser: async (id: string): Promise<void> => {
-    await api.delete(`/competency/rbac/users/${id}`);
+    await api.delete(`/admin/rbac/users/${id}`);
   },
 
   assignRoleToUser: async (userId: string, roleId: number): Promise<void> => {
-    await api.post("/competency/rbac/user-roles", { userId, roleId });
+    await api.post("/admin/rbac/user-roles", { userId, roleId });
   },
 
   revokeRoleFromUser: async (userId: string, roleId: number): Promise<void> => {
-    await api.delete("/competency/rbac/user-roles", { data: { userId, roleId } });
+    await api.delete("/admin/rbac/user-roles", { data: { userId, roleId } });
   },
 
   getUserRoles: async (userId: string): Promise<Role[]> => {
-    const res: AxiosResponse<Role[]> = await api.get(`/competency/rbac/user-roles/user/${userId}`);
+    const res: AxiosResponse<Role[]> = await api.get(`/admin/rbac/user-roles/user/${userId}`);
     return res.data;
   },
 };

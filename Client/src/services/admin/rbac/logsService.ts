@@ -8,16 +8,16 @@ export const LogsService = {
     if (page !== undefined) params.append("page", String(page));
     if (perPage !== undefined) params.append("perPage", String(perPage));
 
-    const res: AxiosResponse<LogPageResult> = await api.get("/competency/rbac/logs", { params });
+    const res: AxiosResponse<LogPageResult> = await api.get("/admin/rbac/logs", { params });
     return res.data;
   },
 
   getLogById: async (id: number): Promise<Log> => {
-    const res: AxiosResponse<Log> = await api.get(`/competency/rbac/logs/${id}`);
+    const res: AxiosResponse<Log> = await api.get(`/admin/rbac/logs/${id}`);
     return res.data;
   },
 
   deleteLog: async (id: number): Promise<void> => {
-    await api.delete(`/competency/rbac/logs/${id}`);
+    await api.delete(`/admin/rbac/logs/${id}`);
   },
 };

@@ -8,26 +8,26 @@ export const OperationsService = {
     if (page !== undefined) params.append("page", String(page));
     if (perPage !== undefined) params.append("perPage", String(perPage));
 
-    const res: AxiosResponse<OperationPageResult> = await api.get("/competency/rbac/operations", { params });
+    const res: AxiosResponse<OperationPageResult> = await api.get("/admin/rbac/operations", { params });
     return res.data;
   },
 
   getOperationById: async (id: number): Promise<Operation> => {
-    const res: AxiosResponse<Operation> = await api.get(`/competency/rbac/operations/${id}`);
+    const res: AxiosResponse<Operation> = await api.get(`/admin/rbac/operations/${id}`);
     return res.data;
   },
 
   createOperation: async (payload: Operation): Promise<Operation> => {
-    const res: AxiosResponse<Operation> = await api.post("/competency/rbac/operations", payload);
+    const res: AxiosResponse<Operation> = await api.post("/admin/rbac/operations", payload);
     return res.data;
   },
 
   updateOperation: async (id: number, payload: Partial<Operation>): Promise<Operation> => {
-    const res: AxiosResponse<Operation> = await api.put(`/competency/rbac/operations/${id}`, payload);
+    const res: AxiosResponse<Operation> = await api.put(`/admin/rbac/operations/${id}`, payload);
     return res.data;
   },
 
   deleteOperation: async (id: number): Promise<void> => {
-    await api.delete(`/competency/rbac/operations/${id}`);
+    await api.delete(`/admin/rbac/operations/${id}`);
   },
 };

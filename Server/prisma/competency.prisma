@@ -52,18 +52,22 @@ model Profile {
 }
 
 model Session {
-  id           String    @id @default(uuid()) @db.Char(36)
-  userId       String    @db.Char(36)
-  accessToken  String    @db.Text
-  refreshToken String    @db.Text
-  createdAt    DateTime  @default(now()) @db.Timestamp(0)
-  updatedAt    DateTime  @updatedAt @db.Timestamp(0)
-  expiresAt    DateTime? @db.Timestamp(0)
+  id             String    @id @default(uuid()) @db.Char(36)
+  userId         String    @db.Char(36)
+  accessToken    String    @db.Text
+  refreshToken   String    @db.Text
+  csrfToken      String    @db.VarChar(255)
+  provider       String    @default("local") @db.VarChar(20)
+  createdAt      DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt      DateTime  @updatedAt @db.Timestamp(0)
+  expiresAt      DateTime  @db.Timestamp(0)
+  lastActivityAt DateTime  @default(now()) @db.Timestamp(0)
 
-  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
+
 
 model Role {
   id              Int       @id @default(autoincrement())

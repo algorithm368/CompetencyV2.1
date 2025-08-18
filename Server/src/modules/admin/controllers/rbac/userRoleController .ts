@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { UserRoleService } from "@Competency/services/rbac/userRoleService";
+import { UserRoleService } from "@/modules/admin/services/rbac/userRoleService";
 import type { UserRole } from "@prisma/client_competency";
 
 const service = new UserRoleService();

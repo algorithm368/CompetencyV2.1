@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { RolePermissionService } from "@Competency/services/rbac/rolePermissionService";
+import { RolePermissionService } from "@/modules/admin/services/rbac/rolePermissionService";
 import type { RolePermission } from "@prisma/client_competency";
 
 const service = new RolePermissionService();

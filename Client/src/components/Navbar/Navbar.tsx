@@ -19,11 +19,12 @@ interface NavbarProps {
   isTop: boolean;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ isTop }) => {
+const Navbar: React.FC<NavbarProps> = () => {
   const auth = useContext(AuthContext);
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     function handleResize() {
@@ -241,10 +242,18 @@ const Navbar: React.FC<NavbarProps> = ({ isTop }) => {
       <Login
         open={loginOpen}
         onClose={() => setLoginOpen(false)}
-        handleLogin={(resp) => {
-          handleLogin(resp);
-          setLoginOpen(false);
+        handleLogin={async (resp) => {
+          setLoading(true);
+          try {
+            await handleLogin(resp);
+            setLoginOpen(false);
+          } catch (error) {
+            console.error(error);
+          } finally {
+            setLoading(false);
+          }
         }}
+        loading={loading}
       />
     </>
   );

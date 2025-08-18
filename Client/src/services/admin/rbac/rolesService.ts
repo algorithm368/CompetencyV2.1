@@ -9,26 +9,26 @@ export const RolesService = {
     if (perPage !== undefined) params.append("perPage", String(perPage));
     if (search) params.append("search", search);
 
-    const res: AxiosResponse<RolePageResult> = await api.get("/competency/rbac/roles", { params });
+    const res: AxiosResponse<RolePageResult> = await api.get("/admin/rbac/roles", { params });
     return res.data;
   },
 
   getRoleById: async (id: number): Promise<Role> => {
-    const res: AxiosResponse<Role> = await api.get(`/competency/rbac/roles/${id}`);
+    const res: AxiosResponse<Role> = await api.get(`/admin/rbac/roles/${id}`);
     return res.data;
   },
 
   createRole: async (payload: CreateRoleDto): Promise<Role> => {
-    const res: AxiosResponse<Role> = await api.post("/competency/rbac/roles", payload);
+    const res: AxiosResponse<Role> = await api.post("/admin/rbac/roles", payload);
     return res.data;
   },
 
   updateRole: async (id: number, payload: UpdateRoleDto): Promise<Role> => {
-    const res: AxiosResponse<Role> = await api.put(`/competency/rbac/roles/${id}`, payload);
+    const res: AxiosResponse<Role> = await api.put(`/admin/rbac/roles/${id}`, payload);
     return res.data;
   },
 
   deleteRole: async (id: number): Promise<void> => {
-    await api.delete(`/competency/rbac/roles/${id}`);
+    await api.delete(`/admin/rbac/roles/${id}`);
   },
 };

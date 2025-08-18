@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { AssetService } from "@Competency/services/rbac/assetService";
+import { AssetService } from "@/modules/admin/services/rbac/assetService";
 import type { Asset } from "@prisma/client_competency";
 import { assetEditableFields } from "@Configs/assetFields";
 const service = new AssetService();

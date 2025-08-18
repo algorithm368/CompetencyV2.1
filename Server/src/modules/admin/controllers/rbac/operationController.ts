@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { OperationService } from "@Competency/services/rbac/operationService";
+import { OperationService } from "@/modules/admin/services/rbac/operationService";
 import type { Operation } from "@prisma/client_competency";
 
 const service = new OperationService();

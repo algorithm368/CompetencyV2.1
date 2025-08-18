@@ -1,5 +1,5 @@
 import { useQuery, useQueries, useMutation, useQueryClient } from "@tanstack/react-query";
-import RbacService from "@Services/admin/rbacService";
+import { RolesService } from "@Services/admin/rbac/rolesService";
 import { Role, RolePageResult, CreateRoleDto, UpdateRoleDto } from "@Types/competency/rbacTypes";
 
 type ToastCallback = (message: string, type?: "success" | "error" | "info") => void;
@@ -9,7 +9,7 @@ export function useRoleManager(options?: { id?: number | null; search?: string; 
 
   const fetchPage = async (pageIndex: number, pageSize: number): Promise<{ data: Role[]; total: number }> => {
     const pageNumber = pageIndex + 1;
-    const result = await RbacService.getAllRoles(search, pageNumber, pageSize);
+    const result = await RolesService.getAllRoles(search, pageNumber, pageSize);
     return {
       data: result.data ?? [],
       total: result.total ?? 0,
@@ -26,7 +26,7 @@ export function useRoleManager(options?: { id?: number | null; search?: string; 
 
   const currentPageQuery = useQuery<RolePageResult, Error>({
     queryKey: ["roles", search, page, perPage] as const,
-    queryFn: () => RbacService.getAllRoles(search, page, perPage),
+    queryFn: () => RolesService.getAllRoles(search, page, perPage),
     enabled: page > initialPrefetchPages,
     staleTime: 5 * 60 * 1000,
     placeholderData: (prev) => prev,
@@ -44,13 +44,13 @@ export function useRoleManager(options?: { id?: number | null; search?: string; 
     queryKey: ["role", id] as const,
     queryFn: async () => {
       if (id === null) throw new Error("Role id is null");
-      return RbacService.getRoleById(id);
+      return RolesService.getRoleById(id);
     },
     enabled: id !== null,
   });
 
   const createRole = useMutation<Role, Error, CreateRoleDto>({
-    mutationFn: (dto: CreateRoleDto) => RbacService.createRole(dto),
+    mutationFn: (dto: CreateRoleDto) => RolesService.createRole(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["roles"] });
 
@@ -62,7 +62,7 @@ export function useRoleManager(options?: { id?: number | null; search?: string; 
   });
 
   const updateRole = useMutation<Role, Error, { id: number; data: UpdateRoleDto }>({
-    mutationFn: ({ id, data }: { id: number; data: UpdateRoleDto }) => RbacService.updateRole(id, data),
+    mutationFn: ({ id, data }: { id: number; data: UpdateRoleDto }) => RolesService.updateRole(id, data),
     onSuccess: (updated: Role) => {
       queryClient.invalidateQueries({ queryKey: ["roles"] });
       queryClient.invalidateQueries({ queryKey: ["role", updated.id] });
@@ -74,7 +74,7 @@ export function useRoleManager(options?: { id?: number | null; search?: string; 
   });
 
   const deleteRole = useMutation<void, Error, number>({
-    mutationFn: (delId: number) => RbacService.deleteRole(delId),
+    mutationFn: (delId: number) => RolesService.deleteRole(delId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["roles"] });
       onToast?.("Role deleted successfully", "success");

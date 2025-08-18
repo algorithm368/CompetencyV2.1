@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { SessionService } from "@Competency/services/rbac/sessionService";
+import { SessionService } from "@/modules/admin/services/rbac/sessionService";
 import type { Session } from "@prisma/client_competency";
 
 const service = new SessionService();

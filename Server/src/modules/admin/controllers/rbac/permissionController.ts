@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
-import { PermissionService } from "@Competency/services/rbac/permissionService";
+import { PermissionService } from "@/modules/admin/services/rbac/permissionService";
 
 const service = new PermissionService();
 

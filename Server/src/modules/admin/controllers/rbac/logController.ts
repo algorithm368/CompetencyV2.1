@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { LogService } from "@Competency/services/rbac/logService";
+import { LogService } from "@/modules/admin/services/rbac/logService";
 import { LogAction } from "@prisma/client_competency";
 import type { Log } from "@prisma/client_competency";
 

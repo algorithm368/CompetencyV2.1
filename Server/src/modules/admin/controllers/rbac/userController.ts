@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { UserService } from "@Competency/services/rbac/userService";
+import { UserService } from "@/modules/admin/services/rbac/userService";
 import type { User } from "@prisma/client_competency";
 
 const service = new UserService();
@@ -8,7 +8,7 @@ interface AuthenticatedRequest extends Request {
   user?: { userId?: string };
 }
 
-function UserView(user: User) {
+function UserView(user: User & { status?: "online" | "offline" }) {
   return {
     id: user.id,
     email: user.email,
@@ -22,6 +22,7 @@ function UserView(user: User) {
     address: user.address,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
+    status: user.status ?? "offline",
   };
 }
 
@@ -33,9 +34,12 @@ export class UserController {
       const perPageRaw = req.query.perPage;
       const page = pageRaw && !isNaN(+pageRaw) ? parseInt(pageRaw as string, 10) : undefined;
       const perPage = perPageRaw && !isNaN(+perPageRaw) ? parseInt(perPageRaw as string, 10) : undefined;
+      const { data, total } = await service.getAll(search, page, perPage);
 
-      const items = await service.getAll(search, page, perPage);
-      res.json(items);
+      res.json({
+        total,
+        data: data.map(UserView),
+      });
     } catch (err) {
       next(err);
     }

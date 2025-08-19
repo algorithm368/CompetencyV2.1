@@ -18,13 +18,9 @@ const Login: React.FC<LoginProps> = ({ open, onClose, handleLogin }) => {
   useEffect(() => {
     if (open) {
       document.body.classList.add("overflow-hidden");
-    } else {
-      document.body.classList.remove("overflow-hidden");
+      return () => document.body.classList.remove("overflow-hidden");
     }
-
-    return () => {
-      document.body.classList.remove("overflow-hidden");
-    };
+    document.body.classList.remove("overflow-hidden");
   }, [open]);
 
   if (!open) return null;
@@ -47,8 +43,19 @@ const Login: React.FC<LoginProps> = ({ open, onClose, handleLogin }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div role="presentation" className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-
+      <button
+        type="button"
+        aria-label="Close overlay"
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm cursor-pointer"
+        onClick={onClose}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            onClose();
+          }
+        }}
+        tabIndex={0}
+        style={{ pointerEvents: "auto" }}
+      />
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden z-10 border border-gray-200">
         <button
           onClick={onClose}
@@ -58,7 +65,6 @@ const Login: React.FC<LoginProps> = ({ open, onClose, handleLogin }) => {
         >
           <XMarkIcon className="h-6 w-6" />
         </button>
-
         <div className="flex flex-col md:flex-row min-h-[380px]">
           {/* Left Panel */}
           <div className="md:w-5/12 w-full bg-gradient-to-br from-teal-600 via-teal-700 to-teal-800 flex items-center justify-center p-6 relative overflow-hidden">

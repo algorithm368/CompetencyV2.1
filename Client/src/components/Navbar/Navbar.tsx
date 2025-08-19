@@ -1,9 +1,12 @@
-import React, { useState, useEffect, useContext } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { FaSignInAlt, FaBars, FaTimes } from "react-icons/fa";
-import ProfileDisplay from "./ProfileDisplay";
+import React, { useContext, useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import Logo from "./Logo";
+import DesktopNavigation from "./DesktopNavigation";
+import AuthActions from "./AuthActions";
+import MobileMenuToggle from "./MobileMenuToggle";
+import MobileMenu from "./MobileMenu";
 import Login from "./Login";
-import AuthContext from "@Contexts/AuthContext";
+import { AuthContext } from "@Contexts/AuthContext";
 
 const NAV_ITEMS: { name: string; path: string }[] = [
   { name: "Home", path: "/home" },
@@ -36,7 +39,6 @@ const Navbar: React.FC<NavbarProps> = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Close mobile menu when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as HTMLElement;
@@ -47,7 +49,6 @@ const Navbar: React.FC<NavbarProps> = () => {
 
     if (menuOpen) {
       document.addEventListener("mousedown", handleClickOutside);
-      // Prevent body scroll when menu is open
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";
@@ -61,7 +62,6 @@ const Navbar: React.FC<NavbarProps> = () => {
 
   const isLoggedIn = !!auth?.user;
 
-  // Helper function to check if a nav item is active
   const isActiveNavItem = (itemPath: string) => {
     return location.pathname === itemPath;
   };
@@ -87,158 +87,31 @@ const Navbar: React.FC<NavbarProps> = () => {
   return (
     <>
       <nav className="fixed top-0 left-0 w-full z-50 transition-all duration-300 ease-in-out bg-white border-b border-gray-200 shadow-sm">
-        <div className="w-full flex items-center justify-between py-3 px-4 md:px-6">
-          {/* Logo - More compact on mobile */}
-          <div className="flex-shrink-0 flex items-center">
-            <Link to="/home" className="flex items-center space-x-1">
-              <div className="w-8 h-8 bg-teal-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">C</span>
-              </div>
-              <span className="text-2xl font-bold text-gray-900">Competency</span>
-            </Link>
-          </div>
+        <div className="w-full grid grid-cols-2 md:grid-cols-3 items-center py-3 px-4 md:px-6">
+          <Logo />
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex space-x-6 lg:space-x-8 flex-1 justify-center px-5">
-            {NAV_ITEMS.map((item) => {
-              const isActive = isActiveNavItem(item.path);
-              return (
-                <Link
-                  key={item.name}
-                  to={item.path}
-                  className={`relative font-medium transition-all duration-300 hover:scale-105 text-sm lg:text-base ${
-                    isActive
-                      ? "text-teal-600 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-teal-600 after:transition-all after:duration-300"
-                      : "text-gray-600 hover:text-teal-600 after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-teal-600 hover:after:w-full after:transition-all after:duration-300"
-                  }`}
-                >
-                  {item.name}
-                </Link>
-              );
-            })}
-          </div>
+          <DesktopNavigation navItems={NAV_ITEMS} isActiveNavItem={isActiveNavItem} />
 
-          {/* Desktop Login/Profile */}
-          <div className="hidden md:flex items-center space-x-4 flex-shrink-0">
-            {isLoggedIn ? (
-              <ProfileDisplay profile={auth?.user} onLogout={handleLogout} />
-            ) : (
-              <button
-                onClick={() => setLoginOpen(true)}
-                className="flex items-center space-x-2 bg-white text-teal-600 hover:bg-teal-600 hover:text-white text-sm font-medium px-4 lg:px-5 py-2 lg:py-2.5 rounded-3xl shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-2 focus:ring-offset-transparent transition-all duration-200 ease-in-out hover:scale-105 transform border border-teal-600"
-              >
-                <FaSignInAlt className="h-4 w-4" />
-                <span>Login</span>
-              </button>
-            )}
-          </div>
+          <div className="flex justify-end items-center">
+            <AuthActions isLoggedIn={isLoggedIn} user={auth?.user} onLogin={() => setLoginOpen(true)} onLogout={handleLogout} />
 
-          {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center space-x-3">
-            {/* Mobile Login Button - Show only when not logged in */}
-            {!isLoggedIn && (
-              <button
-                onClick={() => setLoginOpen(true)}
-                className="flex items-center justify-center bg-white text-teal-600 hover:bg-teal-600 hover:text-white p-2 rounded-full shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-teal-400 transition-all duration-200 ease-in-out border border-teal-600"
-                aria-label="Login"
-              >
-                <FaSignInAlt className="h-4 w-4" />
-              </button>
-            )}
-
-            {/* Profile for mobile when logged in */}
-            {isLoggedIn && (
-              <div className="scale-90">
-                <ProfileDisplay profile={auth?.user} onLogout={handleLogout} />
-              </div>
-            )}
-
-            {/* Hamburger Menu Button */}
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="menu-button flex items-center justify-center w-10 h-10 text-teal-600 hover:text-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-2 focus:ring-offset-transparent rounded-lg transition-all duration-200 hover:bg-teal-50"
-              aria-label="Toggle menu"
-              aria-expanded={menuOpen}
-            >
-              {menuOpen ? <FaTimes className="h-5 w-5" /> : <FaBars className="h-5 w-5" />}
-            </button>
+            <div className="md:hidden flex items-center space-x-3">
+              <AuthActions isLoggedIn={isLoggedIn} user={auth?.user} onLogin={() => setLoginOpen(true)} onLogout={handleLogout} isMobile={true} />
+              <MobileMenuToggle menuOpen={menuOpen} onToggle={() => setMenuOpen(!menuOpen)} />
+            </div>
           </div>
         </div>
 
-        {/* Mobile Menu - Full screen overlay */}
-        {menuOpen && (
-          <>
-            {/* Backdrop */}
-            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden" />
-
-            {/* Menu Content */}
-            <div className="mobile-menu fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl z-50 md:hidden transform transition-transform duration-300 ease-out">
-              {/* Menu Header */}
-              <div className="flex items-center justify-between p-4 border-b border-gray-200">
-                <span className="text-gray-900 font-semibold text-lg">Menu</span>
-                <button
-                  onClick={() => setMenuOpen(false)}
-                  className="flex items-center justify-center w-8 h-8 text-teal-600 hover:text-teal-700 focus:outline-none rounded-lg transition-colors duration-200"
-                  aria-label="Close menu"
-                >
-                  <FaTimes className="h-5 w-5" />
-                </button>
-              </div>
-
-              {/* Menu Items */}
-              <div className="flex flex-col p-4 space-y-2">
-                {NAV_ITEMS.map((item, index) => {
-                  const isActive = isActiveNavItem(item.path);
-                  return (
-                    <Link
-                      key={item.name}
-                      to={item.path}
-                      onClick={() => setMenuOpen(false)}
-                      className={`flex items-center font-medium py-4 px-4 rounded-xl transition-all duration-200 transform hover:translate-x-1 border-b border-gray-100 last:border-b-0 ${
-                        isActive ? "text-teal-600 bg-teal-50 border-l-4 border-l-teal-600" : "text-gray-700 hover:text-teal-600 hover:bg-teal-50"
-                      }`}
-                      style={{
-                        animationDelay: `${index * 50}ms`,
-                        animation: menuOpen ? "slideInRight 0.3s ease-out forwards" : "none",
-                      }}
-                    >
-                      <span className="text-base">{item.name}</span>
-                    </Link>
-                  );
-                })}
-
-                {/* Mobile Login/Logout at bottom */}
-                <div className="pt-6 mt-6 border-t border-gray-200">
-                  {isLoggedIn ? (
-                    <button
-                      onClick={() => {
-                        handleLogout();
-                        setMenuOpen(false);
-                      }}
-                      className="flex items-center justify-center w-full text-red-600 hover:text-red-700 font-medium py-4 px-4 text-base rounded-xl hover:bg-red-50 transition-all duration-200 border border-red-200 hover:border-red-300"
-                    >
-                      <span>Sign Out</span>
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        setLoginOpen(true);
-                        setMenuOpen(false);
-                      }}
-                      className="flex items-center justify-center space-x-3 w-full text-teal-600 font-medium py-4 px-4 text-base rounded-xl bg-white border border-teal-200 hover:bg-teal-50 hover:text-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-400 transition-all duration-200 ease-in-out hover:scale-105 transform shadow-lg"
-                    >
-                      <FaSignInAlt className="h-5 w-5" />
-                      <span>Login</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          </>
-        )}
+        <MobileMenu
+          menuOpen={menuOpen}
+          navItems={NAV_ITEMS}
+          isLoggedIn={isLoggedIn}
+          isActiveNavItem={isActiveNavItem}
+          onClose={() => setMenuOpen(false)}
+          onLogin={() => setLoginOpen(true)}
+          onLogout={handleLogout}
+        />
       </nav>
-
-      {/* Login modal */}
       <Login
         open={loginOpen}
         onClose={() => setLoginOpen(false)}

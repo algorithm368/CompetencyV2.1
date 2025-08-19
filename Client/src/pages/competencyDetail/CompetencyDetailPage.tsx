@@ -1,407 +1,383 @@
+/**
+ * @fileoverview CompetencyDetailPage component for displaying detailed information
+ * about SFIA and TPQI competency frameworks with interactive features.
+ *
+ * This component provides:
+ * - Dynamic competency data fetching based on framework type
+ * - Error handling and retry mechanisms
+ * - Interactive actions (bookmark, favorite, share, etc.)
+ * - Responsive design with animations
+ * - Professional loading and error states
+ *
+ * @author Siriwat Chairak
+ * @version 2.1.0
+ * @since 2025-07-20
+ */
+
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { motion, AnimatePresence, LazyMotion, domAnimation } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+  LazyMotion,
+  domAnimation,
+  useReducedMotion,
+} from "framer-motion";
 import Layout from "@Layouts/Layout";
-import { 
-  FaCode, 
-  FaGraduationCap, 
-  FaTools, 
-  FaClock,
-  FaBookmark,
-  FaShare,
-  FaPrint,
-  FaDownload,
-  FaHeart,
-  FaRegHeart,
-  FaChevronRight,
-  FaInfoCircle,
-} from "react-icons/fa";
-import { 
-  useSfiaJobDetail, 
-  useTpqiUnitDetail 
-} from './hooks/useCompetencyDetail';
-import { useCompetencyDetailError } from './hooks/useCompetencyDetailError';
-import InvalidUrl from "./components/InvalidUrl";
-import ErrorState from "./components/ErrorState";
-import LoadingState from "./components/LoadingState";
-import NoDataState from "./components/NoDataState";
-import BackButton from "./components/BackButton";
-import FrameworkBadge from "./components/FrameworkBadge";
-import StatsCard from "./components/StatsCard";
-import SfiaSection from "./components/SfiaSection";
-import TpqiSection from "./components/TpqiSection";
-import CacheInfo from "./components/CacheInfo";
+import {
+  useSfiaSkillDetail,
+  useTpqiUnitDetail,
+  useAnimationVariants,
+  useCompetencyActions,
+} from "./hooks";
+import { useCompetencyDetailError } from "./hooks/competency/useCompetencyDetailError";
+import { sanitizeUrlParams, isMalformedParam } from "@Utils/errorHandler";
 
-const containerVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.5,
-      staggerChildren: 0.08,
-      ease: [0.25, 0.46, 0.45, 0.94], // Optimized easing
-    },
-  },
-};
+import { getFrameworkIcon, getFrameworkColor } from "./utils/frameworkUtils";
+import InvalidUrl from "./components/states/InvalidUrl";
+import ErrorState from "./components/states/ErrorState";
+import LoadingState from "./components/states/LoadingState";
+import NoDataState from "./components/states/NoDataState";
+import PageHeader from "./components/layouts/PageHeader";
+import SfiaSection from "./components/sfia/SfiaSection";
+import TpqiContainer from "./components/tpqi/TpqiContainer";
+import PageFooter from "./components/layouts/PageFooter";
+import FloatingTooltip from "./components/ui/FloatingTooltip";
+import OptimizedBackgroundDecor from "./components/layouts/OptimizedBackgroundDecor";
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { 
-      duration: 0.3,
-      ease: [0.25, 0.46, 0.45, 0.94],
-    },
-  },
-};
-
-// Optimized button animation variants
-const buttonVariants = {
-  hover: { 
-    scale: 1.05,
-    transition: { duration: 0.15, ease: "easeOut" }
-  },
-  tap: { 
-    scale: 0.95,
-    transition: { duration: 0.1, ease: "easeInOut" }
-  }
-};
-
-// Memoized particle positions to avoid recalculation on each render
-const PARTICLE_POSITIONS = Array.from({ length: 6 }, (_, i) => ({
-  id: `particle-${i}`,
-  left: Math.random() * 100,
-  top: Math.random() * 100,
-  delay: Math.random() * 2,
-  duration: 3 + Math.random() * 2,
-}));
-
-// Optimized action button component
-const ActionButton = React.memo<{
-  onClick: () => void;
-  icon: React.ReactNode;
-  isActive?: boolean;
-  activeColors: string;
-  inactiveColors: string;
-  tooltipKey: string;
-  onTooltip: (key: string | null) => void;
-}>(({ onClick, icon, isActive, activeColors, inactiveColors, tooltipKey, onTooltip }) => (
-  <motion.button
-    onClick={onClick}
-    className={`p-3 rounded-xl border transition-all duration-200 ${
-      isActive ? activeColors : inactiveColors
-    }`}
-    variants={buttonVariants}
-    whileHover="hover"
-    whileTap="tap"
-    onMouseEnter={() => onTooltip(tooltipKey)}
-    onMouseLeave={() => onTooltip(null)}
-  >
-    {icon}
-  </motion.button>
-));
-
-ActionButton.displayName = 'ActionButton';
-
-// Optimized background decoration using CSS animations for better performance
-const OptimizedBackgroundDecor = React.memo(() => (
-  <div className="absolute inset-0 pointer-events-none select-none overflow-hidden">
-    {/* Simplified gradient orbs using CSS animations for better performance */}
-    <div 
-      className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-teal-200 via-blue-200 to-purple-200 rounded-full blur-3xl opacity-30 animate-pulse" 
-      style={{ 
-        animationDuration: '8s'
-      }} 
-    />
-    <div 
-      className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-tr from-green-200 via-teal-200 to-cyan-200 rounded-full blur-3xl opacity-30 animate-bounce" 
-      style={{ 
-        animationDuration: '10s'
-      }} 
-    />
-    <div 
-      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-gradient-to-r from-yellow-200 via-orange-200 to-red-200 rounded-full blur-3xl opacity-20 animate-spin" 
-      style={{ 
-        animationDuration: '15s'
-      }} 
-    />
-    
-    {/* Reduced particles for better performance */}
-    {PARTICLE_POSITIONS.slice(0, 4).map(({ id, left, top, delay, duration }) => (
-      <motion.div
-        key={id}
-        className="absolute w-2 h-2 bg-white rounded-full opacity-20"
-        style={{ 
-          left: `${left}%`, 
-          top: `${top}%`
-        }}
-        animate={{
-          y: [0, -20, 0],
-          opacity: [0.2, 0.6, 0.2],
-        }}
-        transition={{
-          duration,
-          repeat: Infinity,
-          delay,
-          ease: "easeInOut",
-        }}
-      />
-    ))}
-  </div>
-));
-
-OptimizedBackgroundDecor.displayName = 'OptimizedBackgroundDecor';
-
-// Helper functions (memoized outside component)
-const getFrameworkIcon = (framework: string) => {
-  switch (framework.toLowerCase()) {
-    case 'sfia':
-      return <FaCode className="w-5 h-5" />;
-    case 'tpqi':
-      return <FaGraduationCap className="w-5 h-5" />;
-    default:
-      return <FaTools className="w-5 h-5" />;
-  }
-};
-const getFrameworkColor = (framework: string) => {
-  switch (framework.toLowerCase()) {
-    case 'sfia':
-      return 'from-blue-500 to-blue-600';
-    case 'tpqi':
-      return 'from-green-500 to-green-600';
-    default:
-      return 'from-gray-500 to-gray-600';
-  }
-};
+/**
+ * CompetencyDetailPage - A comprehensive detail page for competency frameworks
+ *
+ * This component handles the display of detailed competency information for both
+ * SFIA (Skills Framework for the Information Age) and TPQI frameworks. It provides
+ * a rich user interface with loading states, error handling, and interactive features.
+ *
+ * @component
+ * @example
+ * // Usage in routing
+ * <Route path="/competency/:source/:id" component={CompetencyDetailPage} />
+ *
+ * // URL examples:
+ * // /competency/sfia/123 - Display SFIA competency with ID 123
+ * // /competency/tpqi/456 - Display TPQI unit with ID 456
+ *
+ * @returns {JSX.Element} The rendered competency detail page
+ *
+ * @throws {Error} When source parameter is not 'sfia' or 'tpqi'
+ * @throws {Error} When id parameter is missing or invalid
+ *
+ * @see {@link useSfiaSkillDetail} For SFIA data fetching
+ * @see {@link useTpqiUnitDetail} For TPQI data fetching
+ * @see {@link useCompetencyActions} For interactive actions
+ *
+ * @public
+ */
 
 const CompetencyDetailPage: React.FC = () => {
+  // Navigation and routing
+  // React Router navigation function
   const navigate = useNavigate();
-  const { source, id } = useParams<{ source: 'sfia' | 'tpqi'; id: string }>();
+
+  /**
+   * URL parameters extraction from the route
+   * Includes validation and sanitization for malformed parameters
+   * @type {{ source: "sfia" | "tpqi"; id: string }}
+   */
+  const { source, id } = useParams<{ source: "sfia" | "tpqi"; id: string }>();
+
+  // Sanitize and validate URL parameters using utility functions
+  // First check for known malformed patterns, then use original params if safe
+  const sourceIsMalformed = source && isMalformedParam(source);
+  const idIsMalformed = id && isMalformedParam(id);
+
+  // Use original params if they're not malformed, otherwise try to sanitize
+  const finalSource = sourceIsMalformed
+    ? sanitizeUrlParams({ source }).source
+    : source;
+  const finalId = idIsMalformed ? sanitizeUrlParams({ id }).id : id;
+
+  const isValidSource = finalSource === "sfia" || finalSource === "tpqi";
+  const isValidId = finalId && finalId.length > 0 && finalId.length < 100; // Reasonable length limit
+
+  // Use the final validated parameters
+  const validatedSource = isValidSource ? finalSource : undefined;
+  const validatedId = isValidId ? finalId : undefined;
+
+  // Debug logging in development
+  // if (process.env.NODE_ENV === 'development') {
+  //   console.log('URL Params Debug:', {
+  //     original: { source, id },
+  //     malformed: { sourceIsMalformed, idIsMalformed },
+  //     final: { finalSource, finalId },
+  //     valid: { isValidSource, isValidId },
+  //     validated: { validatedSource, validatedId }
+  //   });
+  // }
+
+  /**
+   * Counter for tracking retry attempts when data fetching fails
+   * @type {number}
+   */
   const [retryCount, setRetryCount] = useState(0);
-  const [isBookmarked, setIsBookmarked] = useState(false);
-  const [isFavorited, setIsFavorited] = useState(false);
-  const [showTooltip, setShowTooltip] = useState<string | null>(null);
 
-  // Error handling hook (must be called before any conditional returns)
-  const {
-    addError,
-    clearErrors
-  } = useCompetencyDetailError();
+  // Animation variants for Framer Motion
+  /**
+   * Check if user prefers reduced motion for accessibility
+   * @type {boolean}
+   */
+  const prefersReducedMotion = useReducedMotion();
 
-  // Specialized hooks based on source (must be called before any conditional returns)
-  const sfiaHook = useSfiaJobDetail({
+  /**
+   * Animation variants for Framer Motion components
+   * Respects user's motion preferences for accessibility
+   * @see {@link useAnimationVariants}
+   */
+  const { containerVariants, itemVariants } = useAnimationVariants();
+
+  /**
+   * Modified animation variants that respect reduced motion preferences
+   * @type {object}
+   */
+  const accessibleContainerVariants = prefersReducedMotion
+    ? { hidden: { opacity: 1 }, visible: { opacity: 1 } }
+    : containerVariants;
+
+  const accessibleItemVariants = prefersReducedMotion
+    ? { hidden: { opacity: 1 }, visible: { opacity: 1 } }
+    : itemVariants;
+
+  /**
+   * Error management utility for competency detail operations
+   * @see {@link useCompetencyDetailError}
+   */
+  const { addError, clearErrors } = useCompetencyDetailError();
+
+  // Data fetching hooks with comfiguration
+  /**
+   * SFIA competency data fetching hook with caching and retry logic
+   * Configuration:
+   * - cacheDuration: 5 minutes (300,000 ms)
+   * - maxRetries: 3 attempts
+   * - autoRetryOnNetworkError: enabled
+   *
+   * @see {@link useSfiaSkillDetail}
+   */
+  const sfiaHook = useSfiaSkillDetail({
     cacheDuration: 5 * 60 * 1000,
     maxRetries: 3,
     autoRetryOnNetworkError: true,
   });
 
+  /**
+   * TPQI competency data fetching hooks with caching and retry logic
+   * Configuration:
+   * - cacheDuration: 5 minutes (300,000 ms)
+   * - maxRetries: 3 attempts
+   * - autoRetryOnNetworkError: enabled
+   *
+   * @see {@link useTpqiUnitDetail}
+   */
   const tpqiHook = useTpqiUnitDetail({
     cacheDuration: 5 * 60 * 1000,
     maxRetries: 3,
     autoRetryOnNetworkError: true,
   });
 
-  // Select the appropriate hook based on source
-  const currentHook = source === 'sfia' ? sfiaHook : tpqiHook;
+  /**
+   * Selects the appropriate data fetching hook based on the framework source
+   * This allows for polymorphic behavior while maintaining type safety
+   *
+   * @type { typeof sfiaHook | typeof tpqiHook }
+   */
+  const currentHook = validatedSource === "sfia" ? sfiaHook : tpqiHook;
+
+  /**
+   * Destructures loading state, error, last fetched time, and reset function
+   * from the currently selected data fetching hook
+   *
+   * @type { boolean } loading - Indicates if data is being fetched
+   * @type { Error | null } error - Error object if fetching failed
+   * @type { Date | null } lastFetched - Timestamp of the last successful fetch
+   * @type { Function } resetState - Function to reset the hook state
+   */
   const { loading, error, lastFetched, resetState } = currentHook;
 
-  // Get competency data with memoization
+  /**
+   * Memoized competency data retrieval with type-safe framework switching
+   *
+   * This memoization prevents unnecessary re-renders when dependencies haven't changed.
+   * The data structure varies between SFIA and TPQI frameworks:
+   * - SFIA: Contains skill details with competency information
+   * - TPQI: Contains unit-code details with competency information
+   *
+   * @return { object | null } The competency data object or null if not available
+   * @memoized Recalculates only when `validatedSource`, `sfiaHook.skillDetail`, or `tpqiHook.unitDetail` change
+   */
   const competencyData = useMemo(() => {
-    if (source === 'sfia') {
-      return sfiaHook.jobDetail;
-    } else if (source === 'tpqi') {
+    if (validatedSource === "sfia") {
+      return sfiaHook.skillDetail;
+    } else if (validatedSource === "tpqi") {
       return tpqiHook.unitDetail;
     }
     return null;
-  }, [source, sfiaHook.jobDetail, tpqiHook.unitDetail]);
+  }, [validatedSource, sfiaHook.skillDetail, tpqiHook.unitDetail]);
 
-  // Memoized title to avoid recalculation
-  const competencyTitle = useMemo(() => 
-    competencyData?.competency?.competency_name ?? `${source?.toUpperCase()} Competency`,
-    [competencyData?.competency?.competency_name, source]
+  /**
+   * Memoized competency title based on the framework source
+   *
+   * This ensures the title is dynamically generated based on the competency data
+   * or defaults to a generic title if not available.
+   *
+   * @return { string } The competency title for display in the header
+   * @memoized Recalculates only when `competencyData` or `validatedSource` changes
+   */
+  const competencyTitle = useMemo(
+    () =>
+      competencyData?.competency?.competency_name ??
+      `${validatedSource?.toUpperCase()} Competency`,
+    [competencyData?.competency?.competency_name, validatedSource]
   );
 
-  // Memoized quick navigation items
+  /**
+   * Memoized quick navigation items based on the framework source
+   *
+   * This provides a dynamic list of navigation links for quick access to different sections
+   * of the competency detail page, tailored to the specific framework.
+   *
+   * @return { Array<{ label: string; href: string }> } The list of quick navigation items
+   * @memoized Recalculates only when `validatedSource` changes
+   */
   const quickNavItems = useMemo(() => {
-    if (source === 'sfia') {
+    if (validatedSource === "sfia") {
       return [
-        { label: 'Overview', href: '#overview' },
-        { label: 'Skill Levels', href: '#skills' },
+        { label: "Overview", href: "#overview" },
+        { label: "Skill Levels", href: "#skills" },
       ];
-    } else if (source === 'tpqi') {
+    } else if (validatedSource === "tpqi") {
       return [
-        { label: 'Skills', href: '#skills' },
-        { label: 'Knowledge', href: '#knowledge' },
-        { label: 'Occupational', href: '#occupational' },
+        { label: "Skills", href: "#skills" },
+        { label: "Knowledge", href: "#knowledge" },
+        { label: "Occupational", href: "#occupational" },
       ];
     }
     return [];
-  }, [source]);
+  }, [validatedSource]);
 
-  // Fetch data when component mounts or parameters change
+  /**
+   * Memoized framework icon and color retrieval functions
+   *
+   * These functions provide the appropriate icon and color for the competency framework
+   * based on the source type, ensuring consistent UI representation.
+   *
+   * @return { Function } Function to get the framework icon
+   * @return { Function } Function to get the framework color
+   */
+  const {
+    isBookmarked,
+    isFavorited,
+    showTooltip,
+    setShowTooltip,
+    handleBookmark,
+    handleFavorite,
+    handleShare,
+    handlePrint,
+    handleDownload,
+  } = useCompetencyActions(validatedSource, validatedId, competencyTitle);
+
+  /**
+   * Effect hook to fetch competency data when the component mounts
+   * or when the source or id parameters change.
+   * This ensures that the correct data is fetched based on the URL parameters.
+   * @param {Array} dependencies - The effect runs when any of these change:
+   *   - validatedSource: The framework type ('sfia' or 'tpqi')
+   *   - validatedId: The unique identifier for the competency
+   *   - retryCount: Incremented on retry attempts to refetch data
+   *   - sfiaHook: The SFIA data fetching hook
+   *   - tpqiHook: The TPQI data fetching hook
+   * @memoized Recalculates only when dependencies change
+   */
   useEffect(() => {
-    if (source && id) {
-      if (source === 'sfia') {
-        sfiaHook.fetchJobDetail(id);
-      } else if (source === 'tpqi') {
-        tpqiHook.fetchUnitDetail(id);
+    if (validatedSource && validatedId && isValidSource && isValidId) {
+      if (validatedSource === "sfia") {
+        sfiaHook.fetchSkillDetail(validatedId);
+      } else if (validatedSource === "tpqi") {
+        tpqiHook.fetchUnitDetail(validatedId);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [source, id, retryCount]); // removed sfiaHook, tpqiHook from deps to avoid unnecessary reruns
+  }, [validatedSource, validatedId, retryCount]);
 
-  // Error tracking
+  /**
+   * Effect hook to handle errors by adding them to the error state
+   * This ensures that any errors encountered during data fetching are logged
+   * and can be displayed to the user.
+   *
+   * @param {Error | string} error - The error object or message to log
+   * @param {string} validatedSource - The source of the competency ('sfia' or 'tpqi')
+   */
   useEffect(() => {
     if (error) {
       addError({
-        message: typeof error === 'string' ? error : 'Failed to fetch competency data',
-        source: source ?? 'unknown'
+        message:
+          typeof error === "string" ? error : "Failed to fetch competency data",
+        source: validatedSource ?? "unknown",
       });
     }
-  }, [error, addError, source]);
+  }, [error, addError, validatedSource]);
 
-  // Load bookmarked and favorited state from localStorage
-  useEffect(() => {
-    if (source && id) {
-      const competencyKey = `${source}-${id}`;
-      const bookmarks = JSON.parse(localStorage.getItem('competency-bookmarks') ?? '[]');
-      const favorites = JSON.parse(localStorage.getItem('competency-favorites') ?? '[]');
-      
-      setIsBookmarked(bookmarks.includes(competencyKey));
-      setIsFavorited(favorites.includes(competencyKey));
-    }
-  }, [source, id]);
-
-  // --- Move hooks above early return ---
+  /**
+   * Handles retry functionality for failed competency data fetching operations.
+   *
+   * This callback function is triggered when the user attempts to retry a failed data fetch operation.
+   * It performs a complete reset of the component state and attemps to refetch the competency data
+   * based on the current source type.
+   *
+   * @async
+   * @function handleRetry
+   *
+   * @description
+   * The retry process follow these steps:
+   * 1. Validates that both `validatedSource` and `validatedId` are defined.
+   * 2. Increments the `retryCount` state to trigger a refetch.
+   * 3. Clears any existing errors to reset the error state.
+   * 4. Resets the component state to its initial values.
+   * 5. Attempts to refetch the competency data using the appropriate hook based on the `validatedSource`.
+   * 6. Logs any errors encountered during the retry attempt.
+   *
+   * @param { void } - This function does not take any parameters.
+   * @returns { Promise<void> } - A promise that resolves when the retry operation is successful.
+   *
+   * @throws { Error } - If the retry operation fails, an error is logged to the console.
+   */
   const handleRetry = useCallback(async () => {
-    if (!source || !id) return;
-    
-    setRetryCount(prev => prev + 1);
+    if (!validatedSource || !validatedId) return;
+
+    setRetryCount((prev) => prev + 1);
     clearErrors();
     resetState();
     try {
-      if (source === 'sfia') {
-        await sfiaHook.fetchJobDetail(id);
+      if (validatedSource === "sfia") {
+        await sfiaHook.fetchSkillDetail(validatedId);
       } else {
-        await tpqiHook.fetchUnitDetail(id);
+        await tpqiHook.fetchUnitDetail(validatedId);
       }
     } catch (err) {
-      console.error('Retry failed:', err);
+      console.error("Retry failed:", err);
     }
-  }, [clearErrors, resetState, source, id, sfiaHook, tpqiHook]);
+  }, [
+    clearErrors,
+    resetState,
+    validatedSource,
+    validatedId,
+    sfiaHook,
+    tpqiHook,
+  ]);
 
-  // User-friendly action handlers
-  const handleBookmark = useCallback(() => {
-    setIsBookmarked(prev => {
-      const newValue = !prev;
-      const bookmarks = JSON.parse(localStorage.getItem('competency-bookmarks') ?? '[]');
-      const competencyKey = `${source}-${id}`;
-      
-      if (newValue) {
-        if (!bookmarks.includes(competencyKey)) {
-          bookmarks.push(competencyKey);
-        }
-      } else {
-        const index = bookmarks.indexOf(competencyKey);
-        if (index > -1) {
-          bookmarks.splice(index, 1);
-        }
-      }
-      
-      localStorage.setItem('competency-bookmarks', JSON.stringify(bookmarks));
-      return newValue;
-    });
-  }, [source, id]);
-
-  const handleFavorite = useCallback(() => {
-    setIsFavorited(prev => {
-      const newValue = !prev;
-      const favorites = JSON.parse(localStorage.getItem('competency-favorites') ?? '[]');
-      const competencyKey = `${source}-${id}`;
-      
-      if (newValue) {
-        if (!favorites.includes(competencyKey)) {
-          favorites.push(competencyKey);
-        }
-      } else {
-        const index = favorites.indexOf(competencyKey);
-        if (index > -1) {
-          favorites.splice(index, 1);
-        }
-      }
-      
-      localStorage.setItem('competency-favorites', JSON.stringify(favorites));
-      return newValue;
-    });
-  }, [source, id]);
-
-  const handleShare = useCallback(async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: competencyTitle,
-          text: `Check out this competency: ${competencyTitle}`,
-          url: window.location.href,
-        });
-      } catch (err) {
-        console.log('Error sharing:', err);
-      }
-    } else {
-      // Fallback: copy to clipboard
-      await navigator.clipboard.writeText(window.location.href);
-      setShowTooltip('URL copied to clipboard!');
-      setTimeout(() => setShowTooltip(null), 2000);
-    }
-  }, [competencyTitle]);
-
-  const handlePrint = useCallback(() => {
-    window.print();
-  }, []);
-
-  const handleDownload = useCallback(() => {
-    // Simple implementation: create a printable version
-    const printContent = `
-      <html>
-        <head>
-          <title>${competencyTitle}</title>
-          <style>
-            body { font-family: Arial, sans-serif; margin: 20px; }
-            h1 { color: #0f766e; }
-            .section { margin: 20px 0; }
-          </style>
-        </head>
-        <body>
-          <h1>${competencyTitle}</h1>
-          <p><strong>Code:</strong> ${id}</p>
-          <p><strong>Framework:</strong> ${source?.toUpperCase()}</p>
-          ${competencyData?.competency?.overall ? `<div class="section"><h2>Overview</h2><p>${competencyData.competency.overall}</p></div>` : ''}
-          <p><em>Generated on ${new Date().toLocaleDateString()}</em></p>
-        </body>
-      </html>
-    `;
-    
-    const blob = new Blob([printContent], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${source}-${id}-competency.html`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    setShowTooltip('Downloaded successfully!');
-    setTimeout(() => setShowTooltip(null), 2000);
-  }, [competencyTitle, source, id, competencyData?.competency?.overall]);
-  // --- End move ---
-
-  // Validate URL parameters (after all hooks have been called)
-  if (!source || !id || (source !== 'sfia' && source !== 'tpqi')) {
+  // Validate URL parameters
+  if (!isValidSource || !isValidId) {
     return (
       <Layout>
-        <InvalidUrl onGoHome={() => navigate('/home')} />
+        <InvalidUrl onGoHome={() => navigate("/home")} />
       </Layout>
     );
   }
@@ -421,193 +397,86 @@ const CompetencyDetailPage: React.FC = () => {
                   exit={{ opacity: 0 }}
                   className="flex flex-col items-center justify-center min-h-96"
                 >
-                  <LoadingState source={source} id={id} />
+                  <LoadingState
+                    source={validatedSource || ""}
+                    id={validatedId || ""}
+                  />
                 </motion.div>
               )}
+
               {!loading && error && (
                 <ErrorState
                   error={error}
-                  source={source}
-                  id={id}
+                  source={validatedSource || ""}
+                  id={validatedId || ""}
                   retryCount={retryCount}
                   onRetry={handleRetry}
                   onGoBack={() => navigate(-1)}
                 />
               )}
+
               {!loading && !error && competencyData && (
                 <motion.div
                   key="success"
-                  variants={containerVariants}
+                  variants={accessibleContainerVariants}
                   initial="hidden"
                   animate="visible"
-                  style={{ willChange: 'transform, opacity' }}
                 >
-                  {/* Enhanced Header with Actions */}
-                  <motion.header variants={itemVariants} className="mb-8">
-                    <div className="flex items-center justify-between mb-6">
-                      <BackButton onClick={() => navigate(-1)} />
-                      
-                      {/* Optimized Action Buttons */}
-                      <div className="flex items-center gap-2">
-                        <ActionButton
-                          onClick={handleBookmark}
-                          icon={<FaBookmark className="w-4 h-4" />}
-                          isActive={isBookmarked}
-                          activeColors="bg-yellow-100 border-yellow-300 text-yellow-600"
-                          inactiveColors="bg-white/80 border-gray-200 text-gray-600 hover:bg-yellow-50"
-                          tooltipKey="bookmark"
-                          onTooltip={setShowTooltip}
-                        />
+                  <PageHeader
+                    source={validatedSource || ""}
+                    id={validatedId || ""}
+                    competencyTitle={competencyTitle}
+                    lastFetched={lastFetched}
+                    quickNavItems={quickNavItems}
+                    competencyData={competencyData}
+                    isBookmarked={isBookmarked}
+                    isFavorited={isFavorited}
+                    onBack={() => navigate(-1)}
+                    onBookmark={handleBookmark}
+                    onFavorite={handleFavorite}
+                    onShare={handleShare}
+                    onPrint={handlePrint}
+                    onDownload={handleDownload}
+                    onTooltip={setShowTooltip}
+                    getFrameworkIcon={getFrameworkIcon}
+                    getFrameworkColor={getFrameworkColor}
+                    itemVariants={accessibleItemVariants}
+                  />
 
-                        <ActionButton
-                          onClick={handleFavorite}
-                          icon={isFavorited ? <FaHeart className="w-4 h-4" /> : <FaRegHeart className="w-4 h-4" />}
-                          isActive={isFavorited}
-                          activeColors="bg-red-100 border-red-300 text-red-600"
-                          inactiveColors="bg-white/80 border-gray-200 text-gray-600 hover:bg-red-50"
-                          tooltipKey="favorite"
-                          onTooltip={setShowTooltip}
-                        />
-
-                        <ActionButton
-                          onClick={handleShare}
-                          icon={<FaShare className="w-4 h-4" />}
-                          activeColors=""
-                          inactiveColors="bg-white/80 border-gray-200 text-gray-600 hover:bg-blue-50"
-                          tooltipKey="share"
-                          onTooltip={setShowTooltip}
-                        />
-
-                        <ActionButton
-                          onClick={handlePrint}
-                          icon={<FaPrint className="w-4 h-4" />}
-                          activeColors=""
-                          inactiveColors="bg-white/80 border-gray-200 text-gray-600 hover:bg-green-50"
-                          tooltipKey="print"
-                          onTooltip={setShowTooltip}
-                        />
-
-                        <ActionButton
-                          onClick={handleDownload}
-                          icon={<FaDownload className="w-4 h-4" />}
-                          activeColors=""
-                          inactiveColors="bg-white/80 border-gray-200 text-gray-600 hover:bg-purple-50"
-                          tooltipKey="download"
-                          onTooltip={setShowTooltip}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Enhanced Title Section */}
-                    <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-4">
-                          <FrameworkBadge framework={source} getFrameworkIcon={getFrameworkIcon} getFrameworkColor={getFrameworkColor} />
-                        </div>
-                        
-                        <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 bg-clip-text text-transparent mb-4 leading-tight">
-                          {competencyTitle}
-                        </h1>
-                        
-                        <div className="flex flex-wrap items-center gap-4 mb-4">
-                          <div className="flex items-center bg-white/60 backdrop-blur-sm rounded-full px-4 py-2 border border-gray-200">
-                            <FaInfoCircle className="w-4 h-4 mr-2 text-blue-600" />
-                            <span className="font-medium text-gray-700">Code:</span>
-                            <span className="ml-1 font-mono text-blue-600">{id}</span>
-                          </div>
-                          
-                          {lastFetched && (
-                            <div className="flex items-center bg-white/60 backdrop-blur-sm rounded-full px-4 py-2 border border-gray-200">
-                              <FaClock className="w-4 h-4 mr-2 text-green-600" />
-                              <span className="text-sm text-gray-600">
-                                Updated: {lastFetched.toLocaleDateString()}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Optimized Quick Navigation */}
-                        <div className="flex flex-wrap gap-2 mb-6">
-                          {quickNavItems.map((item) => (
-                            <button 
-                              key={item.label}
-                              className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm transition-colors ${
-                                source === 'sfia' 
-                                  ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' 
-                                  : 'bg-green-100 text-green-700 hover:bg-green-200'
-                              }`}
-                            >
-                              <span>{item.label}</span>
-                              <FaChevronRight className="w-3 h-3" />
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      
-                      {/* Enhanced Stats Card */}
-                      <motion.div 
-                        variants={itemVariants}
-                        className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 border border-gray-200 shadow-xl lg:min-w-80"
-                      >
-                        <StatsCard source={source} competencyData={competencyData} />
-                      </motion.div>
-                    </div>
-                  </motion.header>
-                  {/* Enhanced Content Section */}
+                  {/* Content Section */}
                   <motion.div variants={itemVariants} className="space-y-8">
-                    {source === 'sfia' && 'competency' in competencyData && competencyData.competency && (
-                      <SfiaSection competency={competencyData.competency} />
-                    )}
-                    {source === 'tpqi' && 'competency' in competencyData && competencyData.competency && (
-                      <TpqiSection competency={competencyData.competency} />
-                    )}
+                    {validatedSource === "sfia" &&
+                      "competency" in competencyData &&
+                      competencyData.competency && (
+                        <SfiaSection competency={competencyData.competency} />
+                      )}
+                    {validatedSource === "tpqi" &&
+                      "competency" in competencyData &&
+                      competencyData.competency && (
+                        <TpqiContainer competency={competencyData.competency} />
+                      )}
                   </motion.div>
 
-                  {/* Enhanced Footer */}
-                  <motion.footer variants={itemVariants} className="mt-12 pt-8 border-t border-gray-200">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                      {lastFetched && <CacheInfo lastFetched={lastFetched} />}
-                      
-                      {/* Helpful Links */}
-                      <div className="flex items-center gap-4">
-                        <a 
-                          href={`/${source}`}
-                          className="text-sm text-gray-600 hover:text-blue-600 transition-colors flex items-center gap-1"
-                        >
-                          Browse more {source?.toUpperCase()} competencies
-                          <FaChevronRight className="w-3 h-3" />
-                        </a>
-                      </div>
-                    </div>
-                  </motion.footer>
-
-                  {/* Optimized Floating Tooltip */}
-                  <AnimatePresence>
-                    {showTooltip && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 10, scale: 0.9 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.9 }}
-                        transition={{ duration: 0.15, ease: "easeOut" }}
-                        className="fixed bottom-4 right-4 bg-gray-900 text-white px-4 py-2 rounded-lg shadow-lg z-50 pointer-events-none"
-                      >
-                        {showTooltip === 'bookmark' && 'Bookmark this competency'}
-                        {showTooltip === 'favorite' && 'Add to favorites'}
-                        {showTooltip === 'share' && 'Share this competency'}
-                        {showTooltip === 'print' && 'Print this page'}
-                        {showTooltip === 'download' && 'Download as PDF'}
-                        {showTooltip && !['bookmark', 'favorite', 'share', 'print', 'download'].includes(showTooltip) && showTooltip}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  <PageFooter
+                    source={validatedSource || ""}
+                    lastFetched={lastFetched}
+                    itemVariants={itemVariants}
+                  />
                 </motion.div>
               )}
-              {!loading && !error && !competencyData && (
-                <NoDataState source={source} id={id} onGoBack={() => navigate(-1)} />
+
+              {!loading && !error && !competencyData && lastFetched && (
+                <NoDataState
+                  source={validatedSource || ""}
+                  id={validatedId || ""}
+                  onGoBack={() => navigate(-1)}
+                />
               )}
             </AnimatePresence>
           </LazyMotion>
         </div>
+
+        <FloatingTooltip showTooltip={showTooltip} />
       </div>
     </Layout>
   );

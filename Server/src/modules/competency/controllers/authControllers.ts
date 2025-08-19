@@ -33,6 +33,7 @@ export const loginWithGoogle = async (req: Request, res: Response) => {
 
   try {
     const { user, accessToken, refreshToken, csrfToken } = await AuthService.loginWithGoogle(idToken);
+
     res.clearCookie("refreshToken", { path: "/" });
     res.clearCookie("csrfToken", { path: "/" });
     res.clearCookie("accessToken", { path: "/" });
@@ -49,7 +50,6 @@ export const loginWithGoogle = async (req: Request, res: Response) => {
       provider: "google",
     });
   } catch (err: any) {
-    console.error("[loginWithGoogle] Login failed:", err.message || err);
     res.status(StatusCodes.UNAUTHORIZED).json({ message: err.message || "Google login failed" });
   }
 };
@@ -68,7 +68,7 @@ export const logout = async (req: AuthenticatedRequest, res: Response) => {
 
     res.status(StatusCodes.OK).json({ message: "Logged out successfully" });
   } catch (err: any) {
-    console.error("[logout] Logout error:", err);
+    console.error("Logout error:", err);
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: err.message || "Logout failed" });
   }
 };
@@ -115,7 +115,6 @@ export const getCurrentUser = async (req: AuthenticatedRequest, res: Response) =
       provider: "google",
     });
   } catch (err: any) {
-    console.error("[getCurrentUser] User not found:", err);
     res.status(StatusCodes.NOT_FOUND).json({ message: err.message || "User not found" });
   }
 };

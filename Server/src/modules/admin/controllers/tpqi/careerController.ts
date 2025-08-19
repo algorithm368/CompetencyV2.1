@@ -6,7 +6,12 @@ const service = new CareerService();
 export class CareerController {
   static async getAll(req: Request, res: Response, next: NextFunction) {
     try {
-      const items = await service.getAll();
+      const search = typeof req.query.search === "string" ? req.query.search : undefined;
+      const pageRaw = req.query.page;
+      const perPageRaw = req.query.perPage;
+      const page = pageRaw && !isNaN(+pageRaw) ? parseInt(pageRaw as string, 10) : undefined;
+      const perPage = perPageRaw && !isNaN(+perPageRaw) ? parseInt(perPageRaw as string, 10) : undefined;
+      const items = await service.getAll(search, page, perPage);
       res.json(items);
     } catch (err) {
       next(err);
@@ -15,7 +20,7 @@ export class CareerController {
 
   static async getById(req: Request, res: Response, next: NextFunction) {
     try {
-      const id = Number(req.params.id);
+      const id = parseInt(req.params.id, 10);
       const item = await service.getById(id);
       if (!item) {
         return res.status(404).json({ error: `Career with id ${id} not found` });
@@ -32,10 +37,12 @@ export class CareerController {
       const data = req.body as Omit<import("@prisma/client_tpqi").Career, "id_career">;
       const newItem = await service.create(data, actor);
       res.status(201).json(newItem);
-    } catch (err) {
-      next(err);
-    }
+    } catch (err: any) {
+      if (err.code === "P2002") {
+        return res.status(409).json({ error: "Career already exists" });
+      }
   }
+}
 
   static async update(req: Request, res: Response, next: NextFunction) {
     try {

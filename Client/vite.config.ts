@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import path from "path";
+
 export default defineConfig({
   plugins: [react(), tailwindcss(), tsconfigPaths()],
   resolve: {
@@ -15,6 +16,33 @@ export default defineConfig({
       "@Types": path.resolve(__dirname, "src/types"),
       "@Layouts": path.resolve(__dirname, "src/layouts"),
       "@Utils": path.resolve(__dirname, "src/utils"),
+    },
+  },
+  // Source map configuration
+  build: {
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Split each major page into its own chunk
+          home: ["src/pages/Home/HomePage.tsx"],
+          about: ["src/pages/About/AboutPage.tsx"],
+          "competency-detail": [
+            "src/pages/competencyDetail/CompetencyDetailPage.tsx",
+          ],
+          "search-results": ["src/pages/SearchResults/SearchResultsPage.tsx"],
+          profile: ["src/pages/ProfilePage/ProfilePage.tsx"],
+          // Admin pages
+          "admin-dashboard": ["src/pages/Admin/Dashboard/DashboardPage.tsx"],
+          "admin-users": ["src/pages/Admin/Users/UserPages.tsx"],
+          "admin-permissions": [
+            "src/pages/Admin/Permission/PermissionPage.tsx",
+          ],
+          // Admin SFIA/TPQI exports
+          "admin-sfia": ["src/pages/Admin/SFIA/ExportSFIAPages.tsx"],
+          "admin-tpqi": ["src/pages/Admin/TPQI/ExportTPQIPages.tsx"],
+        },
+      },
     },
   },
   server: {
@@ -37,6 +65,6 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "jsdom",
-    setupFiles: ['./src/test/setup.ts'],
-  }  
+    setupFiles: ["./src/test/setup.ts"],
+  },
 });

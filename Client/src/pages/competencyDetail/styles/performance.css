@@ -1,0 +1,42 @@
+/* Performance optimizations for animations */
+
+/* Reduce will-change usage to prevent memory issues */
+.motion-safe {
+  will-change: auto;
+}
+
+/* Only apply will-change during actual animations */
+.animating {
+  will-change: transform, opacity;
+}
+
+.animating:not(.animating) {
+  will-change: auto;
+}
+
+/* Optimize for reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .motion-reduce {
+    transform: none !important;
+    animation: none !important;
+  }
+}
+
+/* Optimize compositing layers */
+.optimize-compositing {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000;
+}
+
+/* Prevent layout thrashing */
+.prevent-layout-thrashing {
+  contain: layout style paint;
+}

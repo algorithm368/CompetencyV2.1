@@ -53,10 +53,9 @@ model Description {
 
 model SubSkill {  
   id            Int           @id @default(autoincrement())
-  skillCode     String        // FK to Skill
+  skillCode     String        @db.VarChar(255)
   descriptionId Int
   text          String?       @db.Text
-
   skill         Skill         @relation(fields: [skillCode], references: [code])
   description   Description   @relation(fields: [descriptionId], references: [id])
   informations  Information[]

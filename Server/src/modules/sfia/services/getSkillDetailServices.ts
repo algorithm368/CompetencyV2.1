@@ -1,5 +1,16 @@
 import { prismaSfia } from "../../../db/prismaClients";
 
+/**
+ * Skill detail information including competency data and hierarchical structure.
+ *
+ * @interface SkillDetail
+ * @property {string} competency_id - Unique skill code identifier.
+ * @property {string|null} competency_name - Display name of the skill competency.
+ * @property {string|null} overall - Overall description or overview of the skill.
+ * @property {string|null} note - Additional notes or remarks about the skill.
+ * @property {Object|null} category - Category information containing id and descriptive text.
+ * @property {Array} levels - Array of skill levels with their descriptions and subskills.
+ */
 export interface SkillDetail {
   competency_id: string;
   competency_name: string | null;
@@ -23,6 +34,14 @@ export interface SkillDetail {
   }>;
 }
 
+/**
+ * Complete skill information with statistical summary.
+ *
+ * @interface SkillSubSkillsAndLevels
+ * @property {SkillDetail|null} competency - Detailed skill information with hierarchical structure.
+ * @property {number} totalLevels - Total count of skill levels available.
+ * @property {number} totalSubSkills - Total count of subskills across all levels and descriptions.
+ */
 export interface SkillSubSkillsAndLevels {
   competency: SkillDetail | null;
   totalLevels: number;
@@ -30,17 +49,59 @@ export interface SkillSubSkillsAndLevels {
 }
 
 /**
- * Search for skill details including required subskills and skill levels by skill_code
- * @param skill_code - The skill code to search for
- * @returns Promise<SkillSubSkillsAndLevels | null>
+ * Retrieves comprehensive skill details including levels, descriptions, and subskills by skill code.
+ * 
+ * This function performs a complex database query to fetch a complete skill hierarchy including:
+ * - Basic skill information (name, overview, notes)
+ * - Category classification
+ * - All skill levels with their descriptions
+ * - All subskills under each description
+ * - Statistical counts for levels and subskills
+ *
+ * @async
+ * @function getSkillDetailsByCode
+ * @param {string} skill_code - The unique skill code to search for (e.g., 'PROG', 'DTAN').
+ * @returns {Promise<SkillSubSkillsAndLevels|null>} Complete skill data with statistics, or null if not found.
+ * 
+ * @throws {Error} If database query fails or skill code format is invalid.
+ * 
+ * @example
+ * // Retrieve skill details for programming competency
+ * const skillData = await getSkillDetailsByCode('PROG');
+ * if (skillData) {
+ *   console.log(`Skill: ${skillData.competency?.competency_name}`);
+ *   console.log(`Total Levels: ${skillData.totalLevels}`);
+ *   console.log(`Total SubSkills: ${skillData.totalSubSkills}`);
+ *   
+ *   // Access first level's first description's subskills
+ *   const subskills = skillData.competency?.levels[0]?.descriptions[0]?.subskills;
+ *   subskills?.forEach(subskill => {
+ *     console.log(`- ${subskill.subskill_text}`);
+ *   });
+ * }
+ * 
+ * @example
+ * // Handle case when skill is not found
+ * const result = await getSkillDetailsByCode('INVALID_CODE');
+ * if (!result) {
+ *   console.log('Skill not found or has no associated levels/descriptions');
+ * }
  */
 export async function getSkillDetailsByCode(
   skill_code: string
 ): Promise<SkillSubSkillsAndLevels | null> {
   try {
-    const skillData = await prismaSfia.skill.findUnique({
+    // Query skill data with all related hierarchical information
+    const skillData = await prismaSfia.skill.findFirst({
       where: {
         code: skill_code,
+        levels: {
+          some: {
+            descriptions: {
+              some: {},
+            },
+          },
+        },
       },
       include: {
         category: {
@@ -50,6 +111,11 @@ export async function getSkillDetailsByCode(
           },
         },
         levels: {
+          where: {
+            descriptions: {
+              some: {},
+            },
+          },
           include: {
             descriptions: {
               include: {
@@ -69,20 +135,23 @@ export async function getSkillDetailsByCode(
       },
     });
 
+    // If no skill data found, return null
     if (!skillData) {
       return null;
     }
 
-    // Transform the data to match our interface
+    // Transform the raw database result to match our interface
     const transformedSkill: SkillDetail = {
       competency_id: skillData.code,
       competency_name: skillData.name,
       overall: skillData.overview,
       note: skillData.note,
-      category: skillData.category ? {
-        id: skillData.category.id,
-        category_text: skillData.category.name,
-      } : null,
+      category: skillData.category
+        ? {
+            id: skillData.category.id,
+            category_text: skillData.category.name,
+          }
+        : null,
       levels: skillData.levels.map((level: any) => ({
         id: level.id,
         level_name: level.name,
@@ -97,16 +166,19 @@ export async function getSkillDetailsByCode(
       })),
     };
 
-    // Calculate totals
+    // Calculate statistical totals for the skill
     const totalLevels = skillData.levels.length;
-    const totalSubSkills = skillData.levels.reduce((total: number, level: any) => {
-      return (
-        total +
-        level.descriptions.reduce((descTotal: number, desc: any) => {
-          return descTotal + desc.subSkills.length;
-        }, 0)
-      );
-    }, 0);
+    const totalSubSkills = skillData.levels.reduce(
+      (total: number, level: any) => {
+        return (
+          total +
+          level.descriptions.reduce((descTotal: number, desc: any) => {
+            return descTotal + desc.subSkills.length;
+          }, 0)
+        );
+      },
+      0
+    );
 
     return {
       competency: transformedSkill,
@@ -119,6 +191,10 @@ export async function getSkillDetailsByCode(
   }
 }
 
+/**
+ * @deprecated Use SkillSubSkillsAndLevels instead.
+ * @typedef {SkillSubSkillsAndLevels} SkillSkillsAndLevels
+ */
 // For backward compatibility, also export with the old name
 export type SkillSkillsAndLevels = SkillSubSkillsAndLevels;
 

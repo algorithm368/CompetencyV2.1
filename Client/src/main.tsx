@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import App from "./App";
 import { AuthProvider } from "./contexts/AuthContext";
+import ScrollToTop from "./components/Common/ScrolToTop";
 import "./styles/global.css";
 
 const rootElement = document.getElementById("root");
@@ -24,6 +25,7 @@ const queryClient = new QueryClient({
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
     <BrowserRouter>
+      <ScrollToTop />
       <ThemeProvider>
         <QueryClientProvider client={queryClient}>
           <React.Suspense fallback={<Loading />}>

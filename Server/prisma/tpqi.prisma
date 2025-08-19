@@ -8,179 +8,200 @@ datasource db {
   url      = env("DATABASE_URL_TPQI")
 }
 
-enum ApprovalStatus {
-  APPROVED
-  NOT_APPROVED
-}
-
 model Career {
-  id             Int              @id @default(autoincrement())
-  name           String           @db.VarChar(255)
-  careerLevels   CareerLevel[]
-  summaries      TpqiSummary[]
+  id           Int           @id @default(autoincrement())
+  name         String        @db.VarChar(255)
+  careerLevels CareerLevel[]
+  TpqiSummary  TpqiSummary[]
 }
 
 model CareerLevel {
-  id                     Int                     @id @default(autoincrement())
-  careerId               Int
-  levelId                Int
-  career                 Career                  @relation(fields: [careerId], references: [id])
-  level                  Level                   @relation(fields: [levelId], references: [id])
-  careerLevelDetails     CareerLevelDetail[]
-  careerLevelKnowledge   CareerLevelKnowledge[]
-  careerLevelSkills      CareerLevelSkill[]
-  careerLevelUnitCodes   CareerLevelUnitCode[]
-  summaries              TpqiSummary[]
+  id                   Int                    @id @default(autoincrement())
+  careerId             Int
+  levelId              Int
+  career               Career                 @relation(fields: [careerId], references: [id])
+  level                Level                  @relation(fields: [levelId], references: [id])
+  careerLevelDetails   CareerLevelDetail[]
+  careerLevelKnowledge CareerLevelKnowledge[]
+  careerLevelSkills    CareerLevelSkill[]
+  careerLevelUnitCodes CareerLevelUnitCode[]
+  TpqiSummary          TpqiSummary[]
+
+  @@index([careerId], map: "CareerLevel_careerId_fkey")
+  @@index([levelId], map: "CareerLevel_levelId_fkey")
 }
 
 model Level {
-  id             Int             @id @default(autoincrement())
-  name           String          @db.VarChar(255)
-  careerLevels   CareerLevel[]
-  summaries      TpqiSummary[]
+  id           Int           @id @default(autoincrement())
+  name         String        @db.VarChar(255)
+  careerLevels CareerLevel[]
+  TpqiSummary  TpqiSummary[]
 }
 
 model CareerLevelDetail {
-  id             Int           @id @default(autoincrement())
-  detailsId      Int
-  description    String        @db.VarChar(1200)
-  careerLevelId  Int
-  careerLevel    CareerLevel   @relation(fields: [careerLevelId], references: [id])
+  id            Int         @id @default(autoincrement())
+  detailsId     Int
+  description   String      @db.VarChar(1200)
+  careerLevelId Int
+  careerLevel   CareerLevel @relation(fields: [careerLevelId], references: [id])
 
-  @@unique([detailsId, careerLevelId]) 
+  @@unique([detailsId, careerLevelId])
+  @@index([careerLevelId], map: "CareerLevelDetail_careerLevelId_fkey")
 }
 
-
 model CareerLevelKnowledge {
-  id             Int           @id @default(autoincrement())
-  careerLevelId  Int
-  knowledgeId    Int
-  careerLevel    CareerLevel   @relation(fields: [careerLevelId], references: [id])
-  knowledge      Knowledge     @relation(fields: [knowledgeId], references: [id])
+  id            Int         @id @default(autoincrement())
+  careerLevelId Int
+  knowledgeId   Int
+  careerLevel   CareerLevel @relation(fields: [careerLevelId], references: [id])
+  knowledge     Knowledge   @relation(fields: [knowledgeId], references: [id])
+
+  @@index([careerLevelId], map: "CareerLevelKnowledge_careerLevelId_fkey")
+  @@index([knowledgeId], map: "CareerLevelKnowledge_knowledgeId_fkey")
 }
 
 model CareerLevelSkill {
-  id             Int           @id @default(autoincrement())
-  careerLevelId  Int
-  skillId        Int
-  careerLevel    CareerLevel   @relation(fields: [careerLevelId], references: [id])
-  skill          Skill         @relation(fields: [skillId], references: [id])
+  id            Int         @id @default(autoincrement())
+  careerLevelId Int
+  skillId       Int
+  careerLevel   CareerLevel @relation(fields: [careerLevelId], references: [id])
+  skill         Skill       @relation(fields: [skillId], references: [id])
+
+  @@index([careerLevelId], map: "CareerLevelSkill_careerLevelId_fkey")
+  @@index([skillId], map: "CareerLevelSkill_skillId_fkey")
 }
 
 model CareerLevelUnitCode {
-  id             Int           @id @default(autoincrement())
-  careerLevelId  Int
-  unitCodeId     Int
-  careerLevel    CareerLevel   @relation(fields: [careerLevelId], references: [id])
-  unitCode       UnitCode      @relation(fields: [unitCodeId], references: [id])
+  id            Int         @id @default(autoincrement())
+  careerLevelId Int
+  unitCodeId    Int
+  careerLevel   CareerLevel @relation(fields: [careerLevelId], references: [id])
+  unitCode      UnitCode    @relation(fields: [unitCodeId], references: [id])
+
+  @@index([careerLevelId], map: "CareerLevelUnitCode_careerLevelId_fkey")
+  @@index([unitCodeId], map: "CareerLevelUnitCode_unitCodeId_fkey")
 }
 
 model Knowledge {
-  id                   Int                   @id @default(autoincrement())
-  name                 String                @db.VarChar(255)
-  userKnowledge        UserKnowledge[]
+  id                   Int                    @id @default(autoincrement())
+  name                 String                 @db.VarChar(255)
   careerLevelKnowledge CareerLevelKnowledge[]
+  userKnowledge        UserKnowledge[]
 }
 
 model Skill {
   id                Int                @id @default(autoincrement())
   name              String             @db.VarChar(255)
-  userSkills        UserSkill[]
   careerLevelSkills CareerLevelSkill[]
+  userSkills        UserSkill[]
 }
 
 model UnitCode {
-  id                 Int                  @id @default(autoincrement())
-  code               String               @db.VarChar(255)
-  name               String               @db.VarChar(255)
-  description        String               @db.VarChar(255)
-  careerLevelUnits   CareerLevelUnitCode[]
-  unitSkillLinks     UserUnitSkill[]
-  unitKnowledgeLinks UserUnitKnowledge[]
-    unitSectorLinks    UnitSector[] 
-    unitOccupationalLinks UnitOccupational[] 
+  id                    Int                   @id @default(autoincrement())
+  code                  String                @db.VarChar(255)
+  name                  String                @db.VarChar(255)
+  description           String                @db.VarChar(255)
+  careerLevelUnits      CareerLevelUnitCode[]
+  unitOccupationalLinks UnitOccupational[]
+  unitSectorLinks       UnitSector[]
+  unitKnowledgeLinks    UserUnitKnowledge[]
+  unitSkillLinks        UserUnitSkill[]
 }
 
 model UserKnowledge {
-  id              Int            @id @default(autoincrement())
-  knowledgeId     Int
-  userId                 String         @db.VarChar(255)
-  evidenceUrl     String?        @db.VarChar(1000)
-  approvalStatus  ApprovalStatus @default(NOT_APPROVED)
-  knowledge       Knowledge      @relation(fields: [knowledgeId], references: [id])
+  id             Int            @id @default(autoincrement())
+  knowledgeId    Int
+  userId         String         @db.VarChar(255)
+  evidenceUrl    String?        @db.VarChar(1000)
+  approvalStatus ApprovalStatus @default(NOT_APPROVED)
+  knowledge      Knowledge      @relation(fields: [knowledgeId], references: [id])
 
   @@index([userId])
 }
 
 model UserSkill {
-  id              Int            @id @default(autoincrement())
-  skillId         Int
-  userId                 String         @db.VarChar(255)
-  evidenceUrl     String?        @db.VarChar(1000)
-  approvalStatus  ApprovalStatus @default(NOT_APPROVED)
-  skill           Skill          @relation(fields: [skillId], references: [id])
+  id             Int            @id @default(autoincrement())
+  skillId        Int
+  userId         String         @db.VarChar(255)
+  evidenceUrl    String?        @db.VarChar(1000)
+  approvalStatus ApprovalStatus @default(NOT_APPROVED)
+  skill          Skill          @relation(fields: [skillId], references: [id])
 
   @@index([userId])
 }
 
 model UserUnitKnowledge {
-  id           Int       @id @default(autoincrement())
-  unitCodeId   Int
-  knowledgeId  Int
-  unitCode     UnitCode  @relation(fields: [unitCodeId], references: [id])
+  id          Int      @id @default(autoincrement())
+  unitCodeId  Int
+  knowledgeId Int
+  unitCode    UnitCode @relation(fields: [unitCodeId], references: [id])
+
+  @@index([unitCodeId], map: "UserUnitKnowledge_unitCodeId_fkey")
 }
 
 model UserUnitSkill {
-  id           Int       @id @default(autoincrement())
-  unitCodeId   Int
-  skillId      Int
-  unitCode     UnitCode  @relation(fields: [unitCodeId], references: [id])
+  id         Int      @id @default(autoincrement())
+  unitCodeId Int
+  skillId    Int
+  unitCode   UnitCode @relation(fields: [unitCodeId], references: [id])
+
+  @@index([unitCodeId], map: "UserUnitSkill_unitCodeId_fkey")
 }
 
 model Occupational {
-  id        Int             @id @default(autoincrement())
+  id        Int                @id @default(autoincrement())
   name      String
   unitLinks UnitOccupational[]
 }
 
 model UnitOccupational {
-  id             Int        @id @default(autoincrement())
+  id             Int          @id @default(autoincrement())
   unitCodeId     Int
   occupationalId Int
-  unitCode       UnitCode   @relation(fields: [unitCodeId], references: [id])
   occupational   Occupational @relation(fields: [occupationalId], references: [id])
+  unitCode       UnitCode     @relation(fields: [unitCodeId], references: [id])
+
+  @@index([occupationalId], map: "UnitOccupational_occupationalId_fkey")
+  @@index([unitCodeId], map: "UnitOccupational_unitCodeId_fkey")
 }
 
 model Sector {
-  id          Int           @id @default(autoincrement())
-  name        String        @db.VarChar(255)
-  unitLinks   UnitSector[]
+  id        Int          @id @default(autoincrement())
+  name      String       @db.VarChar(255)
+  unitLinks UnitSector[]
 }
 
 model UnitSector {
-  id         Int       @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   unitCodeId Int
   sectorId   Int
-
-  unitCode   UnitCode  @relation(fields: [unitCodeId], references: [id])
-  sector     Sector    @relation(fields: [sectorId], references: [id])
+  sector     Sector   @relation(fields: [sectorId], references: [id])
+  unitCode   UnitCode @relation(fields: [unitCodeId], references: [id])
 
   @@index([unitCodeId])
   @@index([sectorId])
 }
 
 model TpqiSummary {
-  id                Int           @id @default(autoincrement())
-  userEmail         String        @db.VarChar(255)
-  careerId          Int
-  levelId           Int
-  careerLevelId     Int
-  skillPercent      Decimal?      @db.Decimal(5, 2)
-  knowledgePercent  Decimal?      @db.Decimal(5, 2)
-  career            Career        @relation(fields: [careerId], references: [id])
-  level             Level         @relation(fields: [levelId], references: [id])
-  careerLevel       CareerLevel   @relation(fields: [careerLevelId], references: [id])
+  id               Int         @id @default(autoincrement())
+  userEmail        String      @db.VarChar(255)
+  careerId         Int
+  levelId          Int
+  careerLevelId    Int
+  skillPercent     Decimal?    @db.Decimal(5, 2)
+  knowledgePercent Decimal?    @db.Decimal(5, 2)
+  Career           Career      @relation(fields: [careerId], references: [id])
+  CareerLevel      CareerLevel @relation(fields: [careerLevelId], references: [id])
+  Level            Level       @relation(fields: [levelId], references: [id])
 
   @@unique([userEmail, careerLevelId])
+  @@index([careerId], map: "TpqiSummary_careerId_fkey")
+  @@index([careerLevelId], map: "TpqiSummary_careerLevelId_fkey")
+  @@index([levelId], map: "TpqiSummary_levelId_fkey")
   @@index([userEmail])
+}
+
+enum ApprovalStatus {
+  APPROVED
+  NOT_APPROVED
 }

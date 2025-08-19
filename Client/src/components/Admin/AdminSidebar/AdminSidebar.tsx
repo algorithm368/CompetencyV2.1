@@ -23,6 +23,7 @@ const frameworks = [
     items: [
       { label: "Sector", path: "/admin/tpqi/sector" },
       { label: "Category", path: "/admin/tpqi/category" },
+      { label: "Career", path: "/admin/tpqi/career" },
     ],
   },
   {

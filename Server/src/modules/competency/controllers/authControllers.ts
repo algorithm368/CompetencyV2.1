@@ -3,45 +3,57 @@ import { StatusCodes } from "http-status-codes";
 import AuthService from "@Competency/services/authServices";
 import { AuthenticatedRequest } from "@Middlewares/authMiddleware";
 
+const ACCESS_TOKEN_EXPIRATION = Number(process.env.JWT_ACCESS_EXPIRATION || 3600);
+const REFRESH_TOKEN_MAX_AGE = Number(process.env.JWT_REFRESH_EXPIRATION || 604800);
+
 const isProduction = process.env.NODE_ENV === "production";
 
-// Handle user login with Google OAuth
-export const loginWithGoogle = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  const { idToken } = req.body;
+const ACCESS_TOKEN_COOKIE_OPTIONS = {
+  httpOnly: false,
+  secure: isProduction,
+  sameSite: "strict" as const,
+  path: "/",
+  maxAge: ACCESS_TOKEN_EXPIRATION * 1000,
+};
 
+const REFRESH_TOKEN_COOKIE_OPTIONS = {
+  ...ACCESS_TOKEN_COOKIE_OPTIONS,
+  maxAge: REFRESH_TOKEN_MAX_AGE * 1000,
+};
+
+const CSRF_COOKIE_OPTIONS = {
+  ...ACCESS_TOKEN_COOKIE_OPTIONS,
+  httpOnly: false,
+};
+
+// Login with Google
+export const loginWithGoogle = async (req: Request, res: Response) => {
+  const { idToken } = req.body;
   if (!idToken) {
-    res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ message: "ID token is required for Google login" });
-    return;
+    return res.status(StatusCodes.BAD_REQUEST).json({ message: "ID token is required" });
   }
 
   try {
-    const { user, accessToken, refreshToken } =
+    const { user, accessToken, refreshToken, csrfToken } =
       await AuthService.loginWithGoogle(idToken);
 
-    // Clear any existing cookie before setting
-    res.clearCookie("refreshToken", {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: "lax",
-      path: "/",
-    });
+    // Clear old cookies
+    res.clearCookie("refreshToken", { path: "/" });
+    res.clearCookie("csrfToken", { path: "/" });
+    res.clearCookie("accessToken", { path: "/" });
 
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      path: "/",
-    });
+    // Set new cookies
+    res.cookie("refreshToken", refreshToken, REFRESH_TOKEN_COOKIE_OPTIONS);
+    res.cookie("accessToken", accessToken, ACCESS_TOKEN_COOKIE_OPTIONS);
+    res.cookie("csrfToken", csrfToken, CSRF_COOKIE_OPTIONS);
 
-    res
-      .status(StatusCodes.OK)
-      .json({ user, accessToken, expiresIn: process.env.EXPIRES_IN || "3600" });
+    res.status(StatusCodes.OK).json({
+      user,
+      accessToken,
+      csrfToken,
+      expiresIn: ACCESS_TOKEN_EXPIRATION,
+      provider: "google",
+    });
   } catch (err: any) {
     res
       .status(StatusCodes.UNAUTHORIZED)
@@ -49,28 +61,20 @@ export const loginWithGoogle = async (
   }
 };
 
-// Handle user logout by invalidating refresh token
-export const logout = async (
-  req: AuthenticatedRequest,
-  res: Response
-): Promise<void> => {
+// Logout
+export const logout = async (req: AuthenticatedRequest, res: Response) => {
   const refreshToken = req.cookies.refreshToken as string | undefined;
-
   if (!refreshToken) {
     console.warn("[logout] No refresh token found in cookies");
-    res.sendStatus(StatusCodes.NO_CONTENT);
-    return;
+    return res.sendStatus(StatusCodes.NO_CONTENT);
   }
 
   try {
     await AuthService.logout(refreshToken);
 
-    res.clearCookie("refreshToken", {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: "lax",
-      path: "/",
-    });
+    res.clearCookie("refreshToken", { path: "/" });
+    res.clearCookie("accessToken", { path: "/" });
+    res.clearCookie("csrfToken", { path: "/" });
 
     res.status(StatusCodes.OK).json({ message: "Logged out successfully" });
   } catch (err: any) {
@@ -81,56 +85,55 @@ export const logout = async (
   }
 };
 
-// Handle access token renewal using a refresh token
-export const refreshAccessToken = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+// Refresh token
+export const refreshAccessToken = async (req: Request, res: Response) => {
   const refreshToken = req.cookies.refreshToken;
   if (!refreshToken) {
-    res
+    return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Refresh token is required" });
-    return;
   }
 
   try {
-    const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+    const { accessToken, refreshToken: newRefreshToken, csrfToken } =
       await AuthService.refreshToken(refreshToken);
 
-    // Rotate refresh token cookie
-    res.cookie("refreshToken", newRefreshToken, {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: "/",
+    res.cookie("refreshToken", newRefreshToken, REFRESH_TOKEN_COOKIE_OPTIONS);
+    res.cookie("accessToken", accessToken, ACCESS_TOKEN_COOKIE_OPTIONS);
+    res.cookie("csrfToken", csrfToken, CSRF_COOKIE_OPTIONS);
+
+    res.status(StatusCodes.OK).json({
+      accessToken,
+      csrfToken,
+      expiresIn: ACCESS_TOKEN_EXPIRATION,
     });
-    res.status(StatusCodes.OK).json({ accessToken: newAccessToken, expiresIn: process.env.JWT_REFRESH_EXPIRATION || "3600" });
   } catch (err: any) {
-    console.error("Refresh token failed:", err);
-    res.clearCookie("refreshToken", {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: "lax",
-      path: "/",
-    });
+    console.error("[refreshAccessToken] Refresh failed:", err);
+    res.clearCookie("refreshToken", { path: "/" });
+    res.clearCookie("accessToken", { path: "/" });
+    res.clearCookie("csrfToken", { path: "/" });
 
     res
       .status(StatusCodes.UNAUTHORIZED)
-      .json({ message: err.message || "Refresh token failed" });
+      .json({ message: "Refresh token expired or invalid" });
   }
 };
 
-// Return current authenticated user info
-export const getCurrentUser = async (
-  req: AuthenticatedRequest,
-  res: Response
-): Promise<void> => {
+// Get current authenticated user
+export const getCurrentUser = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const userId = String(req.user?.userId);
-    const user = await AuthService.getCurrentUser(userId);
-    res.status(StatusCodes.OK).json({ user });
+    if (!req.user?.userId) {
+      return res
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "No authenticated user" });
+    }
+
+    const user = await AuthService.getCurrentUser(String(req.user.userId));
+    res.status(StatusCodes.OK).json({
+      user,
+      expiresIn: ACCESS_TOKEN_EXPIRATION,
+      provider: "google",
+    });
   } catch (err: any) {
     res
       .status(StatusCodes.NOT_FOUND)

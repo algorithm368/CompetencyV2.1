@@ -9,3 +9,5 @@ export { default as Select } from "@Components/Common/Select/Select";
 export { default as Toast } from "@Components/Common/Toast/Toast";
 export { default as Switch } from "@Components/Common/Switch/Switch";
 export { default as Textarea } from "@Components/Common/Textarea/Textarea";
+export { default as Checkbox } from "@Components/Common/Checkbox/Checkbox";
+export { default as Spinner } from "@Components/Common/Spinner/Spinner";

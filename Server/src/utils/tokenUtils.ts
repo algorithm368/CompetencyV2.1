@@ -1,4 +1,5 @@
 import jwt, { SignOptions, Secret } from "jsonwebtoken";
+import crypto from "crypto";
 
 // --------------------- Types ---------------------
 export interface AccessTokenPayload {
@@ -98,4 +99,14 @@ export const verifyRefreshToken = (token: string): RefreshTokenPayload => {
     }
     throw new Error("Invalid refresh token");
   }
+};
+
+/**
+ * Generate a cryptographically secure CSRF token.
+ *
+ * @param {number} length - Length of the token in bytes (default 32 bytes → 64 hex chars)
+ * @returns {string} - A random CSRF token
+ */
+export const generateCsrfToken = (length = 32): string => {
+  return crypto.randomBytes(length).toString("hex");
 };

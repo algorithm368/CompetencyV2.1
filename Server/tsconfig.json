@@ -39,6 +39,7 @@
       "@Socket/*": ["socket/*"],
       "@Database/*": ["db/*"],
       "@Types/*": ["types/*"],
+      "@Configs/*": ["config/*"],
 
       "@SFIA/*": ["modules/sfia/*"],
       "@Admin/*": ["modules/admin/*"],

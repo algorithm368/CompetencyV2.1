@@ -116,7 +116,6 @@ model UserKnowledge {
   approvalStatus ApprovalStatus @default(NOT_APPROVED)
   knowledge      Knowledge      @relation(fields: [knowledgeId], references: [id])
 
-  @@index([knowledgeId], map: "UserKnowledge_knowledgeId_fkey")
   @@index([userId])
 }
 
@@ -128,7 +127,6 @@ model UserSkill {
   approvalStatus ApprovalStatus @default(NOT_APPROVED)
   skill          Skill          @relation(fields: [skillId], references: [id])
 
-  @@index([skillId], map: "UserSkill_skillId_fkey")
   @@index([userId])
 }
 

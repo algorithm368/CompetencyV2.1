@@ -50,71 +50,71 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, mobileOpen, onTo
   return (
     <>
       {/* Mobile overlay */}
-      <div className={`fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden transition-opacity ${mobileOpen ? "opacity-50 visible" : "opacity-0 invisible"}`} onClick={onMobileClose} />
+      <div className={`fixed inset-0 bg-opacity-40 z-20 md:hidden transition-opacity ${mobileOpen ? "opacity-50 visible" : "opacity-0 invisible"}`} onClick={onMobileClose} />
 
       <aside
-        className={`fixed top-0 left-0 bottom-0 z-30 w-64 bg-gray-800 text-gray-100 transform transition-transform duration-200 ease-in-out
-          ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
-          md:translate-x-0
-          ${collapsed ? "-translate-x-full md:translate-x-0" : ""}`}
+        className={`fixed top-0 left-0 bottom-0 z-20 w-64 bg-white text-gray-900 shadow-md transform transition-transform duration-200 ease-in-out
+    ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
+    md:translate-x-0
+    ${collapsed ? "-translate-x-full md:translate-x-0" : ""}`}
       >
         <div className="h-full flex flex-col">
-          <div className="px-5 py-3 flex items-center justify-between">
-            <div className="flex-shrink-0 flex items-center space-x-3">
-              <Link to="/" className="flex items-center">
-                <img src="/src/assets/competency-logo.png" alt="Competency Logo" className="h-9 w-9 rounded-full object-cover" />
-                <span className="text-xl ml-3 font-semibold transition-colors duration-300 text-white">Competency</span>
-              </Link>
-            </div>
-            <button className="md:hidden" onClick={onToggle} aria-label="Collapse sidebar">
-              <FiChevronLeft size={20} />
+          {/* Header */}
+          <div className="px-5 py-2 flex items-center justify-between ">
+            <Link to="/" className="flex items-center space-x-3">
+              <img src="/src/assets/competency-logo.png" alt="Logo" className="h-10 w-10 rounded-full object-cover" />
+              <span className="text-lg font-semibold text-gray-900 tracking-wide">Competency</span>
+            </Link>
+            <button className="md:hidden text-gray-500 hover:text-gray-800" onClick={onToggle}>
+              <FiChevronLeft size={22} />
             </button>
           </div>
 
-          <nav className="flex-1 overflow-y-auto mt-4">
+          {/* Navigation */}
+          <nav className="flex-1 overflow-y-auto mt-4 px-1">
+            {/* Main */}
             <div className="mb-6">
-              <p className="px-6 text-xs font-semibold uppercase text-gray-400 mb-2">Main</p>
-              <ul>
+              <p className="px-5 text-xs font-semibold uppercase text-gray-400 mb-2 tracking-wider">Main</p>
+              <ul className="space-y-1">
                 {mainMenu.map((item) => (
                   <li key={item.path}>
                     <NavLink
                       to={item.path}
                       className={({ isActive }) =>
-                        `flex items-center px-6 py-3 text-sm hover:bg-gray-700 transition-colors duration-150 ${isActive ? "bg-gray-700 font-medium text-white" : "text-gray-300"}`
+                        `flex items-center gap-3 px-5 py-3 rounded-lg transition-all duration-200
+                   ${isActive ? "bg-indigo-100 text-indigo-600 font-semibold" : "text-gray-700 hover:bg-gray-100"}`
                       }
                       onClick={onMobileClose}
                     >
-                      <span className="mr-3 text-lg">{item.icon}</span>
-                      <span>{item.name}</span>
+                      <span className="text-lg">{item.icon}</span>
+                      <span className="truncate">{item.name}</span>
                     </NavLink>
                   </li>
                 ))}
               </ul>
             </div>
 
+            {/* Frameworks */}
             <div>
-              <p className="px-6 text-xs font-semibold uppercase text-gray-400 mb-2">Framework</p>
-              <ul>
+              <p className="px-5 text-xs font-semibold uppercase text-gray-400 mb-2 tracking-wider">Framework</p>
+              <ul className="space-y-1">
                 {frameworks.map(({ title, icon, key, items }) => (
                   <li key={key}>
-                    <button
-                      type="button"
-                      onClick={() => toggleSection(key)}
-                      className="w-full flex items-center px-6 py-3 text-sm hover:bg-gray-700 transition-colors duration-150 text-gray-300"
-                      aria-expanded={!!openSections[key]}
-                    >
-                      <span className="mr-3 text-lg">{icon}</span>
-                      <span className="flex-1 text-left">{title}</span>
-                      {openSections[key] ? <FiChevronDown /> : <FiChevronRight />}
+                    <button type="button" onClick={() => toggleSection(key)} className="w-full flex items-center gap-3 px-5 py-3 text-sm text-gray-700 hover:bg-gray-100 transition rounded-lg">
+                      <span className="text-lg text-indigo-500">{icon}</span>
+                      <span className="flex-1 text-left font-medium">{title}</span>
+                      {openSections[key] ? <FiChevronDown className="text-gray-500" /> : <FiChevronRight className="text-gray-500" />}
                     </button>
+
                     {openSections[key] && (
-                      <ul className="pl-12 bg-gray-700">
+                      <ul className="pl-10 space-y-1 mt-1">
                         {items.map((link) => (
                           <li key={link.path}>
                             <NavLink
                               to={link.path}
                               className={({ isActive }) =>
-                                `block px-6 py-2 text-sm hover:bg-gray-600 transition-colors duration-150 ${isActive ? "bg-gray-600 font-medium text-white" : "text-gray-300"}`
+                                `block px-4 py-2 rounded-md text-sm transition
+                          ${isActive ? "bg-indigo-100 text-indigo-600 font-medium" : "text-gray-700 hover:bg-gray-100"}`
                               }
                               onClick={onMobileClose}
                             >

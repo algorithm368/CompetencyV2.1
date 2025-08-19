@@ -1,21 +1,21 @@
-import React, { useEffect, useCallback } from "react";
-import {
-  GoogleOAuthProvider,
-  GoogleLogin,
-  CredentialResponse,
-} from "@react-oauth/google";
+import React, { useEffect, useState, useCallback } from "react";
+import { GoogleOAuthProvider, GoogleLogin, CredentialResponse } from "@react-oauth/google";
+
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { FcGoogle } from "react-icons/fc";
 
 interface LoginProps {
   open: boolean;
   onClose: () => void;
-  handleLogin: (response: CredentialResponse | { credential: string }) => void;
+  handleLogin: (response: CredentialResponse | { credential: string }) => Promise<void>;
+  loading?: boolean;
 }
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const GOOGLE_CLIENT_ID = `${import.meta.env.VITE_GOOGLE_CLIENT_ID}`;
 
 const Login: React.FC<LoginProps> = ({ open, onClose, handleLogin }) => {
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     if (open) {
       document.body.classList.add("overflow-hidden");
@@ -24,19 +24,23 @@ const Login: React.FC<LoginProps> = ({ open, onClose, handleLogin }) => {
     document.body.classList.remove("overflow-hidden");
   }, [open]);
 
-  const handleGoogleSuccess = useCallback(
-    (response: CredentialResponse) => {
-      handleLogin(response);
-      onClose();
-    },
-    [handleLogin, onClose]
-  );
+  if (!open) return null;
+
+  const handleGoogleSuccess = async (response: CredentialResponse) => {
+    setLoading(true);
+    try {
+      await handleLogin(response); // รอ server ตอบ
+      onClose(); // ปิด modal หลัง login สำเร็จ
+    } catch (error) {
+      console.error("Login failed:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleGoogleError = useCallback(() => {
     console.error("Google login error");
   }, []);
-
-  if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -58,6 +62,7 @@ const Login: React.FC<LoginProps> = ({ open, onClose, handleLogin }) => {
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-400 rounded-lg p-1 transition-colors duration-200"
           aria-label="Close"
+          disabled={loading}
         >
           <XMarkIcon className="h-6 w-6" />
         </button>
@@ -73,6 +78,7 @@ const Login: React.FC<LoginProps> = ({ open, onClose, handleLogin }) => {
               <div className="mt-4 w-16 h-1 bg-white/30 rounded-full mx-auto"></div>
             </div>
           </div>
+
           {/* Right Panel */}
           <div className="md:w-7/12 w-full flex items-center justify-center p-6 bg-gray-50/30">
             <div className="w-full max-w-xs">
@@ -85,13 +91,19 @@ const Login: React.FC<LoginProps> = ({ open, onClose, handleLogin }) => {
 
               <div className="space-y-3">
                 {/* Google Login Button */}
-                <div className="flex justify-center relative w-[300px] h-[45px] mx-auto group">
-                  <div className="absolute inset-0 z-10 flex items-center justify-center border border-gray-300 text-gray-700 rounded-xl bg-white hover:bg-gray-50 hover:border-teal-300 hover:shadow-lg hover:scale-105 transition-all duration-300 shadow-sm cursor-pointer group-hover:border-teal-400 group-hover:shadow-xl group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-teal-50">
-                    <FcGoogle className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform duration-300" />
-                    <span className="text-sm font-medium group-hover:text-teal-700 transition-colors duration-300">
-                      Sign in with Google
+                <div className="flex justify-center relative w-[300px] h-[45px] mx-auto">
+                  <div
+                    className={`absolute inset-0 z-10 flex items-center justify-center border border-gray-300 text-gray-700 rounded-xl bg-white hover:bg-gray-50 hover:border-teal-300 transition-all duration-200 shadow-sm hover:shadow-md ${
+                      loading ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                  >
+                    <FcGoogle className="h-5 w-5 mr-3" />
+                    <span className="text-sm font-medium">
+                      {loading ? "Signing in..." : "Sign in with Google"}
                     </span>
                   </div>
+
+                  {/* Transparent GoogleLogin underlay */}
                   <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
                     <div className="absolute inset-0 opacity-1 z-20">
                       <GoogleLogin
@@ -100,10 +112,15 @@ const Login: React.FC<LoginProps> = ({ open, onClose, handleLogin }) => {
                         width="300"
                         useOneTap={false}
                       />
+                      {loading && (
+                        <div className="absolute inset-0 z-30 bg-white/60 cursor-not-allowed rounded-xl"></div>
+                      )}
                     </div>
                   </GoogleOAuthProvider>
                 </div>
               </div>
+
+              {/* Footer */}
               <div className="mt-6 text-center">
                 <p className="text-xs text-gray-500">
                   By signing in, you agree to our Terms of Service

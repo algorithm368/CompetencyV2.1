@@ -4,6 +4,9 @@ import { verifyToken } from "@Utils/tokenUtils";
 
 const prisma = new PrismaClient();
 
+/**
+ * ขยาย Request เพื่อเก็บ user หลัง authenticate
+ */
 export interface AuthenticatedRequest extends Request {
   user?: {
     userId: string;
@@ -13,12 +16,9 @@ export interface AuthenticatedRequest extends Request {
   };
 }
 
-<<<<<<< Updated upstream
-=======
 /**
  * Middleware สำหรับยืนยันตัวตน
  */
->>>>>>> Stashed changes
 export const authenticate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;
@@ -57,13 +57,8 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
       return;
     }
 
-<<<<<<< Updated upstream
-    // ดึง permissions keys
-    const permissions = user.userRoles.flatMap((ur) => ur.role?.rolePermissions?.map((rp) => rp.permission.id.toString()) || []);
-=======
     // สร้าง permission key ในรูปแบบ resource:action
     const permissions = user.userRoles.flatMap((ur) => ur.role?.rolePermissions?.map((rp) => `${rp.permission.asset.tableName}:${rp.permission.operation.name}`) || []);
->>>>>>> Stashed changes
 
     const role = user.userRoles[0]?.role?.name || null;
 
@@ -75,7 +70,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     };
 
     next();
-  } catch (error) {
+  } catch (error: any) {
     console.error("Authentication error:", error);
     res.status(401).json({ message: "Unauthorized: Invalid or expired token" });
   }
@@ -129,11 +124,7 @@ export function authorizeRole(allowedRoles: string | string[]) {
 /**
  * Middleware อนุญาตตาม Permission
  */
-<<<<<<< Updated upstream
-export function authorizePermission(requiredPermissions: PermissionKey | PermissionKey[]) {
-=======
 export function authorizePermission(requiredPermissions: string | string[]) {
->>>>>>> Stashed changes
   return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
     const user = req.user;
 

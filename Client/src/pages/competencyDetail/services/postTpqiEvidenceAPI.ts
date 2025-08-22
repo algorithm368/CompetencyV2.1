@@ -1,7 +1,6 @@
-import { AxiosResponse } from "axios";
 import { SubmitTpqiEvidenceRequest, TpqiApiResponse as ApiResponse } from "../types/tpqi";
 import api from "@Services/api";
-
+import { AxiosError } from "axios";
 /**
  * Service class for managing TPQI evidence submissions.
  * Handles API requests and basic client-side validations.
@@ -16,10 +15,12 @@ export class TpqiEvidenceService {
    */
   async submitEvidence(request: SubmitTpqiEvidenceRequest): Promise<ApiResponse> {
     try {
-      const response: AxiosResponse<ApiResponse> = await api.post("/tpqi/evidence", request);
+      const response = await api.post<ApiResponse>("/tpqi/evidence", request);
       return response.data;
-    } catch (error: any) {
-      const message = error.response?.data?.message || error.message || "Unknown error";
+    } catch (error) {
+      const axiosError = error as AxiosError<ApiResponse>;
+      const message = axiosError.response?.data?.message || axiosError.message || "Failed to submit evidence";
+
       throw new Error(message);
     }
   }

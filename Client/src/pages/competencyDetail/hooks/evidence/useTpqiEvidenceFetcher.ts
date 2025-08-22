@@ -1,22 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import api from "@Services/api";
 
-interface TpqiEvidenceData {
-  skills?: {
-    [skillId: number]: { evidenceUrl: string; approvalStatus: string | null };
-  };
-  knowledge?: {
-    [knowledgeId: number]: {
-      evidenceUrl: string;
-      approvalStatus: string | null;
-    };
-  };
-}
-interface ApiEvidenceItem {
-  id: number;
-  evidenceUrl: string;
-  approvalStatus?: string | null;
-}
+import { fetchTpqiEvidenceByUnitCode, TpqiEvidenceData } from "../../services/tpqiEvidenceAPI";
+
 interface UseTpqiEvidenceFetcherResult {
   evidenceData: TpqiEvidenceData | null;
   loading: boolean;
@@ -26,7 +11,6 @@ interface UseTpqiEvidenceFetcherResult {
 
 /**
  * Hook for fetching existing TPQI evidence data
- * Follows the same pattern as useSfiaEvidenceFetcher
  */
 export const useTpqiEvidenceFetcher = (unitCode: string): UseTpqiEvidenceFetcherResult => {
   const [evidenceData, setEvidenceData] = useState<TpqiEvidenceData | null>(null);
@@ -34,56 +18,30 @@ export const useTpqiEvidenceFetcher = (unitCode: string): UseTpqiEvidenceFetcher
   const [error, setError] = useState<string | null>(null);
 
   const fetchEvidence = useCallback(async () => {
-    if (!unitCode) return;
-
+    if (!unitCode || unitCode.trim() === "") {
+      setEvidenceData({ skills: {}, knowledge: {} });
+      setError(null);
+      return;
+    }
     setLoading(true);
     setError(null);
 
     try {
-      const { data: responseData } = await api.post("/tpqi/evidence/get", { unitCode });
-
-      if (!responseData.success || !responseData.data) {
-        setEvidenceData({ skills: {}, knowledge: {} });
-        return;
-      }
-
-      const { data } = responseData;
-      const transformedData: TpqiEvidenceData = { skills: {}, knowledge: {} };
-
-      if (Array.isArray(data.skillEvidences)) {
-        data.skillEvidences.forEach((evidence: ApiEvidenceItem) => {
-          if (evidence.id && evidence.evidenceUrl) {
-            transformedData.skills![evidence.id] = {
-              evidenceUrl: evidence.evidenceUrl,
-              approvalStatus: evidence.approvalStatus || null,
-            };
-          }
-        });
-      }
-
-      if (Array.isArray(data.knowledgeEvidences)) {
-        data.knowledgeEvidences.forEach((evidence: ApiEvidenceItem) => {
-          if (evidence.id && evidence.evidenceUrl) {
-            transformedData.knowledge![evidence.id] = {
-              evidenceUrl: evidence.evidenceUrl,
-              approvalStatus: evidence.approvalStatus || null,
-            };
-          }
-        });
-      }
-
-      setEvidenceData(transformedData);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch evidence");
+      const data = await fetchTpqiEvidenceByUnitCode(unitCode);
+      setEvidenceData(data);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to fetch evidence";
+      setError(message);
+      // set empty normalized data to avoid null checks in UI
       setEvidenceData({ skills: {}, knowledge: {} });
-      console.error("Failed to fetch TPQI evidence:", err);
+      console.error("useTpqiEvidenceFetcher:", err);
     } finally {
       setLoading(false);
     }
   }, [unitCode]);
 
   useEffect(() => {
-    fetchEvidence();
+    void fetchEvidence();
   }, [fetchEvidence]);
 
   return {

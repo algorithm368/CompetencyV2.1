@@ -26,17 +26,11 @@ export function useEvidenceFetcher(skillCode: string) {
         skillCode,
       });
 
-      if (response.success && response.data?.evidences) {
-        const evidenceMap: EvidenceData = {};
-        response.data.evidences.forEach((evidence: any) => {
-          if (evidence.evidenceUrl) {
-            evidenceMap[evidence.id] = {
-              url: evidence.evidenceUrl,
-              approvalStatus: evidence.approvalStatus,
-            };
-          }
-        });
-        setEvidenceData(evidenceMap);
+      if (response.success && response.data) {
+        setEvidenceData(response.data);
+      } else {
+        setEvidenceData(null);
+        setError(response.message || "No evidence found");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch evidence");

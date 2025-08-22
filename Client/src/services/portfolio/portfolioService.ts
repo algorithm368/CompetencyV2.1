@@ -27,12 +27,6 @@ export class PortfolioService {
   private readonly sfiaService: GetSfiaSummaryService;
   private readonly tpqiService: GetTpqiSummaryService;
 
-  /**
-   * Creates an instance of PortfolioService.
-   *
-   * @param baseApiUrl - The base URL of the backend API.
-   * @param accessToken - The Bearer token for authenticated API access.
-   */
   constructor() {
     this.sfiaService = new GetSfiaSummaryService();
     this.tpqiService = new GetTpqiSummaryService();

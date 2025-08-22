@@ -1,6 +1,6 @@
-import { AxiosResponse } from "axios";
-import { ApiResponse } from "../types/ApiResponse";
 import api from "@Services/api";
+import { AxiosError } from "axios";
+import { ApiResponse } from "../types/sfia";
 
 /**
  * Request interface for getting SFIA evidence.
@@ -35,12 +35,12 @@ export interface GetEvidenceResponse extends ApiResponse {
 export class GetSfiaEvidenceService {
   async getEvidence(request: GetEvidenceRequest): Promise<GetEvidenceResponse> {
     try {
-      const response: AxiosResponse<GetEvidenceResponse> = await api.post("/sfia/evidence/get", request);
-
+      const response = await api.post<GetEvidenceResponse>("/sfia/evidence/get", request);
       return response.data;
-    } catch (error: any) {
-      const message = error.response?.data?.message || error.message || "Unknown error";
-      throw new Error(message);
+    } catch (error) {
+      const axiosError = error as AxiosError<GetEvidenceResponse>;
+      const errData = axiosError.response?.data;
+      throw new Error((errData && "message" in errData ? errData.message : undefined) || axiosError.message || "Failed to retrieve evidence");
     }
   }
 

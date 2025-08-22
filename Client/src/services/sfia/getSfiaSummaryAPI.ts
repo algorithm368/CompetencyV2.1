@@ -19,9 +19,8 @@ export interface SfiaSkillSummary {
  */
 export interface SfiaSummaryStats {
   totalSkills: number;
-  averagePercent: number;
+  averagePercent: number; // Changed from avgSkillPercent to match API
   completedSkills: number;
-  skillSummaries: SfiaSkillSummary[];
 }
 
 /**
@@ -37,6 +36,14 @@ export interface GetSfiaSummaryResponse extends ApiResponse {
  */
 export class GetSfiaSummaryService {
   /**
+   * Creates an instance of GetSfiaSummaryService.
+   *
+   * @param baseApiUrl - The base URL of the backend API.
+   * @param accessToken - The Bearer token for authenticated API access.
+   */
+  constructor() {}
+
+  /**
    * Retrieves the SFIA summary for the authenticated user.
    *
    * @returns Promise<GetSfiaSummaryResponse>
@@ -46,14 +53,14 @@ export class GetSfiaSummaryService {
     try {
       const response = await api.get<GetSfiaSummaryResponse>("/sfia/summary/user");
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching SFIA summary:", error);
-      if (error instanceof Error) throw error;
-      throw new Error("Failed to fetch SFIA summary");
+      throw new Error(error.response?.data?.message || "Failed to fetch SFIA summary");
     }
   }
 
   /**
+
    * Checks if the response contains valid summary data.
    */
   hasSummaryData(response: GetSfiaSummaryResponse): boolean {
@@ -79,6 +86,7 @@ export class GetSfiaSummaryService {
 
     const averageByLevel = new Map<string, number>();
     const levelGroups = new Map<string, number[]>();
+
     summaryData.skillSummaries.forEach((skill) => {
       const levelName = skill.levelName;
       if (!levelGroups.has(levelName)) levelGroups.set(levelName, []);

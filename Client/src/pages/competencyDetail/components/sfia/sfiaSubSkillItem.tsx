@@ -63,7 +63,7 @@ const useEvidenceFetcher = (skillCode: string, subskillId: number, onUrlChange: 
     } finally {
       setEvidenceLoading(false);
     }
-  }, [accessToken, skillCode, subskillId, evidenceLoaded, onEvidenceLoaded, onUrlChange]);
+  }, [skillCode, subskillId, evidenceLoaded, onEvidenceLoaded, onUrlChange]);
 
   useEffect(() => {
     fetchExistingEvidence();

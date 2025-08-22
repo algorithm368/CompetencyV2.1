@@ -1,29 +1,26 @@
 import { useState, useEffect, useCallback } from "react";
-import { useAuth } from "@Contexts/AuthContext";
 import { GetSfiaEvidenceService } from "../../services/getSfiaEvidenceAPI";
 
 interface EvidenceData {
   [subSkillId: number]: {
-    evidence: string;
+    url: string;
     approvalStatus?: string;
   };
 }
 
 export function useEvidenceFetcher(skillCode: string) {
-  const { accessToken } = useAuth();
   const [evidenceData, setEvidenceData] = useState<EvidenceData>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchEvidence = useCallback(async () => {
-    if (!accessToken || !skillCode) return;
+    if (!skillCode) return;
 
     setLoading(true);
     setError(null);
 
     try {
-      const baseApi = import.meta.env.VITE_API_BASE_URL;
-      const evidenceService = new GetSfiaEvidenceService(baseApi, accessToken);
+      const evidenceService = new GetSfiaEvidenceService();
 
       const response = await evidenceService.getEvidence({
         skillCode,
@@ -31,7 +28,7 @@ export function useEvidenceFetcher(skillCode: string) {
 
       if (response.success && response.data?.evidences) {
         const evidenceMap: EvidenceData = {};
-        response.data.evidences.forEach((evidence: unknown) => {
+        response.data.evidences.forEach((evidence: any) => {
           if (evidence.evidenceUrl) {
             evidenceMap[evidence.id] = {
               url: evidence.evidenceUrl,
@@ -47,7 +44,7 @@ export function useEvidenceFetcher(skillCode: string) {
     } finally {
       setLoading(false);
     }
-  }, [accessToken, skillCode]);
+  }, [skillCode]);
 
   useEffect(() => {
     fetchEvidence();

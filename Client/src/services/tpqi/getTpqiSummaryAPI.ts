@@ -1,5 +1,5 @@
 import { ApiResponse } from "../../types/competency/ApiResponse";
-
+import api from "@Services/api";
 /**
  * Interface for TPQI career summary data from the backend.
  */
@@ -37,20 +37,6 @@ export interface GetTpqiSummaryResponse extends ApiResponse {
  * Handles authenticated API requests and basic client-side validations.
  */
 export class GetTpqiSummaryService {
-  private readonly baseApiUrl: string;
-  private readonly accessToken: string | null;
-
-  /**
-   * Creates an instance of GetTpqiSummaryService.
-   *
-   * @param baseApiUrl - The base URL of the backend API.
-   * @param accessToken - The Bearer token for authenticated API access.
-   */
-  constructor(baseApiUrl: string, accessToken: string | null) {
-    this.baseApiUrl = baseApiUrl;
-    this.accessToken = accessToken;
-  }
-
   /**
    * Retrieves the TPQI summary for the authenticated user.
    * Makes a GET request to the /api/tpqi/summary/user endpoint.
@@ -59,38 +45,18 @@ export class GetTpqiSummaryService {
    * @throws Error if user is not authenticated or if the API request fails
    */
   async getUserSummary(): Promise<GetTpqiSummaryResponse> {
-    // Validate authentication
-    if (!this.accessToken) {
-      throw new Error("User is not authenticated");
-    }
-
     try {
-      // Make API request to get user summary
-      const response = await fetch(`${this.baseApiUrl}/api/tpqi/summary/user`, {
-        method: "GET",
+      const { data } = await api.get<GetTpqiSummaryResponse>("/sfia/summary/user", {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${this.accessToken}`,
         },
       });
 
-      // Parse response JSON
-      let result: GetTpqiSummaryResponse;
-      try {
-        result = await response.json();
-      } catch (parseError) {
-        console.error("Error parsing response JSON:", parseError);
-        throw new Error("Failed to parse API response");
+      if (!data.success) {
+        throw new Error(data.message || "Failed to retrieve SFIA summary");
       }
 
-      // Handle non-200 responses
-      if (!response.ok) {
-        throw new Error(
-          result.message || `HTTP ${response.status}: ${response.statusText}`
-        );
-      }
-
-      return result;
+      return data;
     } catch (error) {
       console.error("Error fetching TPQI summary:", error);
       throw error;
@@ -106,22 +72,6 @@ export class GetTpqiSummaryService {
     isValid: boolean;
     error?: string;
   } {
-    // Check if base API URL is provided
-    if (!this.baseApiUrl || this.baseApiUrl.trim() === "") {
-      return {
-        isValid: false,
-        error: "Base API URL is required",
-      };
-    }
-
-    // Check if access token is provided
-    if (!this.accessToken || this.accessToken.trim() === "") {
-      return {
-        isValid: false,
-        error: "Access token is required for authentication",
-      };
-    }
-
     // If all validations pass, return valid
     return {
       isValid: true,
@@ -135,12 +85,7 @@ export class GetTpqiSummaryService {
    * @returns boolean indicating if the response has valid data
    */
   hasSummaryData(response: GetTpqiSummaryResponse): boolean {
-    return (
-      response.success &&
-      !!response.data &&
-      Array.isArray(response.data.careerSummaries) &&
-      response.data.careerSummaries.length > 0
-    );
+    return response.success && !!response.data && Array.isArray(response.data.careerSummaries) && response.data.careerSummaries.length > 0;
   }
 
   /**
@@ -154,10 +99,7 @@ export class GetTpqiSummaryService {
     careersByLevel: Map<string, TpqiCareerSummary[]>;
     skillVsKnowledgeGap: TpqiCareerSummary[];
   } {
-    const highPerformanceCareers = summaryData.careerSummaries.filter(
-      (career) => 
-        (career.skillPercent || 0) >= 80 && (career.knowledgePercent || 0) >= 80
-    );
+    const highPerformanceCareers = summaryData.careerSummaries.filter((career) => (career.skillPercent || 0) >= 80 && (career.knowledgePercent || 0) >= 80);
 
     const careersByLevel = new Map<string, TpqiCareerSummary[]>();
     summaryData.careerSummaries.forEach((career) => {

@@ -1,45 +1,30 @@
 import { useState, useEffect, useCallback } from "react";
-import { useAuth } from "@Contexts/AuthContext";
-import { GetSfiaEvidenceService } from "../../services/getSfiaEvidenceAPI";
+import { GetSfiaEvidenceService, EvidenceData as EvidenceDataType } from "../../services/getSfiaEvidenceAPI";
 
-interface EvidenceData {
-  [subSkillId: number]: {
-    evidence: string;
-    approvalStatus?: string;
-  };
-}
-
-export function useEvidenceFetcher(skillCode: string) {
-  const { accessToken } = useAuth();
-  const [evidenceData, setEvidenceData] = useState<EvidenceData>({});
+export function useEvidenceFetcher(skillCode: string, userId: string) {
+  const [evidenceData, setEvidenceData] = useState<EvidenceDataType | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchEvidence = useCallback(async () => {
-    if (!accessToken || !skillCode) return;
+    if (!skillCode || !userId) return;
 
     setLoading(true);
     setError(null);
 
     try {
-      const baseApi = import.meta.env.VITE_API_BASE_URL;
-      const evidenceService = new GetSfiaEvidenceService(baseApi, accessToken);
+      const evidenceService = new GetSfiaEvidenceService();
 
       const response = await evidenceService.getEvidence({
         skillCode,
+        userId,
       });
 
-      if (response.success && response.data?.evidences) {
-        const evidenceMap: EvidenceData = {};
-        response.data.evidences.forEach((evidence: unknown) => {
-          if (evidence.evidenceUrl) {
-            evidenceMap[evidence.id] = {
-              url: evidence.evidenceUrl,
-              approvalStatus: evidence.approvalStatus,
-            };
-          }
-        });
-        setEvidenceData(evidenceMap);
+      if (response.success && response.data) {
+        setEvidenceData(response.data);
+      } else {
+        setEvidenceData(null);
+        setError(response.message || "No evidence found");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch evidence");
@@ -47,7 +32,7 @@ export function useEvidenceFetcher(skillCode: string) {
     } finally {
       setLoading(false);
     }
-  }, [accessToken, skillCode]);
+  }, [skillCode, userId]);
 
   useEffect(() => {
     fetchEvidence();

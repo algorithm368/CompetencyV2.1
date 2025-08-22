@@ -1,4 +1,6 @@
-import { ApiResponse } from "../types/ApiResponse";
+import api from "@Services/api";
+import { AxiosError } from "axios";
+import { ApiResponse } from "../types/sfia";
 
 /**
  * Request interface for getting SFIA evidence.
@@ -34,58 +36,15 @@ export interface GetEvidenceResponse extends ApiResponse {
  * Handles authenticated API requests and basic client-side validations.
  */
 export class GetSfiaEvidenceService {
-  private readonly baseApiUrl: string;
-  private readonly accessToken: string | null;
-
-  /**
-   * Creates an instance of GetSfiaEvidenceService.
-   *
-   * @param baseApiUrl - The base URL of the backend API.
-   * @param accessToken - The Bearer token for authenticated API access.
-   */
-  constructor(baseApiUrl: string, accessToken: string | null) {
-    this.baseApiUrl = baseApiUrl;
-    this.accessToken = accessToken;
-  }
-
   async getEvidence(request: GetEvidenceRequest): Promise<GetEvidenceResponse> {
-    // Validate request parameters
-    if (!this.accessToken) {
-      throw new Error("User is not authenticated");
-    }
-
-    // request evidence data from the backend API
-    const response = await fetch(`${this.baseApiUrl}/api/sfia/evidence/get`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${this.accessToken}`,
-      },
-      body: JSON.stringify(request),
-    });
-
-    // result handling
-    let result;
-
-    // Attempt to parse the response JSON
     try {
-      result = await response.json();
-    } catch (e) {
-      console.error("Error parsing response JSON:", e);
-      result = {
-        success: false,
-        message: "Failed to parse response",
-      };
+      const response = await api.post<GetEvidenceResponse>("/sfia/evidence/get", request);
+      return response.data;
+    } catch (error) {
+      const axiosError = error as AxiosError<GetEvidenceResponse>;
+      const errData = axiosError.response?.data;
+      throw new Error((errData && "message" in errData ? errData.message : undefined) || axiosError.message || "Failed to retrieve evidence");
     }
-
-    // Handle non-200 responses
-    if (!response.ok) {
-      throw new Error(
-        result.message || `HTTP ${response.status}: ${response.statusText}`
-      );
-    }
-
-    return result;
   }
 
   validateGetEvidenceRequest(

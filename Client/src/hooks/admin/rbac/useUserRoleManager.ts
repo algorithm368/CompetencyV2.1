@@ -1,43 +1,73 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueries, useMutation, useQueryClient } from "@tanstack/react-query";
 import { UserRoleService } from "@Services/admin/rbac/userRoleService";
-import { UserRole } from "@Types/admin/rbac/userRoleTypes";
-import { Role } from "@Types/admin/rbac/roleTypes";
-import { UserRoleAssignmentDto } from "@Types/admin/rbac/userRoleTypes";
+import { UserRole, UserRoleListResponse, UserRoleAssignmentDto } from "@Types/admin/rbac/userRoleTypes";
 
 type ToastCallback = (message: string, type?: "success" | "error" | "info") => void;
 
-export function useUserRoleManager(userId: string, onToast?: ToastCallback) {
+export function useUserRoleManager(options?: { search?: string; page?: number; perPage?: number; initialPrefetchPages?: number }, onToast?: ToastCallback) {
+  const { search = "", page = 1, perPage = 10, initialPrefetchPages = 3 } = options || {};
   const queryClient = useQueryClient();
 
-  // ดึง roles ของ user ตาม userId (UserRole[])
-  const userRolesQuery = useQuery<UserRole[], Error>({
-    queryKey: ["userRoles", userId],
-    queryFn: () => UserRoleService.getUserRoles(userId),
-    enabled: !!userId,
+  // Fetch a page of UserRoles
+  const fetchPage = async (pageIndex: number, pageSize: number): Promise<UserRoleListResponse> => {
+    const pageNumber = pageIndex + 1;
+    return UserRoleService.getAllUserRoles({ search, page: pageNumber, perPage: pageSize });
+  };
+
+  // Prefetch first N pages
+  const prefetchQueries = useQueries({
+    queries: Array.from({ length: initialPrefetchPages }, (_, i) => ({
+      queryKey: ["userRoles", search, i + 1, perPage] as const,
+      queryFn: () => fetchPage(i, perPage),
+      staleTime: 5 * 60 * 1000,
+      enabled: true,
+    })),
   });
 
-  // assign roles (รองรับหลาย role)
-  const assignRolesToUser = useMutation<void, Error, Role[]>({
-    mutationFn: (roles: Role[]) => UserRoleService.assignRolesToUser({ userId, roles } as UserRoleAssignmentDto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["userRoles", userId] });
-      onToast?.("Roles assigned to user successfully", "success");
-    },
-    onError: () => onToast?.("Failed to assign roles to user", "error"),
+  // Current page query
+  const currentPageQuery = useQuery<UserRoleListResponse, Error>({
+    queryKey: ["userRoles", search, page, perPage] as const,
+    queryFn: () => fetchPage(page - 1, perPage),
+    enabled: page > initialPrefetchPages,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: (prev) => prev,
   });
 
-  // revoke role (เฉพาะ role เดียว)
-  const revokeRoleFromUser = useMutation<void, Error, number>({
-    mutationFn: (roleId: number) => UserRoleService.revokeRoleFromUser(userId, roleId),
+  const mergedData: UserRoleListResponse | undefined = page <= initialPrefetchPages ? prefetchQueries[page - 1]?.data : currentPageQuery.data;
+
+  const isLoading = prefetchQueries.some((q) => q.isLoading) || (page > initialPrefetchPages && currentPageQuery.isLoading);
+  const isError = prefetchQueries.some((q) => q.isError) || (page > initialPrefetchPages && currentPageQuery.isError);
+  const error = prefetchQueries.find((q) => q.error)?.error || (page > initialPrefetchPages && currentPageQuery.error);
+
+  // Assign multiple roles to a user
+  const assignRolesToUser = useMutation<UserRole[], Error, UserRoleAssignmentDto>({
+    mutationFn: (payload: UserRoleAssignmentDto) => UserRoleService.assignRolesToUser(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["userRoles", userId] });
-      onToast?.("Role revoked from user successfully", "success");
+      queryClient.invalidateQueries({ queryKey: ["userRoles"] });
+      onToast?.("Roles assigned successfully", "success");
     },
-    onError: () => onToast?.("Failed to revoke role from user", "error"),
+    onError: () => onToast?.("Failed to assign roles", "error"),
+  });
+
+  // Revoke a single role from a user
+  const revokeRoleFromUser = useMutation<UserRole, Error, { userId: string; roleId: number }>({
+    mutationFn: ({ userId, roleId }: { userId: string; roleId: number }) => UserRoleService.revokeRoleFromUser(userId, roleId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["userRoles"] });
+      onToast?.("Role revoked successfully", "success");
+    },
+    onError: () => onToast?.("Failed to revoke role", "error"),
   });
 
   return {
-    userRolesQuery,
+    userRolesQuery: {
+      data: mergedData,
+      isLoading,
+      isError,
+      error,
+      refetch: currentPageQuery.refetch,
+    },
+    fetchPage,
     assignRolesToUser,
     revokeRoleFromUser,
   };

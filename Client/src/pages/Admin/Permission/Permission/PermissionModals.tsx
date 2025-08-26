@@ -1,29 +1,27 @@
+// --- AddEditPermissionModal.tsx ---
 import React from "react";
 import { Modal, Button, Input, LoadingButton } from "@Components/Common/ExportComponent";
 
 interface AddEditPermissionModalProps {
   isOpen: boolean;
   mode: "add" | "edit";
-  initialText: string;
-  initialPermissionKey: string;
-  initialPermissionId: number | null;
+  initialOperationId: number | null;
+  initialAssetId: number | null;
   onClose: () => void;
-  onConfirm: (name: string, key: string) => void;
+  onConfirm: (operationId: number, assetId: number) => void;
   isLoading?: boolean;
 }
 
-export const AddEditPermissionModal: React.FC<AddEditPermissionModalProps> = ({ isOpen, mode, initialText, initialPermissionKey, onClose, onConfirm, isLoading = false }) => {
-  const [name, setName] = React.useState(initialText);
-
-  const [permissionKey, setPermissionKey] = React.useState(initialPermissionKey);
-
-  React.useEffect(() => {
-    setName(initialText);
-  }, [initialText]);
+export const AddEditPermissionModal: React.FC<AddEditPermissionModalProps> = ({ isOpen, mode, initialOperationId, initialAssetId, onClose, onConfirm, isLoading = false }) => {
+  const [operationId, setOperationId] = React.useState<number | null>(initialOperationId);
+  const [assetId, setAssetId] = React.useState<number | null>(initialAssetId);
 
   React.useEffect(() => {
-    setPermissionKey(initialPermissionKey);
-  }, [initialPermissionKey]);
+    if (isOpen) {
+      setOperationId(initialOperationId);
+      setAssetId(initialAssetId);
+    }
+  }, [isOpen, initialOperationId, initialAssetId]);
 
   return (
     <Modal
@@ -36,7 +34,14 @@ export const AddEditPermissionModal: React.FC<AddEditPermissionModalProps> = ({ 
           <Button className="!bg-black !text-white hover:!bg-gray-800" onClick={onClose} disabled={isLoading}>
             Cancel
           </Button>
-          <LoadingButton onClick={() => onConfirm(name, permissionKey)} isLoading={isLoading} loadingText={mode === "add" ? "Creating..." : "Saving..."}>
+          <LoadingButton
+            onClick={() => {
+              if (!operationId || !assetId) return;
+              onConfirm(operationId, assetId);
+            }}
+            isLoading={isLoading}
+            loadingText={mode === "add" ? "Creating..." : "Saving..."}
+          >
             {mode === "add" ? "Create" : "Save"}
           </LoadingButton>
         </>
@@ -44,12 +49,12 @@ export const AddEditPermissionModal: React.FC<AddEditPermissionModalProps> = ({ 
     >
       <div className="space-y-3">
         <div className="flex flex-col">
-          <label className="block text-sm mb-1 ml-0.5">Permission Name (Description)</label>
-          <Input value={name} className="!rounded-xl" onChange={(e) => setName(e.target.value)} disabled={isLoading} />
+          <label>Operation ID</label>
+          <Input type="number" value={operationId ?? ""} onChange={(e) => setOperationId(Number(e.target.value))} disabled={isLoading} />
         </div>
         <div className="flex flex-col">
-          <label className="block text-sm mb-1 ml-0.5">Permission Key</label>
-          <Input value={permissionKey} className="!rounded-xl" onChange={(e) => setPermissionKey(e.target.value)} disabled={isLoading} />
+          <label>Asset ID</label>
+          <Input type="number" value={assetId ?? ""} onChange={(e) => setAssetId(Number(e.target.value))} disabled={isLoading} />
         </div>
       </div>
     </Modal>
@@ -81,6 +86,6 @@ export const DeletePermissionModal: React.FC<DeletePermissionModalProps> = ({ is
       </>
     }
   >
-    <p>Are you sure you want to delete “{permissionText}”?</p>
+    <p>Are you sure you want to delete “{permissionText || "this permission"}”?</p>
   </Modal>
 );

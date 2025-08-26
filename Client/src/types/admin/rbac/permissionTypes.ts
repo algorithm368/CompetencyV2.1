@@ -1,20 +1,11 @@
-// --- Permission ---
 export interface Permission {
   id: number;
   operationId: number;
   assetId: number;
-  createdAt: string;
-  updatedAt: string;
-  operation?: {
-    id: number;
-    name: string;
-    description?: string | null;
-  };
-  asset?: {
-    id: number;
-    tableName: string;
-    description?: string | null;
-  };
+  createdAt: Date;
+  updatedAt: Date;
+  operation?: { id: number; name: string; description?: string | null } | null;
+  asset?: { id: number; tableName: string; description?: string | null } | null;
 }
 
 export interface PermissionPageResult {

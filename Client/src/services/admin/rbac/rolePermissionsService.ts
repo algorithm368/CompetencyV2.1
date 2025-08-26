@@ -12,7 +12,6 @@ export const RolePermissionsService = {
     await api.delete("/admin/rbac/role-permissions", { data: { roleId, permissionId } });
   },
 
-  // แก้ตรงนี้
   getRolePermissions: async (roleId: number): Promise<RolePermission[]> => {
     const res: AxiosResponse<RolePermission[]> = await api.get(`/admin/rbac/role-permissions/role/${roleId}`);
     return res.data;

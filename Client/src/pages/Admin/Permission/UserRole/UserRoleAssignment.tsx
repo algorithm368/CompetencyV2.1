@@ -1,127 +1,133 @@
-import React, { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { FiPlus, FiSearch, FiSettings } from "react-icons/fi";
+import { RowActions, Button, Input, Toast, DataTable } from "@Components/Common/ExportComponent";
 import { useUserRoleManager } from "@Hooks/admin/rbac/useUserRoleManager";
-import { useUsers } from "@Hooks/competency/rbac/useUsers";
-import { useRoles } from "@Hooks/competency/rbac";
-import { User, Role } from "@Types/competency/rbacTypes";
-import { Spinner, Toast, Button, Select } from "@Components/Common/ExportComponent";
+import { UserRole, UserRoleAssignmentDto } from "@Types/admin/rbac/userRoleTypes";
+import { AssignRoleModal, RevokeRoleModal } from "./UserRoleModals";
+import { useRoleManager } from "@Hooks/admin/rbac/useRoleManager";
 
-export const UserRoleAssignment: React.FC = () => {
+export default function UserRoleAssignmentPage() {
+  const [searchText, setSearchText] = useState("");
+  const [debouncedSearchText, setDebouncedSearchText] = useState("");
+  const [modalType, setModalType] = useState<"assign" | "revoke" | null>(null);
+  const [selectedUserRole, setSelectedUserRole] = useState<UserRole | null>(null);
+  const [page, setPage] = useState(1);
+  const perPage = 10;
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
+  const { rolesQuery } = useRoleManager({});
+  const allRoles = rolesQuery.data?.data ?? [];
+  // Debounce search
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedSearchText(searchText), 500);
+    return () => clearTimeout(handler);
+  }, [searchText]);
 
-  const { data: users = [], isLoading: isLoadingUsers } = useUsers({ page: 1, perPage: 100 });
-  const { data: roles = [], isLoading: isLoadingRoles } = useRoles({ page: 1, perPage: 100 });
+  useEffect(() => setPage(1), [debouncedSearchText]);
 
-  const { userRolesQuery, assignRoleToUser, revokeRoleFromUser } = useUserRoleManager(handleToast);
-
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
-
-  function handleToast(message: string, type: "success" | "error" | "info" = "info") {
+  const handleToast = (message: string, type: "success" | "error" | "info" = "info") => {
     setToast({ message, type });
-  }
-
-  if (isLoadingUsers || isLoadingRoles || userRolesQuery.isLoading) {
-    return <Spinner />;
-  }
-
-  const userRoles = userRolesQuery.data || [];
-
-  const handleAssignRole = () => {
-    if (!selectedUserId || !selectedRoleId) {
-      handleToast("Please select both User and Role.", "error");
-      return;
-    }
-    assignRoleToUser.mutate({ userId: selectedUserId, roleId: selectedRoleId });
   };
 
-  const handleRevokeRole = (userId: string, roleId: string) => {
-    revokeRoleFromUser.mutate({ userId, roleId });
+  const { fetchPage, assignRolesToUser, revokeRoleFromUser } = useUserRoleManager({ search: debouncedSearchText, page, perPage }, handleToast);
+
+  // Modal handlers
+  const openAssignModal = (role?: UserRole) => {
+    setSelectedUserRole(role ?? null);
+    setModalType("assign");
   };
+  const openRevokeModal = (role: UserRole) => {
+    setSelectedUserRole(role);
+    setModalType("revoke");
+  };
+  const closeModal = () => {
+    setSelectedUserRole(null);
+    setModalType(null);
+  };
+
+  // Confirmation handlers
+  const confirmAssign = (userId: string, roleIds: number[]) => {
+    const dto: UserRoleAssignmentDto = { userId, roleIds };
+    assignRolesToUser.mutate(dto, {
+      onSuccess: () => {
+        handleToast("Roles assigned successfully!", "success");
+        closeModal();
+      },
+    });
+  };
+
+  const confirmRevoke = (userId: string, roleId: number) => {
+    revokeRoleFromUser.mutate(
+      { userId, roleId },
+      {
+        onSuccess: () => {
+          handleToast("Role revoked successfully!", "success");
+          closeModal();
+        },
+      }
+    );
+  };
+
+  const columns = useMemo(
+    () => [
+      { accessorKey: "id", header: "ID" },
+      { accessorFn: (row: UserRole) => row.userEmail ?? "", header: "User Email" },
+      { accessorFn: (row: UserRole) => row.role?.name ?? "", header: "Role Name" },
+      { accessorFn: (row: UserRole) => row.role?.description ?? "", header: "Description" },
+      { accessorFn: (row: UserRole) => new Date(row.assignedAt).toLocaleString(), header: "Assigned At" },
+      {
+        id: "actions",
+        header: () => (
+          <span className="float-right">
+            <FiSettings />
+          </span>
+        ),
+        cell: ({ row }: { row: { original: UserRole } }) => (
+          <div className="text-right">
+            <RowActions onEdit={() => openAssignModal(row.original)} onDelete={() => openRevokeModal(row.original)} />
+          </div>
+        ),
+      },
+    ],
+    []
+  );
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-semibold">User Role Assignment</h2>
-
-      {/* Form Assign Role */}
-      <div className="flex gap-4 items-center">
-        <Select value={selectedUserId ?? ""} onChange={(e) => setSelectedUserId(e.target.value)} className="w-1/3" aria-label="Select User">
-          <option value="" disabled>
-            Select User
-          </option>
-          {users.map((user: User) => (
-            <option key={user.id} value={user.id}>
-              {user.name} ({user.email})
-            </option>
-          ))}
-        </Select>
-
-        <Select value={selectedRoleId ?? ""} onChange={(e) => setSelectedRoleId(e.target.value)} className="w-1/3" aria-label="Select Role">
-          <option value="" disabled>
-            Select Role
-          </option>
-          {roles.map((role: Role) => (
-            <option key={role.id} value={role.id}>
-              {role.name}
-            </option>
-          ))}
-        </Select>
-
-        <Button onClick={handleAssignRole} disabled={assignRoleToUser.isPending}>
-          Assign Role
-        </Button>
+    <>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 z-10">
+        <h1 className="text-3xl font-Poppins mb-2 sm:mb-0">User Roles</h1>
+        <div className="flex flex-col items-end space-y-2">
+          <Button size="md" onClick={() => openAssignModal()} className="flex items-center">
+            <FiPlus className="mr-2" /> Assign Role
+          </Button>
+          <div className="relative">
+            <Input type="text" placeholder="Search roles..." className="pl-3 pr-30 py-1 text-sm" value={searchText} onChange={(e) => setSearchText(e.target.value)} />
+            <FiSearch className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400" />
+          </div>
+        </div>
       </div>
 
-      {/* Table User + Assigned Roles */}
-      <table className="w-full border-collapse border border-gray-300 text-left">
-        <thead>
-          <tr>
-            <th className="border border-gray-300 p-2">User</th>
-            <th className="border border-gray-300 p-2">Email</th>
-            <th className="border border-gray-300 p-2">Roles Assigned</th>
-            <th className="border border-gray-300 p-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((user) => {
-            const assignedRoles = userRoles
-              .filter((ur) => ur.userId === user.id)
-              .map((ur) => {
-                const role = roles.find((r) => r.id === ur.roleId);
-                return role ? { ...role, userRoleId: ur.id } : null;
-              })
-              .filter(Boolean);
+      <DataTable<UserRole>
+        key={debouncedSearchText}
+        resetTrigger={debouncedSearchText}
+        fetchPage={fetchPage}
+        columns={columns}
+        pageSizes={[5, 10, 20]}
+        initialPageSize={perPage}
+        onPageChange={(newPageIndex) => setPage(newPageIndex + 1)}
+      />
 
-            return (
-              <tr key={user.id} className="even:bg-gray-50">
-                <td className="border border-gray-300 p-2">{user.name}</td>
-                <td className="border border-gray-300 p-2">{user.email}</td>
-                <td className="border border-gray-300 p-2">
-                  {assignedRoles.length === 0 ? (
-                    <span className="italic text-gray-500">No roles assigned</span>
-                  ) : (
-                    assignedRoles.map((role: Role & { userRoleId?: string }) => (
-                      <span key={role.id} className="inline-flex items-center bg-blue-100 text-blue-800 rounded px-2 py-1 mr-2 mb-1">
-                        {role.name}
-                        <button
-                          className="ml-2 text-red-500 hover:text-red-700"
-                          onClick={() => handleRevokeRole(user.id, role.id)}
-                          disabled={revokeRoleFromUser.isPending}
-                          aria-label={`Revoke role ${role.name} from user ${user.name}`}
-                        >
-                          &times;
-                        </button>
-                      </span>
-                    ))
-                  )}
-                </td>
-                <td className="border border-gray-300 p-2">{/* อาจเพิ่ม action อื่น ๆ ในอนาคต */}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      <AssignRoleModal
+        isOpen={modalType === "assign"}
+        selectedRole={selectedUserRole}
+        allRoles={allRoles}
+        onClose={closeModal}
+        onConfirm={confirmAssign}
+        isLoading={assignRolesToUser.status === "pending"}
+      />
+
+      <RevokeRoleModal isOpen={modalType === "revoke"} selectedRole={selectedUserRole} onClose={closeModal} onConfirm={confirmRevoke} isLoading={revokeRoleFromUser.status === "pending"} />
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-    </div>
+    </>
   );
-};
+}

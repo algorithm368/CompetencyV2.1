@@ -5,9 +5,10 @@ import { Permission, PermissionPageResult, CreatePermissionDto, UpdatePermission
 export const PermissionsService = {
   getAllPermissions: async (search?: string, page?: number, perPage?: number): Promise<PermissionPageResult> => {
     const params = new URLSearchParams();
+    const normalizedSearch = search?.trim() || "";
     if (page !== undefined) params.append("page", String(page));
     if (perPage !== undefined) params.append("perPage", String(perPage));
-    if (search) params.append("search", search);
+    params.append("search", normalizedSearch);
 
     const res: AxiosResponse<PermissionPageResult> = await api.get("/admin/rbac/permissions", { params });
     return res.data;

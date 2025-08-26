@@ -1,7 +1,7 @@
 import { UserRepository } from "@Competency/repositories/RoleRepository";
 import type { User, Session } from "@prisma/client_competency";
 import { BaseService } from "@Utils/BaseService";
-
+const ONLINE_THRESHOLD = Number(process.env.ONLINE_THRESHOLD_SEC || 900) * 1000;
 export class UserService extends BaseService<User, keyof User> {
   constructor() {
     super(new UserRepository(), ["id", "email", "firstNameTH", "lastNameTH"], "id", { sessions: true });
@@ -39,7 +39,7 @@ export class UserService extends BaseService<User, keyof User> {
   async getAll(search?: string, page?: number, perPage?: number): Promise<{ data: (User & { sessions?: Session[]; status: "online" | "offline" })[]; total: number }> {
     const commonQuery: any = {
       ...(this.includes ? { include: this.includes } : {}),
-      include: { sessions: true }, // join sessions
+      include: { sessions: true },
       where: {} as any,
     };
 
@@ -69,10 +69,11 @@ export class UserService extends BaseService<User, keyof User> {
       total = data.length;
     }
 
-    const dataWithStatus: (User & { sessions?: Session[]; status: "online" | "offline" })[] = data.map((user) => ({
-      ...user,
-      status: user.sessions?.some((s) => !s.expiresAt || s.expiresAt.getTime() > Date.now()) ? ("online" as const) : ("offline" as const),
-    }));
+    const now = Date.now();
+    const dataWithStatus: (User & { sessions?: Session[]; status: "online" | "offline" })[] = data.map((user) => {
+      const online = user.sessions?.some((s) => s.expiresAt.getTime() > now && now - s.lastActivityAt.getTime() < ONLINE_THRESHOLD);
+      return { ...user, status: online ? "online" : "offline" };
+    });
 
     return { data: dataWithStatus, total };
   }

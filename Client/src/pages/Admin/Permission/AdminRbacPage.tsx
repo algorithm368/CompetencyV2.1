@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import RolePage from "./Role/RolePage";
 import { RolePermissionManager } from "./RolePermission/RolePermissionManager";
-// import UserRoleAssignmentPage from "./UserRole/UserRoleAssignment";
+import UserRoleAssignmentPage from "./UserRole/UserRoleAssignment";
 import PermissionPage from "./Permission/PermissionPage";
 import { AdminLayout } from "@Layouts/AdminLayout";
 import AssetPage from "./Asset/AssetPage";
 
 const AdminRbacPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<"roles" | "rolePermissions" | "permissions" | "assets">("roles");
+  const [activeTab, setActiveTab] = useState<"roles" | "rolePermissions" | "permissions" | "assets" | "userRoles">("roles");
 
   return (
     <AdminLayout>
@@ -40,17 +40,23 @@ const AdminRbacPage: React.FC = () => {
           >
             Asset Access
           </button>
+
+          {/* New User Roles Tab */}
+          <button
+            className={`pb-2 border-b-4 ${activeTab === "userRoles" ? "border-blue-600 text-blue-600" : "border-transparent"} font-semibold whitespace-nowrap`}
+            onClick={() => setActiveTab("userRoles")}
+          >
+            User Roles
+          </button>
         </div>
 
         {/* Tab Content */}
         <div>
           {activeTab === "roles" && <RolePage />}
-
           {activeTab === "rolePermissions" && <RolePermissionManager />}
-
           {activeTab === "permissions" && <PermissionPage />}
-
           {activeTab === "assets" && <AssetPage />}
+          {activeTab === "userRoles" && <UserRoleAssignmentPage />}
         </div>
       </div>
     </AdminLayout>

@@ -79,5 +79,6 @@ rbacRoutes.delete("/users/:id", UserController.deleteUser);
 rbacRoutes.post("/user-roles", UserRoleController.assignRole);
 rbacRoutes.delete("/user-roles", UserRoleController.revokeRole);
 rbacRoutes.get("/user-roles/user/:userId", UserRoleController.getRolesByUser);
+rbacRoutes.get("/user-roles", UserRoleController.getAll);
 
 export default rbacRoutes;

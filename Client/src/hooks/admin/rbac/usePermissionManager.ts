@@ -1,23 +1,52 @@
+import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PermissionsService } from "@Services/admin/rbac/permissionsService";
 import { Permission, PermissionPageResult, CreatePermissionDto, UpdatePermissionDto } from "@Types/admin/rbac/permissionTypes";
 
 type ToastCallback = (message: string, type?: "success" | "error" | "info") => void;
 
-export function usePermissionManager(options?: { id?: number | null; search?: string; page?: number; perPage?: number }, onToast?: ToastCallback) {
-  const { id = null, search = "", page = 1, perPage = 10 } = options || {};
+export function usePermissionManager(options?: { id?: number | null; search?: string; page?: number; perPage?: number; initialPrefetchPages?: number }, onToast?: ToastCallback) {
+  const { id = null, search = "", page = 1, perPage = 10, initialPrefetchPages = 3 } = options || {};
   const queryClient = useQueryClient();
+  const normalizedSearch = search ?? "";
 
-  // Fetch permissions page
-  const permissionsQuery = useQuery<PermissionPageResult, Error>({
-    queryKey: ["permissions", search, page, perPage] as const,
-    queryFn: () => PermissionsService.getAllPermissions(search, page, perPage),
+  const fetchPage = async (pageIndex: number, pageSize: number): Promise<PermissionPageResult> => {
+    const pageNumber = pageIndex + 1;
+    const result = await PermissionsService.getAllPermissions(normalizedSearch, pageNumber, pageSize);
+    return { data: result.data ?? [], total: result.total ?? 0 };
+  };
+
+  // Current page query
+  const currentPageQuery = useQuery<PermissionPageResult>({
+    queryKey: ["permissions", normalizedSearch, page, perPage],
+    queryFn: () => fetchPage(page - 1, perPage),
     staleTime: 5 * 60 * 1000,
   });
 
+  // Prefetch next pages sequentially after current page loads
+  useEffect(() => {
+    if (!currentPageQuery.data) return;
+    const totalPages = Math.max(Math.ceil(currentPageQuery.data.total / perPage), 1);
+    for (let i = 1; i <= initialPrefetchPages; i++) {
+      const nextPage = page + i;
+      if (nextPage > totalPages) break;
+
+      queryClient.prefetchQuery({
+        queryKey: ["permissions", normalizedSearch, nextPage, perPage],
+        queryFn: () => fetchPage(nextPage - 1, perPage),
+        staleTime: 5 * 60 * 1000,
+      });
+    }
+  }, [currentPageQuery.data, page, perPage, initialPrefetchPages, normalizedSearch, queryClient]);
+  const mergedData: PermissionPageResult = currentPageQuery.data ?? { data: [], total: 0 };
+
+  const isLoading = currentPageQuery.isLoading;
+  const isError = currentPageQuery.isError;
+  const error = currentPageQuery.error;
+
   // Fetch single permission by id
   const permissionQuery = useQuery<Permission, Error>({
-    queryKey: ["permission", id] as const,
+    queryKey: ["permission", id],
     queryFn: async () => {
       if (id === null) throw new Error("Permission id is null");
       return PermissionsService.getPermissionById(id);
@@ -58,7 +87,8 @@ export function usePermissionManager(options?: { id?: number | null; search?: st
   });
 
   return {
-    permissionsQuery,
+    permissionsQuery: { data: mergedData, isLoading, isError, error, refetch: currentPageQuery.refetch },
+    fetchPage,
     permissionQuery,
     createPermission,
     updatePermission,

@@ -6,11 +6,9 @@ import { AuthenticatedRequest } from "@Middlewares/authMiddleware";
 const ACCESS_TOKEN_EXPIRATION = Number(process.env.JWT_ACCESS_EXPIRATION || 3600);
 const REFRESH_TOKEN_MAX_AGE = Number(process.env.JWT_REFRESH_EXPIRATION || 604800);
 
-const isProduction = process.env.NODE_ENV === "production";
-
 const ACCESS_TOKEN_COOKIE_OPTIONS = {
   httpOnly: false,
-  secure: isProduction,
+  secure: process.env.NODE_ENV === "production",
   sameSite: "strict" as const,
   path: "/",
   maxAge: ACCESS_TOKEN_EXPIRATION * 1000,
@@ -34,15 +32,12 @@ export const loginWithGoogle = async (req: Request, res: Response) => {
   }
 
   try {
-    const { user, accessToken, refreshToken, csrfToken } =
-      await AuthService.loginWithGoogle(idToken);
+    const { user, accessToken, refreshToken, csrfToken } = await AuthService.loginWithGoogle(idToken);
 
-    // Clear old cookies
     res.clearCookie("refreshToken", { path: "/" });
     res.clearCookie("csrfToken", { path: "/" });
     res.clearCookie("accessToken", { path: "/" });
 
-    // Set new cookies
     res.cookie("refreshToken", refreshToken, REFRESH_TOKEN_COOKIE_OPTIONS);
     res.cookie("accessToken", accessToken, ACCESS_TOKEN_COOKIE_OPTIONS);
     res.cookie("csrfToken", csrfToken, CSRF_COOKIE_OPTIONS);
@@ -55,19 +50,14 @@ export const loginWithGoogle = async (req: Request, res: Response) => {
       provider: "google",
     });
   } catch (err: any) {
-    res
-      .status(StatusCodes.UNAUTHORIZED)
-      .json({ message: err.message || "Google login failed" });
+    res.status(StatusCodes.UNAUTHORIZED).json({ message: err.message || "Google login failed" });
   }
 };
 
 // Logout
 export const logout = async (req: AuthenticatedRequest, res: Response) => {
-  const refreshToken = req.cookies.refreshToken as string | undefined;
-  if (!refreshToken) {
-    console.warn("[logout] No refresh token found in cookies");
-    return res.sendStatus(StatusCodes.NO_CONTENT);
-  }
+  const refreshToken = req.cookies.refreshToken;
+  if (!refreshToken) return res.sendStatus(StatusCodes.NO_CONTENT);
 
   try {
     await AuthService.logout(refreshToken);
@@ -79,9 +69,7 @@ export const logout = async (req: AuthenticatedRequest, res: Response) => {
     res.status(StatusCodes.OK).json({ message: "Logged out successfully" });
   } catch (err: any) {
     console.error("Logout error:", err);
-    res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: err.message || "Logout failed" });
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: err.message || "Logout failed" });
   }
 };
 
@@ -89,14 +77,11 @@ export const logout = async (req: AuthenticatedRequest, res: Response) => {
 export const refreshAccessToken = async (req: Request, res: Response) => {
   const refreshToken = req.cookies.refreshToken;
   if (!refreshToken) {
-    return res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ message: "Refresh token is required" });
+    return res.status(StatusCodes.BAD_REQUEST).json({ message: "Refresh token is required" });
   }
 
   try {
-    const { accessToken, refreshToken: newRefreshToken, csrfToken } =
-      await AuthService.refreshToken(refreshToken);
+    const { accessToken, refreshToken: newRefreshToken, csrfToken } = await AuthService.refreshToken(refreshToken);
 
     res.cookie("refreshToken", newRefreshToken, REFRESH_TOKEN_COOKIE_OPTIONS);
     res.cookie("accessToken", accessToken, ACCESS_TOKEN_COOKIE_OPTIONS);
@@ -107,15 +92,12 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
       csrfToken,
       expiresIn: ACCESS_TOKEN_EXPIRATION,
     });
-  } catch (err: any) {
+  } catch (err) {
     console.error("[refreshAccessToken] Refresh failed:", err);
     res.clearCookie("refreshToken", { path: "/" });
     res.clearCookie("accessToken", { path: "/" });
     res.clearCookie("csrfToken", { path: "/" });
-
-    res
-      .status(StatusCodes.UNAUTHORIZED)
-      .json({ message: "Refresh token expired or invalid" });
+    res.status(StatusCodes.UNAUTHORIZED).json({ message: "Refresh token expired or invalid" });
   }
 };
 
@@ -123,9 +105,7 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
 export const getCurrentUser = async (req: AuthenticatedRequest, res: Response) => {
   try {
     if (!req.user?.userId) {
-      return res
-        .status(StatusCodes.UNAUTHORIZED)
-        .json({ message: "No authenticated user" });
+      return res.status(StatusCodes.UNAUTHORIZED).json({ message: "No authenticated user" });
     }
 
     const user = await AuthService.getCurrentUser(String(req.user.userId));
@@ -135,8 +115,6 @@ export const getCurrentUser = async (req: AuthenticatedRequest, res: Response) =
       provider: "google",
     });
   } catch (err: any) {
-    res
-      .status(StatusCodes.NOT_FOUND)
-      .json({ message: err.message || "User not found" });
+    res.status(StatusCodes.NOT_FOUND).json({ message: err.message || "User not found" });
   }
 };

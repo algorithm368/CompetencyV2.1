@@ -71,7 +71,6 @@ class AuthService {
     const refreshToken = generateRefreshToken({ userId: user.id });
     const csrfToken = generateCsrfToken();
 
-    // Upsert session
     const now = new Date();
     const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 วัน
 
@@ -80,11 +79,11 @@ class AuthService {
     if (existingSession) {
       await prisma.session.update({
         where: { id: existingSession.id },
-        data: { accessToken, refreshToken, csrfToken, provider: "google", updatedAt: now, lastActivityAt: now, expiresAt },
+        data: { accessToken, refreshToken, csrfToken, provider: "google", updatedAt: now, expiresAt },
       });
     } else {
       await prisma.session.create({
-        data: { userId: user.id, accessToken, refreshToken, csrfToken, provider: "google", createdAt: now, updatedAt: now, lastActivityAt: now, expiresAt },
+        data: { userId: user.id, accessToken, refreshToken, csrfToken, provider: "google", createdAt: now, updatedAt: now, expiresAt },
       });
     }
 

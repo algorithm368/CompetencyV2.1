@@ -33,6 +33,7 @@ model User {
   profile     Profile?   @relation("UserProfile")
   sessions    Session[]
   userRoles   UserRole[]
+   userAssetInstances UserAssetInstance[]
 
   @@index([email])
 }
@@ -125,10 +126,25 @@ model AssetInstance {
   recordId  String  @db.VarChar(100) // ใช้สำหรับ object-level RBAC
 
   asset     Asset   @relation(fields: [assetId], references: [id], onDelete: Cascade)
-
+   userAssetInstances UserAssetInstance[]
   @@index([assetId])
   @@index([recordId])
 }
+
+model UserAssetInstance {
+  id              Int           @id @default(autoincrement())
+  userId          String        @db.Char(36)
+  assetInstanceId Int
+  assignedAt      DateTime      @default(now())
+
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assetInstance   AssetInstance @relation(fields: [assetInstanceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, assetInstanceId], map: "uix_user_asset_instance")
+  @@index([userId])
+  @@index([assetInstanceId])
+}
+
 
 model Permission {
   id          Int          @id @default(autoincrement())

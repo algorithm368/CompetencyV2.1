@@ -36,6 +36,25 @@ export class AssetInstanceController {
     }
   }
 
+  static async getAll(req: Request, res: Response, next: NextFunction) {
+    try {
+      const search = typeof req.query.search === "string" ? req.query.search : undefined;
+      const pageRaw = req.query.page;
+      const perPageRaw = req.query.perPage;
+      const page = pageRaw && !isNaN(+pageRaw) ? parseInt(pageRaw as string, 10) : undefined;
+      const perPage = perPageRaw && !isNaN(+perPageRaw) ? parseInt(perPageRaw as string, 10) : undefined;
+
+      const result = await service.getAll(search, page, perPage);
+
+      res.json({
+        total: result.total,
+        data: AssetInstanceListView(result.data),
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
   static async deleteInstanceById(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const id = Number(req.params.id);

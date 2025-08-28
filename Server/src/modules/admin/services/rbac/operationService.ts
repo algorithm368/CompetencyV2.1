@@ -1,4 +1,4 @@
-import { OperationRepository } from "@Competency/repositories/RoleRepository";
+import { OperationRepository } from "@/modules/admin/repositories/RoleRepository";
 import type { Operation } from "@prisma/client_competency";
 import { BaseService } from "@Utils/BaseService";
 

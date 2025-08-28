@@ -1,15 +1,15 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { FiPlus, FiSearch, FiSettings } from "react-icons/fi";
 import { RowActions, Button, Input, Toast, DataTable } from "@Components/Common/ExportComponent";
-import { useAssetManager } from "@Hooks/admin/rbac/useAssetManager";
-import { Asset, CreateAssetDto, UpdateAssetDto } from "@Types/admin/rbac/assetTypes";
-import { AddEditAssetModal, DeleteAssetModal } from "./AddEditAssetModal";
+import { useOperationManager } from "@Hooks/admin/rbac/useOperationManager";
+import { Operation } from "@Types/admin/rbac/operationTypes";
+import { AddEditOperationModal, DeleteOperationModal } from "./AddEditOperationModal";
 
-export default function AssetPage() {
+export default function OperationPage() {
   const [searchText, setSearchText] = useState("");
   const [debouncedSearchText, setDebouncedSearchText] = useState("");
   const [modalType, setModalType] = useState<"add" | "edit" | "delete" | null>(null);
-  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
+  const [selectedOperation, setSelectedOperation] = useState<Operation | null>(null);
   const [page, setPage] = useState(1);
   const perPage = 10;
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
@@ -25,58 +25,59 @@ export default function AssetPage() {
     setToast({ message, type });
   };
 
-  const { fetchPage, assetsQuery, createAsset, updateAsset, deleteAsset } = useAssetManager({ search: debouncedSearchText, page, perPage }, handleToast);
+  const { fetchPage, operationsQuery, createOperation, updateOperation, deleteOperation } = useOperationManager({ page, perPage }, handleToast);
 
   const openAddModal = () => {
-    setSelectedAsset(null);
+    setSelectedOperation(null);
     setModalType("add");
   };
-  const openEditModal = (asset: Asset) => {
-    setSelectedAsset(asset);
+  const openEditModal = (operation: Operation) => {
+    setSelectedOperation(operation);
     setModalType("edit");
   };
-  const openDeleteModal = (asset: Asset) => {
-    setSelectedAsset(asset);
+  const openDeleteModal = (operation: Operation) => {
+    setSelectedOperation(operation);
     setModalType("delete");
   };
   const closeModal = () => {
     setModalType(null);
-    setSelectedAsset(null);
+    setSelectedOperation(null);
   };
 
-  const confirmAdd = (tableName: string, description?: string) => {
-    const dto: CreateAssetDto = { tableName, description: description || undefined };
-    createAsset.mutate(dto, {
-      onSuccess: () => {
-        handleToast("Asset created successfully!", "success");
-        closeModal();
-        assetsQuery.refetch();
-      },
-    });
-  };
-
-  const confirmEdit = (tableName: string, description?: string) => {
-    if (!selectedAsset) return;
-    const dto: UpdateAssetDto = { tableName, description: description || undefined };
-    updateAsset.mutate(
-      { id: selectedAsset.id, data: dto },
+  const confirmAdd = (name: string, description?: string) => {
+    createOperation.mutate(
+      { id: 0, name, description: description || undefined, updatedAt: new Date().toISOString() },
       {
         onSuccess: () => {
-          handleToast("Asset updated successfully!", "success");
+          handleToast("Operation created successfully!", "success");
           closeModal();
-          assetsQuery.refetch();
+          operationsQuery.refetch();
+        },
+      }
+    );
+  };
+
+  const confirmEdit = (name: string, description?: string) => {
+    if (!selectedOperation) return;
+    updateOperation.mutate(
+      { id: selectedOperation.id, data: { name, description: description || undefined } },
+      {
+        onSuccess: () => {
+          handleToast("Operation updated successfully!", "success");
+          closeModal();
+          operationsQuery.refetch();
         },
       }
     );
   };
 
   const confirmDelete = () => {
-    if (!selectedAsset) return;
-    deleteAsset.mutate(selectedAsset.id, {
+    if (!selectedOperation) return;
+    deleteOperation.mutate(selectedOperation.id, {
       onSuccess: () => {
-        handleToast("Asset deleted successfully!", "success");
+        handleToast("Operation deleted successfully!", "success");
         closeModal();
-        assetsQuery.refetch();
+        operationsQuery.refetch();
       },
     });
   };
@@ -84,7 +85,7 @@ export default function AssetPage() {
   const columns = useMemo(
     () => [
       { accessorKey: "id", header: "ID" },
-      { accessorKey: "tableName", header: "Table Name" },
+      { accessorKey: "name", header: "Operation Name" },
       { accessorKey: "description", header: "Description" },
       {
         id: "actions",
@@ -93,7 +94,7 @@ export default function AssetPage() {
             <FiSettings />
           </span>
         ),
-        cell: ({ row }: { row: { original: Asset } }) => (
+        cell: ({ row }: { row: { original: Operation } }) => (
           <div className="text-right">
             <RowActions onEdit={() => openEditModal(row.original)} onDelete={() => openDeleteModal(row.original)} />
           </div>
@@ -106,19 +107,19 @@ export default function AssetPage() {
   return (
     <>
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 z-10">
-        <h1 className="text-3xl font-Poppins mb-2 sm:mb-0">Assets</h1>
+        <h1 className="text-3xl font-Poppins mb-2 sm:mb-0">Operations</h1>
         <div className="flex flex-col items-end space-y-2">
           <Button size="md" onClick={openAddModal} className="flex items-center">
-            <FiPlus className="mr-2" /> Add Asset
+            <FiPlus className="mr-2" /> Add Operation
           </Button>
           <div className="relative">
-            <Input type="text" placeholder="Search assets..." className="pl-3 pr-30 py-1 text-sm" value={searchText} onChange={(e) => setSearchText(e.target.value)} />
+            <Input type="text" placeholder="Search operations..." className="pl-3 pr-30 py-1 text-sm" value={searchText} onChange={(e) => setSearchText(e.target.value)} />
             <FiSearch className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400" />
           </div>
         </div>
       </div>
 
-      <DataTable<Asset>
+      <DataTable<Operation>
         key={debouncedSearchText}
         resetTrigger={debouncedSearchText}
         fetchPage={fetchPage}
@@ -128,18 +129,24 @@ export default function AssetPage() {
         onPageChange={(newPageIndex) => setPage(newPageIndex + 1)}
       />
 
-      <AddEditAssetModal
+      <AddEditOperationModal
         isOpen={modalType === "add" || modalType === "edit"}
         mode={modalType === "edit" ? "edit" : "add"}
-        initialTableName={selectedAsset?.tableName || ""}
-        initialDescription={selectedAsset?.description || ""}
-        initialAssetId={selectedAsset?.id ?? null}
+        initialName={selectedOperation?.name || ""}
+        initialDescription={selectedOperation?.description || ""}
+        initialOperationId={selectedOperation?.id ?? null}
         onClose={closeModal}
-        onConfirm={(tableName, description) => (modalType === "add" ? confirmAdd(tableName, description) : confirmEdit(tableName, description))}
-        isLoading={createAsset.status === "pending" || updateAsset.status === "pending"}
+        onConfirm={(name, description) => (modalType === "add" ? confirmAdd(name, description) : confirmEdit(name, description))}
+        isLoading={createOperation.status === "pending" || updateOperation.status === "pending"}
       />
 
-      <DeleteAssetModal isOpen={modalType === "delete"} assetText={selectedAsset?.tableName ?? undefined} onClose={closeModal} onConfirm={confirmDelete} isLoading={deleteAsset.status === "pending"} />
+      <DeleteOperationModal
+        isOpen={modalType === "delete"}
+        operationText={selectedOperation?.name ?? undefined}
+        onClose={closeModal}
+        onConfirm={confirmDelete}
+        isLoading={deleteOperation.status === "pending"}
+      />
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </>

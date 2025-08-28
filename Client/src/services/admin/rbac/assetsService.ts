@@ -11,6 +11,7 @@ export const AssetsService = {
     if (search) params.append("search", search);
 
     const res: AxiosResponse<AssetPageResult> = await api.get("/admin/rbac/assets", { params });
+
     return res.data;
   },
 

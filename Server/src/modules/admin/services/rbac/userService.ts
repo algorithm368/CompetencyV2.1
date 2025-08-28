@@ -1,4 +1,4 @@
-import { UserRepository } from "@Competency/repositories/RoleRepository";
+import { UserRepository } from "@/modules/admin/repositories/RoleRepository";
 import type { User, Session } from "@prisma/client_competency";
 import { BaseService } from "@Utils/BaseService";
 const ONLINE_THRESHOLD = Number(process.env.ONLINE_THRESHOLD_SEC || 900) * 1000;

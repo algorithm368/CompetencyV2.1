@@ -1,4 +1,4 @@
-import { PermissionRepository } from "@Competency/repositories/RoleRepository";
+import { PermissionRepository } from "@/modules/admin/repositories/RoleRepository";
 import type { Permission } from "@prisma/client_competency";
 import { BaseService } from "@Utils/BaseService";
 

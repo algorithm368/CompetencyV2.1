@@ -1,6 +1,6 @@
 import type { Session } from "@prisma/client_competency";
 import { BaseService } from "@Utils/BaseService";
-import { SessionRepository } from "@Competency/repositories/RoleRepository";
+import { SessionRepository } from "@/modules/admin/repositories/RoleRepository";
 
 export class SessionService extends BaseService<Session, "id"> {
   constructor() {

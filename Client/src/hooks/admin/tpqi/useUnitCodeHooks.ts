@@ -39,7 +39,7 @@ export function useUnitCodeManager(
   const fetchPage = async (
     pageIndex: number,
     pageSize: number
-  ): Promise<UnitCodePageResult> => {
+  ): Promise<{ data: UnitCode[]; total: number }> => {
     const pageNumber = pageIndex + 1;
     const result = await UnitCodeService.getAll(search, pageNumber, pageSize);
     return {
@@ -50,7 +50,7 @@ export function useUnitCodeManager(
 
   const prefetchQueries = useQueries({
     queries: Array.from({ length: initialPrefetchPages }, (_, i) => ({
-      queryKey: ["unitCodes", search, i + 1, perPage],
+      queryKey: ["UnitCode", search, i + 1, perPage],
       queryFn: () => fetchPage(i, perPage),
       staleTime: 5 * 60 * 1000,
       enabled: true,
@@ -58,7 +58,7 @@ export function useUnitCodeManager(
   });
 
   const currentPageQuery = useQuery<UnitCodePageResult, Error>({
-    queryKey: ["unitCodes", search, page, perPage],
+    queryKey: ["UnitCode", search, page, perPage],
     queryFn: () => UnitCodeService.getAll(search, page, perPage),
     enabled: page > initialPrefetchPages,
     staleTime: 5 * 60 * 1000,
@@ -87,7 +87,7 @@ export function useUnitCodeManager(
     (page > initialPrefetchPages && currentPageQuery.error);
 
   const unitCodeQuery = useQuery<UnitCode | undefined, Error>({
-    queryKey: ["unitCode", id],
+    queryKey: ["UnitCode", id],
     queryFn: () => {
       if (id === null) return Promise.resolve(undefined);
       return UnitCodeService.getById(id);
@@ -98,7 +98,7 @@ export function useUnitCodeManager(
   const createUnitCode = useMutation<UnitCode, Error, CreateUnitCodeDto>({
     mutationFn: (data) => UnitCodeService.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["unitCodes"] });
+      queryClient.invalidateQueries({ queryKey: ["UnitCode"] });
       onToast?.("Unit Code created successfully", "success");
     },
     onError: (error) => {
@@ -113,8 +113,8 @@ export function useUnitCodeManager(
   >({
     mutationFn: ({ id, data }) => UnitCodeService.update(id, data),
     onSuccess: (updated) => {
-      queryClient.invalidateQueries({ queryKey: ["unitCodes"] });
-      queryClient.invalidateQueries({ queryKey: ["unitCode", updated.id] });
+      queryClient.invalidateQueries({ queryKey: ["UnitCode"] });
+      queryClient.invalidateQueries({ queryKey: ["UnitCode", updated.id] });
       onToast?.("Unit Code updated successfully", "success");
     },
     onError: (error) => {
@@ -125,7 +125,7 @@ export function useUnitCodeManager(
   const deleteUnitCode = useMutation<void, Error, number>({
     mutationFn: (delId) => UnitCodeService.delete(delId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["unitCodes"] });
+      queryClient.invalidateQueries({ queryKey: ["UnitCode"] });
       onToast?.("Unit Code deleted successfully", "success");
     },
     onError: (error) => {
@@ -145,5 +145,6 @@ export function useUnitCodeManager(
     createUnitCode,
     updateUnitCode,
     deleteUnitCode,
+    fetchPage
   };
 }

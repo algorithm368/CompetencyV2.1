@@ -13,5 +13,10 @@ export const adminRoutes = (
     <Route path="/sfia/description" element={<ExportPages.DescriptionPage />} />
 
     <Route path="/tpqi/career" element={<ExportPages.CareerPage />} />
+    <Route path="/tpqi/skill" element={<ExportPages.SkillPage />} />
+    <Route path="/tpqi/sector" element={<ExportPages.SectorPage />} />
+    <Route path="/tpqi/occupational" element={<ExportPages.OccupationalPage />} />
+    <Route path="/tpqi/knowledge" element={<ExportPages.KnowledgePage />} />
+    <Route path="/tpqi/unitcode" element={<ExportPages.UnitCodePage />} />
   </>
 );

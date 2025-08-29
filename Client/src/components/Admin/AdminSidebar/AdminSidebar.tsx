@@ -22,8 +22,11 @@ const frameworks = [
     key: "tpqi",
     items: [
       { label: "Sector", path: "/admin/tpqi/sector" },
-      { label: "Category", path: "/admin/tpqi/category" },
       { label: "Career", path: "/admin/tpqi/career" },
+      { label: "Skill", path: "/admin/tpqi/skill" },
+      { label: "Occupational", path: "/admin/tpqi/occupational" },
+      { label: "Knowledge", path: "/admin/tpqi/knowledge" },
+      { label: "Unit Code", path: "/admin/tpqi/unitcode" }
     ],
   },
   {

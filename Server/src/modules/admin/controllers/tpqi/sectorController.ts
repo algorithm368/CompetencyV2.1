@@ -6,8 +6,12 @@ const service = new SectorService();
 export class SectorController {
   static async getAll(req: Request, res: Response, next: NextFunction) {
     try {
-      const items = await service.getAll();
-      res.json(items);
+      const search = req.query.search as string | undefined;
+      const page = req.query.page ? Number(req.query.page) : undefined;
+      const perPage = req.query.perPage ? Number(req.query.perPage) : undefined;
+
+      const result = await service.getAll(search, page, perPage);
+      res.json(result);
     } catch (err) {
       next(err);
     }

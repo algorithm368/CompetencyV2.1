@@ -10,8 +10,7 @@ import {
     CreateKnowledgeDto,
     UpdateKnowledgeDto,
     KnowledgePageResult,
-} from "@Types/tpqi/KnowledgeTypes";
-import { use } from "react";
+} from "@Types/tpqi/knowledgeTypes";
 
 type ToastCallback = (
     message: string,
@@ -51,7 +50,7 @@ export function useKnowledgeManager(
 
     const prefetchQueries = useQueries({
         queries: Array.from({ length: initialPrefetchPages }, (_, i) => ({
-            queryKey: ["knowledges", search, i + 1, perPage],
+            queryKey: ["Knowledge", search, i + 1, perPage],
             queryFn: () => fetchPage(i, perPage),
             staleTime: 5 * 60 * 1000,
             enabled: true,
@@ -59,7 +58,7 @@ export function useKnowledgeManager(
     });
 
     const currentPageQuery = useQuery<KnowledgePageResult, Error>({
-        queryKey: ["knowledges", search, page, perPage],
+        queryKey: ["Knowledge", search, page, perPage],
         queryFn: () => KnowledgeService.getAll(search, page, perPage),
         enabled: page > initialPrefetchPages,
         staleTime: 5 * 60 * 1000,
@@ -87,7 +86,7 @@ export function useKnowledgeManager(
         prefetchQueries.find((q) => q.isError)?.error || currentPageQuery.error;
 
     const knowledgeQuery = useQuery<Knowledge | undefined, Error>({
-        queryKey: ["knowledge", id],
+        queryKey: ["Knowledge", id],
         queryFn: () => {
             if (id === null) throw new Error("knowledge id is null");
             return KnowledgeService.getById(id);
@@ -98,7 +97,7 @@ export function useKnowledgeManager(
     const createKnowledge = useMutation<Knowledge, Error, CreateKnowledgeDto>({
         mutationFn: async (dto) => KnowledgeService.create(dto),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["knowledges"] });
+            queryClient.invalidateQueries({ queryKey: ["Knowledge"] });
             onToast?.("Knowledge created successfully", "success");
         },
         onError: () => {
@@ -109,8 +108,8 @@ export function useKnowledgeManager(
     const updateKnowledge = useMutation<Knowledge, Error, { id: number; data: UpdateKnowledgeDto }>({
         mutationFn: async ({ id, data }) => KnowledgeService.update(id, data),
         onSuccess: (updated) => {
-            queryClient.invalidateQueries({ queryKey: ["knowledges"] });
-            queryClient.invalidateQueries({ queryKey: ["knowledge", updated.id] });
+            queryClient.invalidateQueries({ queryKey: ["Knowledge"] });
+            queryClient.invalidateQueries({ queryKey: ["Knowledge", updated.id] });
             onToast?.("Knowledge updated successfully", "success");
         },
         onError: () => {
@@ -121,7 +120,7 @@ export function useKnowledgeManager(
     const deleteKnowledge = useMutation<void, Error, number>({
         mutationFn: async (delId) => KnowledgeService.delete(delId),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["knowledges"] });
+            queryClient.invalidateQueries({ queryKey: ["Knowledge"] });
             onToast?.("Knowledge deleted successfully", "success");
         },
         onError: () => {

@@ -30,7 +30,7 @@ export function useSkillManager(
     // Prefetch multiple pages
     const prefetchQueries = useQueries({
         queries: Array.from({ length: initialPrefetchPages }, (_, i) => ({
-            queryKey: ["skills", search, i + 1, perPage],
+            queryKey: ["skill", search, i + 1, perPage],
             queryFn: () => fetchPage(i, perPage),
             staleTime: 5 * 60 * 1000,
             enabled: true,
@@ -39,7 +39,7 @@ export function useSkillManager(
 
     // Load the current page if it's not prefetched
     const currentPageQuery = useQuery<SkillPageResult, Error>({
-        queryKey: ["skills", search, page, perPage],
+        queryKey: ["skill", search, page, perPage],
         queryFn: () => SkillService.getAll(search, page, perPage),
         enabled: page > initialPrefetchPages,
         staleTime: 5 * 60 * 1000,
@@ -74,7 +74,7 @@ export function useSkillManager(
     const createSkill = useMutation<Skill, Error, CreateSkillDto>({
         mutationFn: (dto) => SkillService.create(dto),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["skills"] });
+            queryClient.invalidateQueries({ queryKey: ["skill"] });
             onToast?.("Skill created successfully", "success");
         },
         onError: (error) => {
@@ -85,7 +85,7 @@ export function useSkillManager(
     const updateSkill = useMutation<Skill, Error, { id: number; data: UpdateSkillDto }>({
         mutationFn: ({ id, data }) => SkillService.update(id, data),
         onSuccess: (updated) => {
-            queryClient.invalidateQueries({ queryKey: ["skills"] });
+            queryClient.invalidateQueries({ queryKey: ["skill"] });
             queryClient.invalidateQueries({ queryKey: ["skill", updated.id] });
             onToast?.("Skill updated successfully", "success");
         },
@@ -97,7 +97,7 @@ export function useSkillManager(
     const deleteSkill = useMutation<void, Error, number>({
         mutationFn: (delId) => SkillService.delete(delId),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["skills"] });
+            queryClient.invalidateQueries({ queryKey: ["skill"] });
             onToast?.("Skill deleted successfully", "success");
         },
         onError: (error) => {

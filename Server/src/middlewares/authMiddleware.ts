@@ -4,9 +4,6 @@ import { verifyToken } from "@Utils/tokenUtils";
 
 const prisma = new PrismaClient();
 
-/**
- * ขยาย Request เพื่อเก็บ user หลัง authenticate
- */
 export interface AuthenticatedRequest extends Request {
   user?: {
     userId: string;
@@ -21,6 +18,7 @@ export interface AuthenticatedRequest extends Request {
  */
 export const authenticate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
+    // 🔹 ตรวจสอบ header และ token
     const authHeader = req.headers.authorization;
     const token = authHeader?.startsWith("Bearer ") ? authHeader.split(" ")[1] : req.cookies?.token;
 
@@ -29,8 +27,17 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
       return;
     }
 
-    const payload = verifyToken(token);
+    // 🔹 ตรวจสอบ payload
+    let payload;
+    try {
+      payload = verifyToken(token);
+    } catch (err) {
+      console.error("Token verification failed:", err);
+      res.status(401).json({ message: "Unauthorized: Invalid token" });
+      return;
+    }
 
+    // 🔹 ดึง user จากฐานข้อมูล
     const user = await prisma.user.findUnique({
       where: { id: String(payload.userId) },
       include: {
@@ -57,7 +64,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
       return;
     }
 
-    // สร้าง permission key ในรูปแบบ resource:action
+    // สร้าง permission key
     const permissions = user.userRoles.flatMap((ur) => ur.role?.rolePermissions?.map((rp) => `${rp.permission.asset.tableName}:${rp.permission.operation.name}`) || []);
 
     const role = user.userRoles[0]?.role?.name || null;
@@ -89,6 +96,9 @@ export const authorize = (resource: string, action: string) => {
       res.status(401).json({ message: "Unauthorized" });
       return;
     }
+
+    // ถ้าเป็น admin ให้ผ่านเลย
+    if (user.role?.toLowerCase() === "admin") return next();
 
     if (!user.permissions.includes(required)) {
       res.status(403).json({ message: "Forbidden: insufficient permissions" });
@@ -150,6 +160,64 @@ export function authorizePermission(requiredPermissions: string | string[]) {
     next();
   };
 }
+
+/**
+ * Middleware ตรวจสิทธิ์ object-level
+ * resource = tableName ของ asset
+ * action = operation name
+ */
+export const authorizeInstance = (resource: string, action: string) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    const user = (req as AuthenticatedRequest).user;
+    if (!user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // 🔹 Bypass admin
+    if (user.role?.toLowerCase() === "admin") {
+      return next();
+    }
+
+    try {
+      // หา instance ของ user จาก UserAssetInstance
+      const userAssetInstance = await prisma.userAssetInstance.findFirst({
+        where: {
+          userId: user.userId,
+          assetInstance: {
+            asset: { tableName: resource },
+          },
+        },
+        include: {
+          assetInstance: {
+            include: { asset: true },
+          },
+        },
+      });
+
+      if (!userAssetInstance) {
+        return res.status(404).json({ message: "No accessible asset instance found for this user" });
+      }
+
+      const instance = userAssetInstance.assetInstance;
+
+      // สร้าง permission key
+      const permissionKey = `${instance.asset.tableName}:${action}`;
+
+      // เช็ค user permission
+      if (!user.permissions.includes(permissionKey)) {
+        return res.status(403).json({ message: "Forbidden: insufficient permission for this object" });
+      }
+
+      // attach instance ให้ req ใช้ต่อได้
+      (req as any).assetInstance = instance;
+
+      next();
+    } catch (error) {
+      console.error("authorizeInstance error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  };
+};
 
 /**
  * ========================

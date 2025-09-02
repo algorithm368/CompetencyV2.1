@@ -37,6 +37,18 @@ async function main() {
     { tableName: "Sector", description: "สาขาวิชาชีพ" },
     { tableName: "UnitSector", description: "ความสัมพันธ์สาขาวิชาชีพกับหน่วย" },
     { tableName: "TpqiSummary", description: "สรุปผลการประเมินผู้ใช้ TPQI" },
+
+    // ===== RBAC =====
+    { tableName: "User", description: "ข้อมูลผู้ใช้" },
+    { tableName: "Role", description: "ข้อมูล Role" },
+    { tableName: "UserRole", description: "ความสัมพันธ์ผู้ใช้กับ Role" },
+    { tableName: "Operation", description: "Operation สำหรับ Permission" },
+    { tableName: "Asset", description: "ข้อมูล Asset" },
+    { tableName: "AssetInstance", description: "Instance ของ Asset" },
+    { tableName: "UserAssetInstance", description: "ความสัมพันธ์ผู้ใช้กับ AssetInstance" },
+    { tableName: "Permission", description: "Permission CRUD" },
+    { tableName: "RolePermission", description: "ความสัมพันธ์ Role กับ Permission" },
+    { tableName: "Log", description: "Log ของระบบ" },
   ];
 
   // สร้าง Operation
@@ -67,7 +79,7 @@ async function main() {
     }
   }
 
-  console.log("Seeded SFIA and TPQI assets, operations, and permissions.");
+  console.log("✅ Seeded SFIA, TPQI, and RBAC assets with operations and permissions.");
 }
 
 main()

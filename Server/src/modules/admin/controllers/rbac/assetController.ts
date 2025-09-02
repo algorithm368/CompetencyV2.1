@@ -15,7 +15,7 @@ function AssetView(asset: Asset) {
     id: asset.id,
     tableName: asset.tableName,
     description: asset.description,
-    updatedAt: asset.updatedAt.toISOString(), // แปลงเป็น string
+    updatedAt: asset.updatedAt.toISOString(),
   };
 }
 

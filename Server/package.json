@@ -20,7 +20,6 @@
     "prisma:migrate": "prisma migrate deploy",
     "prisma:push": "prisma db push",
     "prisma:studio": "prisma studio",
-    "seed": "ts-node src/db/seed.ts",
     "seed-assets": "ts-node src/db/seed-assets.ts"
   },
   "keywords": [],

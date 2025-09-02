@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { DashboardController } from "@Admin/controllers/dashboardController";
-import rbacRoutes from "../../admin/routes/rbacRoutes";
+import rbacRoutes from "./rbac/rbacRoutes";
 import sfiaRoutes from "./sfia/index";
 import tpqiRoutes from "./tpqi/index";
 

@@ -1,4 +1,4 @@
-import { AssetInstanceRepository } from "@Competency/repositories/RoleRepository";
+import { AssetInstanceRepository } from "@/modules/admin/repositories/RoleRepository";
 import type { AssetInstance } from "@prisma/client_competency";
 import { BaseService } from "@Utils/BaseService";
 

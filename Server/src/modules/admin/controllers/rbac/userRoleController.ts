@@ -8,11 +8,11 @@ interface AuthenticatedRequest extends Request {
   user?: { userId?: string };
 }
 
-// แปลง UserRole entity สำหรับ response
-function UserRoleView(ur: UserRole & { role?: any }) {
+function UserRoleView(ur: UserRole & { role?: any; user?: { email?: string } }) {
   return {
     id: ur.id,
     userId: ur.userId,
+    userEmail: ur.user?.email,
     roleId: ur.roleId,
     assignedAt: ur.assignedAt,
     role: ur.role
@@ -25,7 +25,7 @@ function UserRoleView(ur: UserRole & { role?: any }) {
   };
 }
 
-function UserRoleListView(items: (UserRole & { role?: any })[]) {
+function UserRoleListView(items: (UserRole & { role?: any; user?: { email?: string } })[]) {
   return items.map(UserRoleView);
 }
 
@@ -74,6 +74,24 @@ export class UserRoleController {
 
       const roles = await service.getRolesForUser(userId);
       return res.status(200).json(UserRoleListView(roles));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getAll(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { search, page, perPage } = req.query;
+
+      const pageNumber = page ? parseInt(page as string, 10) : undefined;
+      const perPageNumber = perPage ? parseInt(perPage as string, 10) : undefined;
+
+      const result = await service.getAll(search as string | undefined, pageNumber, perPageNumber);
+
+      return res.status(200).json({
+        data: UserRoleListView(result.data),
+        total: result.total,
+      });
     } catch (error) {
       next(error);
     }

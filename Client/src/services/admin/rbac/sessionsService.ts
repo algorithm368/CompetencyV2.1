@@ -1,8 +1,18 @@
 import { AxiosResponse } from "axios";
 import api from "@Services/api";
-import { Session } from "@Types/admin/rbac/sessionTypes";
+import { Session, SessionPageResult } from "@Types/admin/rbac/sessionTypes";
 
 export const SessionsService = {
+  getAll: async (search?: string, page?: number, perPage?: number): Promise<SessionPageResult> => {
+    const params = new URLSearchParams();
+    if (page !== undefined) params.append("page", String(page));
+    if (perPage !== undefined) params.append("perPage", String(perPage));
+    if (search) params.append("search", search);
+
+    const res: AxiosResponse<SessionPageResult> = await api.get("/admin/rbac/sessions", { params });
+    return res.data;
+  },
+
   createSession: async (payload: Session): Promise<Session> => {
     const res: AxiosResponse<Session> = await api.post("/admin/rbac/sessions", payload);
     return res.data;

@@ -1,4 +1,4 @@
-import { Role, Permission, RolePermission, UserRole, Asset, AssetInstance, Log, Operation, Session, User } from "@prisma/client_competency";
+import { Role, Permission, RolePermission, UserRole, Asset, AssetInstance, Log, Operation, Session, User, UserAssetInstance } from "@prisma/client_competency";
 import { DatabaseManagement } from "@Utils/databaseUtils";
 import { BaseRepository } from "@Utils/BaseRepository";
 import { COMPETENCY } from "@Database/dbManagers";
@@ -59,6 +59,12 @@ export class SessionRepository extends BaseRepository<Session, "id"> {
 
 export class UserRepository extends BaseRepository<User, "id"> {
   constructor(manager: DatabaseManagement<any> = COMPETENCY.user, pkField: "id" = "id") {
+    super(manager, pkField);
+  }
+}
+
+export class UserAssetInstanceRepository extends BaseRepository<UserAssetInstance, "id"> {
+  constructor(manager: DatabaseManagement<any> = COMPETENCY.userAssetInstance, pkField: "id" = "id") {
     super(manager, pkField);
   }
 }

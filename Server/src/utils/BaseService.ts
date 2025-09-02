@@ -1,7 +1,14 @@
 export class BaseService<T extends Record<string, any>, K extends keyof T> {
   constructor(protected readonly repo: any, protected readonly searchFields: string[], private readonly pkField: keyof T, protected readonly includes?: Record<string, boolean>) {}
 
-  async getAll(search?: string, page?: number, perPage?: number): Promise<{ data: T[]; total: number }> {
+  /**
+   * Get all records with optional search and pagination.
+   * @param search   Search string
+   * @param page     Page number (1-based)
+   * @param perPage  Items per page
+   * @param txClient Optional transactional client
+   */
+  async getAll(search?: string, page?: number, perPage?: number, txClient?: any): Promise<{ data: T[]; total: number }> {
     const where: any = {};
 
     if (search && search.trim()) {
@@ -21,36 +28,44 @@ export class BaseService<T extends Record<string, any>, K extends keyof T> {
     };
 
     if (page !== undefined && perPage !== undefined && !isNaN(page) && !isNaN(perPage)) {
-      const data = await this.repo.findMany({
-        ...commonQuery,
-        skip: (page - 1) * perPage,
-        take: perPage,
-      });
+      const data = await this.repo.findMany({ ...commonQuery, skip: (page - 1) * perPage, take: perPage }, txClient);
 
-      const total = await this.repo.manager.count({ where });
+      const total = await this.repo.manager.count({ where }, txClient);
 
       return { data, total };
     }
 
-    const data = await this.repo.findMany(commonQuery);
+    const data = await this.repo.findMany(commonQuery, txClient);
     const total = data.length;
 
     return { data, total };
   }
 
-  getById(id: T[typeof this.pkField]): Promise<T | null> {
-    return this.repo.findById(id);
+  /**
+   * Get record by primary key.
+   */
+  getById(id: T[typeof this.pkField], txClient?: any): Promise<T | null> {
+    return this.repo.findById(id, txClient);
   }
 
-  create(data: Omit<T, typeof this.pkField>, actor: string): Promise<T> {
-    return this.repo.create(data, actor);
+  /**
+   * Create a new record.
+   */
+  create(data: Omit<T, typeof this.pkField>, actor: string, txClient?: any): Promise<T> {
+    return this.repo.create(data, actor, undefined, txClient);
   }
 
-  update(id: T[typeof this.pkField], updates: Partial<Omit<T, typeof this.pkField>>, actor: string): Promise<T> {
-    return this.repo.update(id, updates, actor);
+  /**
+   * Update a record by primary key.
+   */
+  update(id: T[typeof this.pkField], updates: Partial<Omit<T, typeof this.pkField>>, actor: string, txClient?: any): Promise<T> {
+    return this.repo.update(id, updates, actor, undefined, txClient);
   }
 
-  delete(id: T[typeof this.pkField], actor: string): Promise<T> {
-    return this.repo.delete(id, actor);
+  /**
+   * Delete a record by primary key.
+   */
+  delete(id: T[typeof this.pkField], actor: string, txClient?: any): Promise<T> {
+    return this.repo.delete(id, actor, undefined, txClient);
   }
 }

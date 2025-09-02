@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useReactTable, getCoreRowModel, flexRender, ColumnDef } from "@tanstack/react-table";
 import { FiChevronLeft, FiChevronRight, FiChevronsLeft, FiChevronsRight, FiAlertTriangle, FiRefreshCw } from "react-icons/fi";
 import { Select } from "@Components/Common/ExportComponent";
@@ -19,16 +19,61 @@ function DataTable<T extends object>({ fetchPage, columns, pageSizes = [5, 10, 2
   const [pageSize, setPageSize] = useState(initialPageSize);
   const [pageIndex, setPageIndex] = useState(0);
   const [cache, setCache] = useState<Record<number, T[]>>({});
-  const [loadingPages, setLoadingPages] = useState<Set<number>>(new Set());
   const [errorPages, setErrorPages] = useState<Record<number, string>>({});
   const [totalRows, setTotalRows] = useState(0);
 
+  const loadingPagesRef = useRef<Set<number>>(new Set());
+
+  // Reset cache on trigger
   useEffect(() => {
     setCache({});
     setPageIndex(0);
+    loadingPagesRef.current.clear();
   }, [resetTrigger]);
 
   const totalPages = Math.max(Math.ceil(totalRows / pageSize), 1);
+
+  // Sliding window prefetch
+  const loadPagesSlidingWindow = useCallback(
+    async (startPage: number) => {
+      const pagesToLoad: number[] = [];
+      for (let i = 0; i < initialPrefetchPages; i++) {
+        const idx = startPage + i;
+        if (!loadingPagesRef.current.has(idx) && !cache[idx] && idx < totalPages) pagesToLoad.push(idx);
+      }
+      if (pagesToLoad.length === 0) return;
+
+      pagesToLoad.forEach((idx) => loadingPagesRef.current.add(idx));
+
+      try {
+        for (const idx of pagesToLoad) {
+          const result = await fetchPage(idx, pageSize);
+          setCache((prev) => ({ ...prev, [idx]: result.data }));
+          setTotalRows(result.total);
+          setErrorPages((prev) => {
+            const copy = { ...prev };
+            delete copy[idx];
+            return copy;
+          });
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Error loading data";
+        setErrorPages((prev) => {
+          const copy = { ...prev };
+          pagesToLoad.forEach((idx) => (copy[idx] = message));
+          return copy;
+        });
+      } finally {
+        pagesToLoad.forEach((idx) => loadingPagesRef.current.delete(idx));
+      }
+    },
+    [fetchPage, pageSize, initialPrefetchPages, cache, totalPages]
+  );
+
+  // Prefetch initial pages
+  useEffect(() => {
+    loadPagesSlidingWindow(0);
+  }, [loadPagesSlidingWindow, resetTrigger]);
 
   const table = useReactTable({
     data: cache[pageIndex] ?? [],
@@ -42,50 +87,17 @@ function DataTable<T extends object>({ fetchPage, columns, pageSizes = [5, 10, 2
       if (next.pageIndex !== pageIndex) {
         setPageIndex(next.pageIndex);
         onPageChange?.(next.pageIndex);
-        if (!cache[next.pageIndex] && !loadingPages.has(next.pageIndex)) loadPage(next.pageIndex);
+        loadPagesSlidingWindow(next.pageIndex); // sliding window
       }
-      if (next.pageSize !== pageSize) setPageSize(next.pageSize);
+      if (next.pageSize !== pageSize) {
+        setPageSize(next.pageSize);
+        setCache({});
+        setPageIndex(0);
+        loadPagesSlidingWindow(0);
+      }
     },
   });
 
-  const loadPage = useCallback(
-    async (idx: number) => {
-      setLoadingPages((prev) => new Set(prev).add(idx));
-      try {
-        const result = await fetchPage(idx, pageSize);
-        setCache((prev) => ({ ...prev, [idx]: result.data }));
-        setTotalRows(result.total);
-        setErrorPages((prev) => {
-          const copy = { ...prev };
-          delete copy[idx];
-          return copy;
-        });
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Error loading data";
-        setErrorPages((prev) => ({ ...prev, [idx]: message }));
-      } finally {
-        setLoadingPages((prev) => {
-          const copy = new Set(prev);
-          copy.delete(idx);
-          return copy;
-        });
-      }
-    },
-    [fetchPage, pageSize]
-  );
-
-  useEffect(() => {
-    const pagesToLoad = [];
-    for (let i = 0; i < initialPrefetchPages && i < totalPages; i++) {
-      if (!cache[i] && !loadingPages.has(i)) {
-        pagesToLoad.push(i);
-      }
-    }
-    pagesToLoad.forEach(loadPage);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialPrefetchPages, totalPages]);
-
-  const currentData = cache[pageIndex] ?? [];
   const startRow = pageIndex * pageSize + 1;
   const endRow = Math.min((pageIndex + 1) * pageSize, totalRows);
 
@@ -136,7 +148,7 @@ function DataTable<T extends object>({ fetchPage, columns, pageSizes = [5, 10, 2
             ))}
           </thead>
           <tbody className="bg-white divide-y divide-gray-100">
-            {loadingPages.has(pageIndex) ? (
+            {loadingPagesRef.current.has(pageIndex) ? (
               Array.from({ length: pageSize }).map((_, rowIdx) => (
                 <tr key={`skeleton-${rowIdx}`} className={rowIdx % 2 === 0 ? "bg-white" : "bg-gray-25"}>
                   {columns.map((_, colIdx) => (
@@ -152,14 +164,14 @@ function DataTable<T extends object>({ fetchPage, columns, pageSizes = [5, 10, 2
                   <div className="flex flex-col items-center space-y-4">
                     <FiAlertTriangle className="w-12 h-12 text-red-500" />
                     <p className="text-lg font-semibold text-red-600">{errorPages[pageIndex]}</p>
-                    <button onClick={() => loadPage(pageIndex)} className="mt-2 inline-flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-3xl hover:bg-red-700">
+                    <button onClick={() => loadPagesSlidingWindow(pageIndex)} className="mt-2 inline-flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-3xl hover:bg-red-700">
                       <FiRefreshCw className="w-4 h-4" />
                       <span>Retry</span>
                     </button>
                   </div>
                 </td>
               </tr>
-            ) : currentData.length === 0 ? (
+            ) : table.getRowModel().rows.length === 0 ? (
               <tr>
                 <td colSpan={columns.length} className="px-6 py-12 text-center">
                   <div className="flex flex-col items-center space-y-3 bg-gray-50 p-6 rounded-xl border border-dashed border-gray-200">
@@ -170,15 +182,28 @@ function DataTable<T extends object>({ fetchPage, columns, pageSizes = [5, 10, 2
                 </td>
               </tr>
             ) : (
-              table.getRowModel().rows.map((row, idx) => (
-                <tr key={row.id} className={`transition-colors duration-150 hover:bg-gray-50 ${idx % 2 === 0 ? "bg-white" : "bg-gray-25"}`}>
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 overflow-hidden truncate max-w-xs">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
+              <>
+                {table.getRowModel().rows.map((row, idx) => (
+                  <tr key={row.id} className={`transition-colors duration-150 hover:bg-gray-50 ${idx % 2 === 0 ? "bg-white" : "bg-gray-25"}`}>
+                    {row.getVisibleCells().map((cell) => (
+                      <td key={cell.id} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 overflow-hidden truncate max-w-xs">
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+
+                {table.getRowModel().rows.length < pageSize &&
+                  Array.from({ length: pageSize - table.getRowModel().rows.length }).map((_, idx) => (
+                    <tr key={`empty-${idx}`} className={(table.getRowModel().rows.length + idx) % 2 === 0 ? "bg-white" : "bg-gray-25"}>
+                      {columns.map((_, colIdx) => (
+                        <td key={colIdx} className="px-6 py-4">
+                          &nbsp;
+                        </td>
+                      ))}
+                    </tr>
                   ))}
-                </tr>
-              ))
+              </>
             )}
           </tbody>
         </table>
@@ -195,6 +220,7 @@ function DataTable<T extends object>({ fetchPage, columns, pageSizes = [5, 10, 2
                   setPageSize(Number(val));
                   setCache({});
                   setPageIndex(0);
+                  loadPagesSlidingWindow(0);
                 }}
                 options={pageSizes.map((s) => ({ label: `${s} rows`, value: s }))}
                 className="w-30 px-3 py-1.5 text-sm bg-gray-50 text-gray-600"

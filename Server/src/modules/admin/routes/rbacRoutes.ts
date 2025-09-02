@@ -8,7 +8,8 @@ import { RoleController } from "@/modules/admin/controllers/rbac/roleController"
 import { RolePermissionController } from "@/modules/admin/controllers/rbac/rolePermissionController";
 import { SessionController } from "@/modules/admin/controllers/rbac/sessionController";
 import { UserController } from "@/modules/admin/controllers/rbac/userController";
-import { UserRoleController } from "@/modules/admin/controllers/rbac/userRoleController ";
+import { UserRoleController } from "@/modules/admin/controllers/rbac/userRoleController";
+import { UserAssetInstanceController } from "@/modules/admin/controllers/rbac/userAssetInstanceController";
 
 export const rbacRoutes = express.Router();
 
@@ -19,12 +20,13 @@ rbacRoutes.post("/asset-instances", AssetInstanceController.createInstance);
 rbacRoutes.delete("/asset-instances/:id", AssetInstanceController.deleteInstanceById);
 rbacRoutes.delete("/asset-instances", AssetInstanceController.deleteInstance);
 rbacRoutes.get("/asset-instances/asset/:assetId", AssetInstanceController.getInstancesByAsset);
+rbacRoutes.get("/asset-instances", AssetInstanceController.getAll);
 rbacRoutes.get("/asset-instances/:id", AssetInstanceController.getInstanceById);
 rbacRoutes.put("/asset-instances/:id", AssetInstanceController.updateInstanceRecord);
 
 // --- Asset routes ---
 rbacRoutes.post("/assets", AssetController.createAsset);
-rbacRoutes.get("/assets/name/:tableName", AssetController.getAssetByName);
+rbacRoutes.get("/assets", AssetController.getAll);
 rbacRoutes.put("/assets/:id", AssetController.updateAsset);
 rbacRoutes.delete("/assets/:id", AssetController.deleteAsset);
 
@@ -61,6 +63,7 @@ rbacRoutes.get("/role-permissions/role/:roleId", RolePermissionController.getPer
 
 // --- Session routes ---
 rbacRoutes.post("/sessions", SessionController.createSession);
+rbacRoutes.get("/sessions", SessionController.getAll);
 rbacRoutes.get("/sessions/:id", SessionController.getSessionById);
 rbacRoutes.get("/sessions/by-access-token", SessionController.getSessionByAccessToken);
 rbacRoutes.get("/sessions/by-refresh-token", SessionController.getSessionByRefreshToken);
@@ -79,5 +82,12 @@ rbacRoutes.delete("/users/:id", UserController.deleteUser);
 rbacRoutes.post("/user-roles", UserRoleController.assignRole);
 rbacRoutes.delete("/user-roles", UserRoleController.revokeRole);
 rbacRoutes.get("/user-roles/user/:userId", UserRoleController.getRolesByUser);
+rbacRoutes.get("/user-roles", UserRoleController.getAll);
+
+// --- UserAssetInstance routes ---
+rbacRoutes.post("/user-asset-instances", UserAssetInstanceController.assign);
+rbacRoutes.delete("/user-asset-instances", UserAssetInstanceController.revoke);
+rbacRoutes.get("/user-asset-instances/user/:userId", UserAssetInstanceController.getForUser);
+rbacRoutes.get("/user-asset-instances", UserAssetInstanceController.getAll);
 
 export default rbacRoutes;

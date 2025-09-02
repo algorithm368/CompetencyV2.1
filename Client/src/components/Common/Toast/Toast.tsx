@@ -54,7 +54,7 @@ export default function Toast({ message, type = "info", duration = 3000, onClose
         ${bgColors[type]}
         transition-opacity duration-300
         ${visible ? "opacity-100" : "opacity-0 pointer-events-none"}
-        z-50
+        z-1000
       `}
     >
       {icons[type]}

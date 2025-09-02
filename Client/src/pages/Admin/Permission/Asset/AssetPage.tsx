@@ -2,32 +2,30 @@ import React, { useState, useMemo, useEffect } from "react";
 import { FiPlus, FiSearch, FiSettings } from "react-icons/fi";
 import { RowActions, Button, Input, Toast, DataTable } from "@Components/Common/ExportComponent";
 import { useAssetManager } from "@Hooks/admin/rbac/useAssetManager";
-import { Asset, CreateAssetDto, UpdateAssetDto } from "@Types/competency/rbacTypes";
-import { AddEditAssetModal, DeleteAssetModal } from "./AssetModal";
+import { Asset, CreateAssetDto, UpdateAssetDto } from "@Types/admin/rbac/assetTypes";
+import { AddEditAssetModal, DeleteAssetModal } from "./AddEditAssetModal";
+import { AdminLayout } from "@Layouts/AdminLayout";
 
 export default function AssetPage() {
-  const [searchText, setSearchText] = useState<string>("");
-  const [debouncedSearchText, setDebouncedSearchText] = useState<string>("");
+  const [searchText, setSearchText] = useState("");
+  const [debouncedSearchText, setDebouncedSearchText] = useState("");
   const [modalType, setModalType] = useState<"add" | "edit" | "delete" | null>(null);
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [page, setPage] = useState(1);
   const perPage = 10;
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
 
-  // Debounce search text
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedSearchText(searchText), 500);
     return () => clearTimeout(handler);
   }, [searchText]);
 
-  // Reset page to 1 when search text changes
   useEffect(() => setPage(1), [debouncedSearchText]);
 
   const handleToast = (message: string, type: "success" | "error" | "info" = "info") => {
     setToast({ message, type });
   };
 
-  // Use useAssetManager hook
   const { fetchPage, assetsQuery, createAsset, updateAsset, deleteAsset } = useAssetManager({ search: debouncedSearchText, page, perPage }, handleToast);
 
   const openAddModal = () => {
@@ -35,12 +33,10 @@ export default function AssetPage() {
     setModalType("add");
   };
   const openEditModal = (asset: Asset) => {
-    // Type as Asset
     setSelectedAsset(asset);
     setModalType("edit");
   };
   const openDeleteModal = (asset: Asset) => {
-    // Type as Asset
     setSelectedAsset(asset);
     setModalType("delete");
   };
@@ -49,8 +45,8 @@ export default function AssetPage() {
     setSelectedAsset(null);
   };
 
-  const confirmAdd = (name: string, description?: string) => {
-    const dto: CreateAssetDto = { name, description: description || undefined }; // Use CreateAssetDto
+  const confirmAdd = (tableName: string, description?: string) => {
+    const dto: CreateAssetDto = { tableName, description: description || undefined };
     createAsset.mutate(dto, {
       onSuccess: () => {
         handleToast("Asset created successfully!", "success");
@@ -60,9 +56,9 @@ export default function AssetPage() {
     });
   };
 
-  const confirmEdit = (name: string, description?: string) => {
+  const confirmEdit = (tableName: string, description?: string) => {
     if (!selectedAsset) return;
-    const dto: UpdateAssetDto = { name, description: description || undefined }; // Use UpdateAssetDto
+    const dto: UpdateAssetDto = { tableName, description: description || undefined };
     updateAsset.mutate(
       { id: selectedAsset.id, data: dto },
       {
@@ -89,7 +85,7 @@ export default function AssetPage() {
   const columns = useMemo(
     () => [
       { accessorKey: "id", header: "ID" },
-      { accessorKey: "tableName", header: "Asset Name" },
+      { accessorKey: "tableName", header: "Table Name" },
       { accessorKey: "description", header: "Description" },
       {
         id: "actions",
@@ -109,7 +105,7 @@ export default function AssetPage() {
   );
 
   return (
-    <>
+    <AdminLayout>
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 z-10">
         <h1 className="text-3xl font-Poppins mb-2 sm:mb-0">Assets</h1>
         <div className="flex flex-col items-end space-y-2">
@@ -117,7 +113,7 @@ export default function AssetPage() {
             <FiPlus className="mr-2" /> Add Asset
           </Button>
           <div className="relative">
-            <Input type="text" placeholder="Search assets..." className="pl-3 pr-30 py-1 text-sm" value={searchText} onChange={(e) => setSearchText(e.target.value)} /> {/* Changed placeholder */}
+            <Input type="text" placeholder="Search assets..." className="pl-3 pr-30 py-1 text-sm" value={searchText} onChange={(e) => setSearchText(e.target.value)} />
             <FiSearch className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400" />
           </div>
         </div>
@@ -136,15 +132,17 @@ export default function AssetPage() {
       <AddEditAssetModal
         isOpen={modalType === "add" || modalType === "edit"}
         mode={modalType === "edit" ? "edit" : "add"}
-        initialAsset={selectedAsset}
+        initialTableName={selectedAsset?.tableName || ""}
+        initialDescription={selectedAsset?.description || ""}
+        initialAssetId={selectedAsset?.id ?? null}
         onClose={closeModal}
-        onConfirm={(name, description) => (modalType === "add" ? confirmAdd(name, description) : confirmEdit(name, description))}
+        onConfirm={(tableName, description) => (modalType === "add" ? confirmAdd(tableName, description) : confirmEdit(tableName, description))}
         isLoading={createAsset.status === "pending" || updateAsset.status === "pending"}
       />
 
-      <DeleteAssetModal isOpen={modalType === "delete"} assetText={selectedAsset?.name ?? undefined} onClose={closeModal} onConfirm={confirmDelete} isLoading={deleteAsset.status === "pending"} />
+      <DeleteAssetModal isOpen={modalType === "delete"} assetText={selectedAsset?.tableName ?? undefined} onClose={closeModal} onConfirm={confirmDelete} isLoading={deleteAsset.status === "pending"} />
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-    </>
+    </AdminLayout>
   );
 }

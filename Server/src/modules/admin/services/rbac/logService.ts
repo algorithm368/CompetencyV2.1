@@ -1,4 +1,4 @@
-import { LogRepository } from "@Competency/repositories/RoleRepository";
+import { LogRepository } from "@/modules/admin/repositories/RoleRepository";
 import type { Log, LogAction } from "@prisma/client_competency";
 import { BaseService } from "@Utils/BaseService";
 

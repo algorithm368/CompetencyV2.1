@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FiMoreVertical, FiEdit, FiTrash2 } from "react-icons/fi";
 import { createPortal } from "react-dom";
-
 interface RowActionsProps {
-  onEdit: () => void;
-  onDelete: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
 const RowActions: React.FC<RowActionsProps> = ({ onEdit, onDelete }) => {
@@ -33,42 +32,41 @@ const RowActions: React.FC<RowActionsProps> = ({ onEdit, onDelete }) => {
     }
   }, [open]);
 
+  if (!onEdit && !onDelete) return null;
+
   return (
     <>
-      <button
-        ref={buttonRef}
-        className="p-1 rounded hover:bg-gray-100"
-        onClick={() => setOpen((prev) => !prev)}
-      >
+      <button ref={buttonRef} className="p-1 rounded hover:bg-gray-100 hover:rounded" onClick={() => setOpen((prev) => !prev)}>
         <FiMoreVertical />
       </button>
 
       {open &&
         createPortal(
-          <div
-            id="row-actions-dropdown"
-            className="absolute bg-white border rounded-xl shadow-ml z-50 w-28"
-            style={{ top: coords.top, left: coords.left }}
-          >
-            <button
-              className="w-full px-4 py-2 flex items-center text-sm hover:bg-gray-100"
-              onClick={() => {
-                onEdit();
-                setOpen(false);
-              }}
-            >
-              <FiEdit className="mr-2" /> Edit
-            </button>
-            <button
-              className="w-full px-4 py-2 flex items-center text-sm hover:bg-gray-100"
-              onClick={() => {
-                onDelete();
-                setOpen(false);
-              }}
-            >
-              <FiTrash2 className="mr-2" /> Delete
-            </button>
+          <div id="row-actions-dropdown" className="absolute bg-white border rounded-xl shadow-ml z-50 w-28" style={{ top: coords.top, left: coords.left }}>
+            {onEdit && (
+              <button
+                className="w-full px-4 py-2 flex items-center text-sm hover:bg-gray-100 rounded-t-xl"
+                onClick={() => {
+                  onEdit();
+                  setOpen(false);
+                }}
+              >
+                <FiEdit className="mr-2" /> Edit
+              </button>
+            )}
+            {onDelete && (
+              <button
+                className={`w-full px-4 py-2 flex items-center text-sm hover:bg-gray-100 ${onEdit ? "rounded-b-xl" : "rounded-t-xl rounded-b-xl"}`}
+                onClick={() => {
+                  onDelete();
+                  setOpen(false);
+                }}
+              >
+                <FiTrash2 className="mr-2" /> Delete
+              </button>
+            )}
           </div>,
+
           document.body
         )}
     </>

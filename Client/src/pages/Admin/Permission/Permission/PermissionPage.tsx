@@ -1,9 +1,10 @@
-import React, { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { FiPlus, FiSearch, FiSettings } from "react-icons/fi";
 import { RowActions, Button, Input, Toast, DataTable } from "@Components/Common/ExportComponent";
 import { usePermissionManager } from "@Hooks/admin/rbac/usePermissionManager";
-import { Permission, CreatePermissionDto, UpdatePermissionDto } from "@Types/competency/rbacTypes";
+import { Permission, CreatePermissionDto, UpdatePermissionDto } from "@Types/admin/rbac/permissionTypes";
 import { AddEditPermissionModal, DeletePermissionModal } from "./PermissionModals";
+import { AdminLayout } from "@Layouts/AdminLayout";
 
 export default function PermissionPage() {
   const [searchText, setSearchText] = useState("");
@@ -25,51 +26,46 @@ export default function PermissionPage() {
     setToast({ message, type });
   };
 
-  const { fetchPage, permissionsQuery, createPermission, updatePermission, deletePermission } = usePermissionManager({ search: debouncedSearchText, page, perPage }, handleToast);
+  const { fetchPage, createPermission, updatePermission, deletePermission } = usePermissionManager({ search: debouncedSearchText, page, perPage }, handleToast);
 
   // Modal handlers
   const openAddModal = () => {
     setSelectedPermission(null);
     setModalType("add");
   };
-
   const openEditModal = (permission: Permission) => {
     setSelectedPermission(permission);
     setModalType("edit");
   };
-
   const openDeleteModal = (permission: Permission) => {
     setSelectedPermission(permission);
     setModalType("delete");
   };
-
   const closeModal = () => {
     setSelectedPermission(null);
     setModalType(null);
   };
 
-  // Confirmation handlers for CUD operations
-  const confirmAdd = (text: string, key: string) => {
-    const dto: CreatePermissionDto = { key, description: text || undefined };
+  // Confirmation handlers
+  const confirmAdd = (operationId: number, assetId: number) => {
+    const dto: CreatePermissionDto = { operationId, assetId };
     createPermission.mutate(dto, {
       onSuccess: () => {
         handleToast("Permission created successfully!", "success");
         closeModal();
-        permissionsQuery.refetch();
       },
     });
   };
 
-  const confirmEdit = (text: string, key: string) => {
+  const confirmEdit = (operationId: number, assetId: number) => {
     if (!selectedPermission) return;
-    const dto: UpdatePermissionDto = { key, description: text || undefined };
+    const dto: UpdatePermissionDto = { operationId, assetId };
     updatePermission.mutate(
       { id: selectedPermission.id, data: dto },
       {
         onSuccess: () => {
           handleToast("Permission updated successfully!", "success");
           closeModal();
-          permissionsQuery.refetch();
         },
       }
     );
@@ -81,17 +77,18 @@ export default function PermissionPage() {
       onSuccess: () => {
         handleToast("Permission deleted successfully!", "success");
         closeModal();
-        permissionsQuery.refetch();
       },
     });
   };
 
-  // Define columns for the DataTable
   const columns = useMemo(
     () => [
       { accessorKey: "id", header: "ID" },
-      { accessorKey: "key", header: "Permission Key" },
-      { accessorKey: "description", header: "Description" },
+      { accessorFn: (row: Permission) => row.operation?.name ?? "", header: "Operation" },
+      { accessorFn: (row: Permission) => row.asset?.description ?? "", header: "Asset" },
+      { accessorFn: (row: Permission) => new Date(row.createdAt).toLocaleString(), header: "Created At" },
+      { accessorFn: (row: Permission) => new Date(row.updatedAt).toLocaleString(), header: "Updated At" },
+
       {
         id: "actions",
         header: () => (
@@ -110,7 +107,7 @@ export default function PermissionPage() {
   );
 
   return (
-    <>
+    <AdminLayout>
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 z-10">
         <h1 className="text-3xl font-Poppins mb-2 sm:mb-0">Permissions</h1>
         <div className="flex flex-col items-end space-y-2">
@@ -137,23 +134,22 @@ export default function PermissionPage() {
       <AddEditPermissionModal
         isOpen={modalType === "add" || modalType === "edit"}
         mode={modalType === "edit" ? "edit" : "add"}
-        initialText={selectedPermission?.description || ""}
-        initialPermissionKey={selectedPermission?.key || ""}
-        initialPermissionId={selectedPermission?.id ?? null}
+        initialOperationId={selectedPermission?.operation?.id ?? null}
+        initialAssetId={selectedPermission?.asset?.id ?? null}
         onClose={closeModal}
-        onConfirm={(text, key) => (modalType === "add" ? confirmAdd(text, key) : confirmEdit(text, key))}
+        onConfirm={(operationId, assetId) => (modalType === "add" ? confirmAdd(operationId, assetId) : confirmEdit(operationId, assetId))}
         isLoading={createPermission.status === "pending" || updatePermission.status === "pending"}
       />
 
       <DeletePermissionModal
         isOpen={modalType === "delete"}
-        permissionText={selectedPermission?.description ?? undefined}
+        permissionText={`${selectedPermission?.operation?.name || ""} - ${selectedPermission?.asset?.description || ""}`}
         onClose={closeModal}
         onConfirm={confirmDelete}
         isLoading={deletePermission.status === "pending"}
       />
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-    </>
+    </AdminLayout>
   );
 }

@@ -11,6 +11,7 @@ export const LevelService = {
     if (search) params.append("search", search);
 
     const res = await api.get<LevelPageResult>(`${BASE_URL}?${params.toString()}`);
+
     return res.data;
   },
 

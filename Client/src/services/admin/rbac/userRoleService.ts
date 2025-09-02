@@ -1,6 +1,6 @@
 import { AxiosResponse } from "axios";
 import api from "@Services/api";
-import { UserRoleAssignmentDto, UserRole } from "@Types/admin/rbac/userRoleTypes";
+import { UserRoleAssignmentDto, UserRole, UserRoleListResponse } from "@Types/admin/rbac/userRoleTypes";
 
 export const UserRoleService = {
   assignRolesToUser: async (payload: UserRoleAssignmentDto): Promise<UserRole[]> => {
@@ -15,6 +15,14 @@ export const UserRoleService = {
 
   getUserRoles: async (userId: string): Promise<UserRole[]> => {
     const res: AxiosResponse<UserRole[]> = await api.get(`/admin/rbac/user-roles/user/${userId}`);
+    return res.data;
+  },
+
+  getAllUserRoles: async (params?: { search?: string; page?: number; perPage?: number }): Promise<UserRoleListResponse> => {
+    const res: AxiosResponse<UserRoleListResponse> = await api.get("/admin/rbac/user-roles", {
+      params,
+    });
+
     return res.data;
   },
 };

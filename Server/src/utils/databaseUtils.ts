@@ -21,19 +21,9 @@ export class DatabaseManagement<M extends Record<string, any>> {
   private modelName: string;
 
   constructor(private readonly model: M, private readonly defaultActor: string = "system", private readonly defaultLogger: Logger = new FileLogger(), private readonly hooks: Hooks<any> = {}) {
-    // Try to infer a name for logging
     this.modelName = (model as any).name ?? model.constructor?.name ?? "UnknownModel";
   }
 
-  /**
-   * Internal helper to write a log entry.
-   *
-   * @param level     Log level ("INFO" | "WARN" | "ERROR")
-   * @param action    CRUD action name ("CREATE", "UPDATE", etc.)
-   * @param data      Payload or result to include in the log
-   * @param actor     Who performed this action
-   * @param requestId Optional request identifier for correlation
-   */
   private async logEvent(level: LogEvent["level"], action: string, data: any, actor: string, requestId: string | undefined, logger: Logger) {
     await logger.log({
       timestamp: new Date().toISOString(),
@@ -47,93 +37,110 @@ export class DatabaseManagement<M extends Record<string, any>> {
   }
 
   /**
-   * Find a unique record by conditions.
-   *
-   * @param args        Arguments for model.findUnique(...)
-   * @param actor       (optional) defaults to this.defaultActor
-   * @param logger      (optional) defaults to this.defaultLogger
-   * @returns           The found record or null
+   * Find a unique record by conditions
+   * @param args Arguments for model.findUnique(...)
+   * @param actor Who performs this operation
+   * @param requestId Optional correlation ID for logging
+   * @param logger Optional logger instance
+   * @param txClient Optional transactional client
+   * @returns The found record or null
    */
-  public async findUnique<T>(args: Parameters<M["findUnique"]>[0]): Promise<T | null> {
+  public async findUnique<T>(args: Parameters<M["findUnique"]>[0], actor: string = this.defaultActor, requestId?: string, logger: Logger = this.defaultLogger, txClient?: M): Promise<T | null> {
     try {
-      return await this.model.findUnique(args);
+      const client = txClient ?? this.model;
+      return await client.findUnique(args);
     } catch (err: any) {
+      await this.logEvent("ERROR", "READ_ONE", { error: err.message }, actor, requestId, logger);
       throw new DatabaseError("READ_ONE", this.modelName, err);
     }
   }
+
   /**
-   * Find multiple records with optional filters.
-   *
-   * @param params      Arguments for model.findMany(...)
-   * @param actor       (optional) defaults to this.defaultActor
-   * @param logger      (optional) defaults to this.defaultLogger
-   * @returns            Array of records
+   * Find multiple records
+   * @param params Arguments for model.findMany(...)
+   * @param actor Who performs this operation
+   * @param requestId Optional correlation ID for logging
+   * @param logger Optional logger instance
+   * @param txClient Optional transactional client
+   * @returns Array of records
    */
-  public async findMany<T>(params: Parameters<M["findMany"]>[0] = {} as any): Promise<T[]> {
+  public async findMany<T>(params: Parameters<M["findMany"]>[0] = {} as any, actor: string = this.defaultActor, requestId?: string, logger: Logger = this.defaultLogger, txClient?: M): Promise<T[]> {
     try {
+      const client = txClient ?? this.model;
       if (params && (params as any).$scalars && ((params as any).include || (params as any).select)) {
         delete (params as any).$scalars;
       }
-
-      return await this.model.findMany(params);
+      return await client.findMany(params);
     } catch (err: any) {
+      await this.logEvent("ERROR", "READ_MANY", { error: err.message }, actor, requestId, logger);
       throw new DatabaseError("READ_MANY", this.modelName, err);
     }
   }
 
-  /** Find the first record that matches the condition */
-  public async findFirst<T>(params: Parameters<M["findFirst"]>[0] = {} as any): Promise<T | null> {
+  /**
+   * Find the first record that matches conditions
+   * @param params Arguments for model.findFirst(...)
+   * @param actor Who performs this operation
+   * @param requestId Optional correlation ID
+   * @param logger Optional logger
+   * @param txClient Optional transactional client
+   * @returns The first matching record or null
+   */
+  public async findFirst<T>(
+    params: Parameters<M["findFirst"]>[0] = {} as any,
+    actor: string = this.defaultActor,
+    requestId?: string,
+    logger: Logger = this.defaultLogger,
+    txClient?: M
+  ): Promise<T | null> {
     try {
-      const result = await (this.model as any).findFirst(params);
+      const client = txClient ?? this.model;
+      const result = await (client as any).findFirst(params);
       return result as T | null;
     } catch (err: any) {
+      await this.logEvent("ERROR", "READ_FIRST", { error: err.message }, actor, requestId, logger);
       throw new DatabaseError("READ_FIRST", this.modelName, err);
     }
   }
 
   /**
-   * Create a new record (with optional hooks).
-   *
-   * @param params       Arguments for model.create(...)
-   * @param actor        (optional) defaults to this.defaultActor
-   * @param requestId    (optional) a request‐correlation ID
-   * @param logger       (optional) defaults to this.defaultLogger
-   * @returns             The newly created record
+   * Create a new record
+   * @param params Arguments for model.create(...)
+   * @param actor Who performs this operation
+   * @param requestId Optional correlation ID
+   * @param logger Optional logger
+   * @param txClient Optional transactional client
+   * @returns The newly created record
    */
-  public async create<T>(params: Parameters<M["create"]>[0], actor: string = this.defaultActor, requestId?: string, logger: Logger = this.defaultLogger): Promise<T> {
+  public async create<T>(params: Parameters<M["create"]>[0], actor: string = this.defaultActor, requestId?: string, logger: Logger = this.defaultLogger, txClient?: M): Promise<T> {
     const ctx: HookContext<T> = { params };
     try {
-      if (this.hooks.beforeCreate) {
-        await this.hooks.beforeCreate(ctx);
-      }
-      const result = await this.model.create(params);
+      if (this.hooks.beforeCreate) await this.hooks.beforeCreate(ctx);
+      const client = txClient ?? this.model;
+      const result = await client.create(params);
       ctx.result = result;
       await this.logEvent("INFO", "CREATE", result, actor, requestId, logger);
-
-      if (this.hooks.afterCreate) {
-        await this.hooks.afterCreate(ctx);
-      }
-
+      if (this.hooks.afterCreate) await this.hooks.afterCreate(ctx);
       return result;
     } catch (err: any) {
-      console.error("[CREATE] Error:", err.message);
       await this.logEvent("ERROR", "CREATE", { error: err.message }, actor, requestId, logger);
       throw new DatabaseError("CREATE", this.modelName, err);
     }
   }
 
   /**
-   * Update an existing record.
-   *
-   * @param params       Arguments for model.update(...)
-   * @param actor        (optional) defaults to this.defaultActor
-   * @param requestId    (optional) a request‐correlation ID
-   * @param logger       (optional) defaults to this.defaultLogger
-   * @returns             The updated record
+   * Update a record
+   * @param params Arguments for model.update(...)
+   * @param actor Who performs this operation
+   * @param requestId Optional correlation ID
+   * @param logger Optional logger
+   * @param txClient Optional transactional client
+   * @returns The updated record
    */
-  public async update<T>(params: Parameters<M["update"]>[0], actor: string = this.defaultActor, requestId?: string, logger: Logger = this.defaultLogger): Promise<T> {
+  public async update<T>(params: Parameters<M["update"]>[0], actor: string = this.defaultActor, requestId?: string, logger: Logger = this.defaultLogger, txClient?: M): Promise<T> {
     try {
-      const result = await this.model.update(params);
+      const client = txClient ?? this.model;
+      const result = await client.update(params);
       await this.logEvent("INFO", "UPDATE", result, actor, requestId, logger);
       return result;
     } catch (err: any) {
@@ -143,22 +150,24 @@ export class DatabaseManagement<M extends Record<string, any>> {
   }
 
   /**
-   * Bulk update multiple records.
-   *
-   * @param params       Arguments for model.updateMany(...)
-   * @param actor        (optional) defaults to this.defaultActor
-   * @param requestId    (optional) a request‐correlation ID
-   * @param logger       (optional) defaults to this.defaultLogger
-   * @returns             The updateMany result ({ count: number })
+   * Bulk update multiple records
+   * @param params Arguments for model.updateMany(...)
+   * @param actor Who performs this operation
+   * @param requestId Optional correlation ID
+   * @param logger Optional logger
+   * @param txClient Optional transactional client
+   * @returns The result of updateMany
    */
   public async updateMany(
     params: Parameters<M["updateMany"]>[0],
     actor: string = this.defaultActor,
     requestId?: string,
-    logger: Logger = this.defaultLogger
+    logger: Logger = this.defaultLogger,
+    txClient?: M
   ): Promise<Awaited<ReturnType<M["updateMany"]>>> {
     try {
-      const result = await (this.model as any).updateMany(params);
+      const client = txClient ?? this.model;
+      const result = await (client as any).updateMany(params);
       await this.logEvent("INFO", "UPDATE_MANY", result, actor, requestId, logger);
       return result as Awaited<ReturnType<M["updateMany"]>>;
     } catch (err: any) {
@@ -168,28 +177,18 @@ export class DatabaseManagement<M extends Record<string, any>> {
   }
 
   /**
-   * Delete a single record.
-   *
-   * @param params       Arguments for model.delete(...)
-   * @param actor        (optional) defaults to this.defaultActor
-   * @param requestId    (optional) a request‐correlation ID
-   * @param logger       (optional) defaults to this.defaultLogger
-   * @returns             The deleted record
+   * Delete a record
+   * @param params Arguments for model.delete(...)
+   * @param actor Who performs this operation
+   * @param requestId Optional correlation ID
+   * @param logger Optional logger
+   * @param txClient Optional transactional client
+   * @returns The deleted record
    */
-  public async delete<T>(params: Parameters<M["delete"]>[0], actor: string = this.defaultActor, requestId?: string, logger: Logger = this.defaultLogger): Promise<T> {
+  public async delete<T>(params: Parameters<M["delete"]>[0], actor: string = this.defaultActor, requestId?: string, logger: Logger = this.defaultLogger, txClient?: M): Promise<T> {
     try {
-      const result = await this.model.delete(params);
-      await this.logEvent("INFO", "DELETE", result, actor, requestId, logger);
-      return result;
-    } catch (err: any) {
-      await this.logEvent("ERROR", "DELETE", { error: err.message }, actor, requestId, logger);
-      throw new DatabaseError("DELETE", this.modelName, err);
-    }
-  }
-
-  public async deleteByCompositeKey<T>(compositeKey: Record<string, any>, actor: string = this.defaultActor, requestId?: string, logger: Logger = this.defaultLogger): Promise<T> {
-    try {
-      const result = await this.model.delete({ where: compositeKey });
+      const client = txClient ?? this.model;
+      const result = await client.delete(params);
       await this.logEvent("INFO", "DELETE", result, actor, requestId, logger);
       return result;
     } catch (err: any) {
@@ -199,22 +198,24 @@ export class DatabaseManagement<M extends Record<string, any>> {
   }
 
   /**
-   * Delete multiple records.
-   *
-   * @param params       Arguments for model.deleteMany(...)
-   * @param actor        (optional) defaults to this.defaultActor
-   * @param requestId    (optional) a request‐correlation ID
-   * @param logger       (optional) defaults to this.defaultLogger
-   * @returns             The deleteMany result
+   * Delete multiple records
+   * @param params Arguments for model.deleteMany(...)
+   * @param actor Who performs this operation
+   * @param requestId Optional correlation ID
+   * @param logger Optional logger
+   * @param txClient Optional transactional client
+   * @returns The result of deleteMany
    */
   public async deleteMany(
     params: Parameters<M["deleteMany"]>[0],
     actor: string = this.defaultActor,
     requestId?: string,
-    logger: Logger = this.defaultLogger
+    logger: Logger = this.defaultLogger,
+    txClient?: M
   ): Promise<Awaited<ReturnType<M["deleteMany"]>>> {
     try {
-      const result = await this.model.deleteMany(params);
+      const client = txClient ?? this.model;
+      const result = await client.deleteMany(params);
       await this.logEvent("INFO", "DELETE_MANY", result, actor, requestId, logger);
       return result as Awaited<ReturnType<M["deleteMany"]>>;
     } catch (err: any) {
@@ -224,17 +225,18 @@ export class DatabaseManagement<M extends Record<string, any>> {
   }
 
   /**
-   * Upsert a record (insert or update).
-   *
-   * @param params       Arguments for model.upsert(...)
-   * @param actor        (optional) defaults to this.defaultActor
-   * @param requestId    (optional) a request‐correlation ID
-   * @param logger       (optional) defaults to this.defaultLogger
-   * @returns             The upserted record
+   * Upsert a record
+   * @param params Arguments for model.upsert(...)
+   * @param actor Who performs this operation
+   * @param requestId Optional correlation ID
+   * @param logger Optional logger
+   * @param txClient Optional transactional client
+   * @returns The upserted record
    */
-  public async upsert<T>(params: Parameters<M["upsert"]>[0], actor: string = this.defaultActor, requestId?: string, logger: Logger = this.defaultLogger): Promise<T> {
+  public async upsert<T>(params: Parameters<M["upsert"]>[0], actor: string = this.defaultActor, requestId?: string, logger: Logger = this.defaultLogger, txClient?: M): Promise<T> {
     try {
-      const result = await this.model.upsert(params);
+      const client = txClient ?? this.model;
+      const result = await client.upsert(params);
       await this.logEvent("INFO", "UPSERT", result, actor, requestId, logger);
       return result;
     } catch (err: any) {
@@ -244,28 +246,10 @@ export class DatabaseManagement<M extends Record<string, any>> {
   }
 
   /**
-   * Paginate results.
-   *
-   * @param options  { page, perPage, where?, orderBy? }
-   * @returns        An object containing `data: T[]` and `total: number`
-   */
-  public async paginate<T>(options: { page: number; perPage: number; where?: any; orderBy?: any }): Promise<{ data: T[]; total: number }> {
-    try {
-      const { page, perPage, where, orderBy } = options;
-      const skip = (page - 1) * perPage;
-      const [data, total] = await Promise.all([this.model.findMany({ where, orderBy, take: perPage, skip }), (this.model as any).count({ where })]);
-
-      return { data: data as T[], total };
-    } catch (err: any) {
-      throw new DatabaseError("PAGINATE", this.modelName, err);
-    }
-  }
-
-  /**
-   * Run multiple operations inside a transaction.
-   *
-   * @param operations  A callback that receives a transactional client
-   * @returns           The result of the transaction
+   * Run multiple operations inside a transaction
+   * @param operations A callback that receives a transactional client
+   * @param actor Who performs this operation
+   * @returns Array of results from operations
    */
   public async transaction(operations: (client: M) => Promise<any[]>, actor: string = this.defaultActor): Promise<any[]> {
     if (typeof (this.model as any).$transaction !== "function") {
@@ -283,15 +267,20 @@ export class DatabaseManagement<M extends Record<string, any>> {
   }
 
   /**
-   * Count records with optional filters.
-   *
-   * @param args     Arguments for model.count(...)
-   * @returns        Number of matching records
+   * Count records
+   * @param args Arguments for model.count(...)
+   * @param actor Who performs this operation
+   * @param requestId Optional correlation ID
+   * @param logger Optional logger
+   * @param txClient Optional transactional client
+   * @returns Number of matching records
    */
-  public async count(args: Parameters<M["count"]>[0] = {}): Promise<number> {
+  public async count(args: Parameters<M["count"]>[0] = {}, actor: string = this.defaultActor, requestId?: string, logger: Logger = this.defaultLogger, txClient?: M): Promise<number> {
     try {
-      return await (this.model as any).count(args);
+      const client = txClient ?? this.model;
+      return await (client as any).count(args);
     } catch (err: any) {
+      await this.logEvent("ERROR", "COUNT", { error: err.message }, actor, requestId, logger);
       throw new DatabaseError("COUNT", this.modelName, err);
     }
   }

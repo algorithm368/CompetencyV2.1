@@ -1,7 +1,8 @@
+import { getSessionStatus } from "@/utils/sessionStatus";
 import { UserRepository } from "@/modules/admin/repositories/RoleRepository";
 import type { User, Session } from "@prisma/client_competency";
 import { BaseService } from "@Utils/BaseService";
-const ONLINE_THRESHOLD = Number(process.env.ONLINE_THRESHOLD_SEC || 900) * 1000;
+
 export class UserService extends BaseService<User, keyof User> {
   constructor() {
     super(new UserRepository(), ["id", "email", "firstNameTH", "lastNameTH"], "id", { sessions: true });
@@ -13,25 +14,19 @@ export class UserService extends BaseService<User, keyof User> {
 
   async createUser(data: Partial<User>, actor: string = "system"): Promise<User> {
     const existing = await this.repo.findFirst({ where: { email: data.email } });
-    if (existing) {
-      throw new Error("User with this email already exists");
-    }
+    if (existing) throw new Error("User with this email already exists");
     return await this.repo.create(data, actor);
   }
 
   async updateUser(id: string, updateData: Partial<User>, actor: string = "system"): Promise<User> {
     const existing = await this.repo.findById(id);
-    if (!existing) {
-      throw new Error("User not found");
-    }
+    if (!existing) throw new Error("User not found");
     return await this.repo.update(id, updateData, actor);
   }
 
   async deleteUser(id: string, actor: string = "system"): Promise<User> {
     const existing = await this.repo.findById(id);
-    if (!existing) {
-      throw new Error("User not found");
-    }
+    if (!existing) throw new Error("User not found");
     return await this.repo.delete(id, actor);
   }
 
@@ -47,9 +42,7 @@ export class UserService extends BaseService<User, keyof User> {
       commonQuery.where.OR = this.searchFields.map((fieldPath) => {
         const parts = fieldPath.split(".");
         let nested: any = { contains: search.trim() };
-        for (let i = parts.length - 1; i >= 1; i--) {
-          nested = { [parts[i]]: nested };
-        }
+        for (let i = parts.length - 1; i >= 1; i--) nested = { [parts[i]]: nested };
         return { [parts[0]]: nested };
       });
     }
@@ -58,20 +51,15 @@ export class UserService extends BaseService<User, keyof User> {
     let total: number;
 
     if (page !== undefined && perPage !== undefined && !isNaN(page) && !isNaN(perPage)) {
-      data = await this.repo.findMany({
-        ...commonQuery,
-        skip: (page - 1) * perPage,
-        take: perPage,
-      });
+      data = await this.repo.findMany({ ...commonQuery, skip: (page - 1) * perPage, take: perPage });
       total = await this.repo.manager.count({ where: commonQuery.where });
     } else {
       data = await this.repo.findMany(commonQuery);
       total = data.length;
     }
 
-    const now = Date.now();
     const dataWithStatus: (User & { sessions?: Session[]; status: "online" | "offline" })[] = data.map((user) => {
-      const online = user.sessions?.some((s) => s.expiresAt.getTime() > now && now - s.lastActivityAt.getTime() < ONLINE_THRESHOLD);
+      const online = user.sessions?.some(getSessionStatus);
       return { ...user, status: online ? "online" : "offline" };
     });
 

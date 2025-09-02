@@ -4,6 +4,7 @@ import { RowActions, Button, Input, Toast, DataTable } from "@Components/Common/
 import { usePermissionManager } from "@Hooks/admin/rbac/usePermissionManager";
 import { Permission, CreatePermissionDto, UpdatePermissionDto } from "@Types/admin/rbac/permissionTypes";
 import { AddEditPermissionModal, DeletePermissionModal } from "./PermissionModals";
+import { AdminLayout } from "@Layouts/AdminLayout";
 
 export default function PermissionPage() {
   const [searchText, setSearchText] = useState("");
@@ -106,7 +107,7 @@ export default function PermissionPage() {
   );
 
   return (
-    <>
+    <AdminLayout>
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 z-10">
         <h1 className="text-3xl font-Poppins mb-2 sm:mb-0">Permissions</h1>
         <div className="flex flex-col items-end space-y-2">
@@ -149,6 +150,6 @@ export default function PermissionPage() {
       />
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-    </>
+    </AdminLayout>
   );
 }

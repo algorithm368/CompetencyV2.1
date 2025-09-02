@@ -3,6 +3,7 @@ import { RolesService } from "@Services/admin/rbac/rolesService";
 import { Role, RolePageResult, CreateRoleDto, UpdateRoleDto } from "@Types/competency/rbacTypes";
 
 type ToastCallback = (message: string, type?: "success" | "error" | "info") => void;
+
 export function useRoleManager(options?: { id?: number | null; search?: string; page?: number; perPage?: number; initialPrefetchPages?: number }, onToast?: ToastCallback) {
   const { id = null, search = "", page = 1, perPage = 10, initialPrefetchPages = 3 } = options || {};
   const queryClient = useQueryClient();

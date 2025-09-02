@@ -4,6 +4,7 @@ import { RowActions, Button, Input, Toast, DataTable } from "@Components/Common/
 import { useAssetManager } from "@Hooks/admin/rbac/useAssetManager";
 import { Asset, CreateAssetDto, UpdateAssetDto } from "@Types/admin/rbac/assetTypes";
 import { AddEditAssetModal, DeleteAssetModal } from "./AddEditAssetModal";
+import { AdminLayout } from "@Layouts/AdminLayout";
 
 export default function AssetPage() {
   const [searchText, setSearchText] = useState("");
@@ -104,7 +105,7 @@ export default function AssetPage() {
   );
 
   return (
-    <>
+    <AdminLayout>
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 z-10">
         <h1 className="text-3xl font-Poppins mb-2 sm:mb-0">Assets</h1>
         <div className="flex flex-col items-end space-y-2">
@@ -142,6 +143,6 @@ export default function AssetPage() {
       <DeleteAssetModal isOpen={modalType === "delete"} assetText={selectedAsset?.tableName ?? undefined} onClose={closeModal} onConfirm={confirmDelete} isLoading={deleteAsset.status === "pending"} />
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-    </>
+    </AdminLayout>
   );
 }

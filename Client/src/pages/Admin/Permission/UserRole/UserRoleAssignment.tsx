@@ -5,6 +5,7 @@ import { useUserRoleManager } from "@Hooks/admin/rbac/useUserRoleManager";
 import { UserRole, UserRoleAssignmentDto } from "@Types/admin/rbac/userRoleTypes";
 import { AssignRoleModal, RevokeRoleModal } from "./UserRoleModals";
 import { useRoleManager } from "@Hooks/admin/rbac/useRoleManager";
+import { AdminLayout } from "@Layouts/AdminLayout";
 
 export default function UserRoleAssignmentPage() {
   const [searchText, setSearchText] = useState("");
@@ -92,7 +93,7 @@ export default function UserRoleAssignmentPage() {
   );
 
   return (
-    <>
+    <AdminLayout>
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 z-10">
         <h1 className="text-3xl font-Poppins mb-2 sm:mb-0">User Roles</h1>
         <div className="flex flex-col items-end space-y-2">
@@ -128,6 +129,6 @@ export default function UserRoleAssignmentPage() {
       <RevokeRoleModal isOpen={modalType === "revoke"} selectedRole={selectedUserRole} onClose={closeModal} onConfirm={confirmRevoke} isLoading={revokeRoleFromUser.status === "pending"} />
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-    </>
+    </AdminLayout>
   );
 }

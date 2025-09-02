@@ -6,16 +6,15 @@ import { useUserManager } from "@Hooks/admin/rbac/useUserManager";
 import { User } from "@Types/admin/rbac/userTypes";
 import { AddEditUserModal, DeleteUserModal } from "./UserModals";
 
-function UserPage() {
-  const [searchText, setSearchText] = useState<string>("");
-  const [debouncedSearchText, setDebouncedSearchText] = useState<string>("");
+export default function UserPage() {
+  const [searchText, setSearchText] = useState("");
+  const [debouncedSearchText, setDebouncedSearchText] = useState("");
   const [modalType, setModalType] = useState<"add" | "edit" | "delete" | null>(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [page, setPage] = useState(1);
   const perPage = 10;
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
 
-  // debounce search
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedSearchText(searchText), 500);
     return () => clearTimeout(handler);
@@ -27,17 +26,9 @@ function UserPage() {
     setToast({ message, type });
   };
 
-  const { usersQuery, fetchPage, createUser, updateUser, deleteUser } = useUserManager(
-    {
-      search: debouncedSearchText,
-      page,
-      perPage,
-      initialPrefetchPages: 3,
-    },
-    handleToast
-  );
+  const { fetchPage, createUser, updateUser, deleteUser } = useUserManager({ search: debouncedSearchText, page, perPage }, handleToast);
 
-  // modal handlers
+  // Modal handlers
   const openAddModal = () => {
     setSelectedUser(null);
     setModalType("add");
@@ -51,17 +42,16 @@ function UserPage() {
     setModalType("delete");
   };
   const closeModal = () => {
-    setModalType(null);
     setSelectedUser(null);
+    setModalType(null);
   };
 
-  // confirm actions
+  // Confirm actions
   const confirmAdd = (data: Partial<User>) => {
     createUser.mutate(data as User, {
       onSuccess: () => {
         handleToast("User created successfully", "success");
         closeModal();
-        usersQuery.refetch();
       },
     });
   };
@@ -74,7 +64,6 @@ function UserPage() {
         onSuccess: () => {
           handleToast("User updated successfully", "success");
           closeModal();
-          usersQuery.refetch();
         },
       }
     );
@@ -86,14 +75,12 @@ function UserPage() {
       onSuccess: () => {
         handleToast("User deleted successfully", "success");
         closeModal();
-        usersQuery.refetch();
       },
     });
   };
 
   const columns = useMemo(
     () => [
-      { accessorKey: "id", header: "ID" },
       { accessorKey: "email", header: "Email" },
       { accessorKey: "firstNameTH", header: "First Name (TH)" },
       { accessorKey: "lastNameTH", header: "Last Name (TH)" },
@@ -115,7 +102,7 @@ function UserPage() {
       {
         id: "actions",
         header: () => (
-          <span style={{ float: "right" }}>
+          <span className="float-right">
             <FiSettings />
           </span>
         ),
@@ -177,5 +164,3 @@ function UserPage() {
     </AdminLayout>
   );
 }
-
-export default UserPage;

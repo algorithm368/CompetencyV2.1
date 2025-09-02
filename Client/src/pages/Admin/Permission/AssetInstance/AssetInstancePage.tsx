@@ -4,6 +4,7 @@ import { RowActions, Button, Input, Toast, DataTable } from "@Components/Common/
 import { useAssetInstanceManager } from "@Hooks/admin/rbac/useAssetInstanceManager";
 import { AssetInstance } from "@Types/admin/rbac/assetInstanceTypes";
 import { AddEditAssetInstanceModal, DeleteAssetInstanceModal } from "./AddEditAssetInstanceModal";
+import { AdminLayout } from "@Layouts/AdminLayout";
 
 export default function AssetInstancePage() {
   const [searchText, setSearchText] = useState("");
@@ -111,7 +112,7 @@ export default function AssetInstancePage() {
   );
 
   return (
-    <>
+    <AdminLayout>
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 z-10">
         <h1 className="text-3xl font-Poppins mb-2 sm:mb-0">Asset Instances</h1>
         <div className="flex flex-col items-end space-y-2">
@@ -154,6 +155,6 @@ export default function AssetInstancePage() {
       />
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-    </>
+    </AdminLayout>
   );
 }

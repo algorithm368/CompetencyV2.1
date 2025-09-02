@@ -63,6 +63,7 @@ rbacRoutes.get("/role-permissions/role/:roleId", RolePermissionController.getPer
 
 // --- Session routes ---
 rbacRoutes.post("/sessions", SessionController.createSession);
+rbacRoutes.get("/sessions", SessionController.getAll);
 rbacRoutes.get("/sessions/:id", SessionController.getSessionById);
 rbacRoutes.get("/sessions/by-access-token", SessionController.getSessionByAccessToken);
 rbacRoutes.get("/sessions/by-refresh-token", SessionController.getSessionByRefreshToken);

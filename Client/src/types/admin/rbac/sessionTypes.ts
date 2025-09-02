@@ -1,10 +1,12 @@
-// --- Session ---
-export interface Session {
+export interface SessionView {
   id: string;
   userId: string;
-  accessToken: string;
-  refreshToken: string;
+  email: string;
   expiresAt?: string | null;
-  createdAt: string;
-  updatedAt: string;
+  status: "online" | "offline";
+}
+
+export interface SessionPageResult {
+  data: SessionView[];
+  total: number;
 }

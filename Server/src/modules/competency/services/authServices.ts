@@ -1,8 +1,10 @@
-import { PrismaClient, User, UserRole, Role, RolePermission, Permission } from "@prisma/client_competency";
-import { generateToken, generateRefreshToken, verifyRefreshToken, generateCsrfToken } from "@Utils/tokenUtils";
+import { PrismaClient, User, UserRole, Role, RolePermission, Permission, Session } from "@prisma/client_competency";
+import { generateToken, generateRefreshToken, generateCsrfToken, verifyRefreshToken } from "@Utils/tokenUtils";
 import { OAuth2Client } from "google-auth-library";
+import { SessionService } from "@/modules/admin/services/rbac/sessionService";
 
 const prisma = new PrismaClient();
+const sessionService = new SessionService();
 const DEFAULT_USER_ROLE = process.env.DEFAULT_USER_ROLE || "User";
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 if (!GOOGLE_CLIENT_ID) throw new Error("Missing GOOGLE_CLIENT_ID env variable");
@@ -18,10 +20,16 @@ type UserWithRoles = User & {
 };
 
 class AuthService {
-  // Login with Google token
+  /**
+   * Login with Google token using transaction
+   * @param googleToken Google ID token
+   * @param txClient    Optional transactional Prisma client
+   * @returns           User info + tokens
+   */
   async loginWithGoogle(googleToken: string) {
     if (!googleToken) throw new Error("Google token is required");
 
+    // Verify token
     const ticket = await googleClient.verifyIdToken({
       idToken: googleToken,
       audience: GOOGLE_CLIENT_ID,
@@ -29,32 +37,34 @@ class AuthService {
     const payload = ticket.getPayload();
     if (!payload?.email) throw new Error("Invalid Google token");
 
+    const email = payload.email!;
+    const firstNameEN = payload.given_name ?? "";
+    const lastNameEN = payload.family_name ?? "";
+    const profileImage = payload.picture ?? "noimage.jpg";
+
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
     // Find or create user
-    let user = await prisma.user.findUnique({ where: { email: payload.email } });
+    let user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      user = await prisma.user.create({
-        data: {
-          email: payload.email,
-          firstNameEN: payload.given_name ?? undefined,
-          lastNameEN: payload.family_name ?? undefined,
-          profileImage: payload.picture ?? "noimage.jpg",
-        },
-      });
+      user = await prisma.user.create({ data: { email, firstNameEN, lastNameEN, profileImage } });
     } else {
       const needsUpdate = !user.profileImage || user.profileImage === "noimage.jpg" || !user.firstNameEN || !user.lastNameEN;
+
       if (needsUpdate) {
         user = await prisma.user.update({
-          where: { email: payload.email },
+          where: { email },
           data: {
-            profileImage: user.profileImage === "noimage.jpg" ? payload.picture ?? "noimage.jpg" : undefined,
-            firstNameEN: user.firstNameEN ?? payload.given_name,
-            lastNameEN: user.lastNameEN ?? payload.family_name,
+            profileImage: user.profileImage === "noimage.jpg" ? profileImage : undefined,
+            firstNameEN: user.firstNameEN || firstNameEN,
+            lastNameEN: user.lastNameEN || lastNameEN,
           },
         });
       }
     }
 
-    // Load roles with permissions
+    // Load roles
     const userWithRoles = (await prisma.user.findUnique({
       where: { id: user.id },
       include: {
@@ -64,60 +74,63 @@ class AuthService {
       },
     })) as UserWithRoles | null;
 
-    const primaryRole = userWithRoles?.userRoles[0]?.role.name ?? DEFAULT_USER_ROLE;
+    const primaryRole = userWithRoles?.userRoles[0]?.role?.name ?? DEFAULT_USER_ROLE;
 
-    // Generate JWT + refresh + CSRF
+    // Generate tokens
     const accessToken = generateToken({ userId: user.id, email: user.email, role: primaryRole });
     const refreshToken = generateRefreshToken({ userId: user.id });
     const csrfToken = generateCsrfToken();
 
     // Upsert session
-    const now = new Date();
-    const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 วัน
-
-    // Upsert session
-    const existingSession = await prisma.session.findFirst({ where: { userId: user.id } });
-    if (existingSession) {
-      await prisma.session.update({
-        where: { id: existingSession.id },
-        data: { accessToken, refreshToken, csrfToken, provider: "google", updatedAt: now, lastActivityAt: now, expiresAt },
-      });
-    } else {
-      await prisma.session.create({
-        data: { userId: user.id, accessToken, refreshToken, csrfToken, provider: "google", createdAt: now, updatedAt: now, lastActivityAt: now, expiresAt },
-      });
-    }
+    await sessionService.upsertSession(user.id, accessToken, refreshToken, csrfToken, "google", expiresAt);
 
     return {
-      user: { userId: user.id, email: user.email, firstNameEN: user.firstNameEN, lastNameEN: user.lastNameEN, profileImage: user.profileImage, role: primaryRole },
+      user: {
+        userId: user.id,
+        email: user.email,
+        firstNameEN: user.firstNameEN,
+        lastNameEN: user.lastNameEN,
+        profileImage: user.profileImage,
+        role: primaryRole,
+      },
       accessToken,
       refreshToken,
       csrfToken,
     };
   }
 
-  // Logout by refreshToken
-  async logout(refreshToken: string) {
+  /**
+   * Logout by refreshToken
+   * @param refreshToken Refresh token
+   * @param txClient     Optional transactional Prisma client
+   */
+  async logout(refreshToken: string, txClient?: PrismaClient) {
     if (!refreshToken) throw new Error("Refresh token required");
-    await prisma.session.deleteMany({ where: { refreshToken } });
+    const client = txClient ?? prisma;
+    await client.session.deleteMany({ where: { refreshToken } });
   }
 
-  // Refresh token
-  async refreshToken(oldRefreshToken: string) {
+  /**
+   * Refresh token
+   * @param oldRefreshToken Existing refresh token
+   * @param txClient        Optional transactional Prisma client
+   */
+  async refreshToken(oldRefreshToken: string, txClient?: PrismaClient) {
     if (!oldRefreshToken) throw new Error("Refresh token required");
 
+    const client = txClient ?? prisma;
     const payload = verifyRefreshToken(oldRefreshToken);
-    const storedSession = await prisma.session.findFirst({ where: { userId: payload.userId } });
+
+    const storedSession = await client.session.findFirst({ where: { userId: payload.userId } });
     if (!storedSession || storedSession.refreshToken !== oldRefreshToken) throw new Error("Invalid refresh token");
 
-    const userWithRoles = await prisma.user.findUnique({
+    const userWithRoles = await client.user.findUnique({
       where: { id: payload.userId },
       include: { userRoles: { include: { role: { include: { rolePermissions: { include: { permission: true } } } } } } },
     });
     if (!userWithRoles) throw new Error("User not found");
 
     const primaryRole = userWithRoles.userRoles[0]?.role.name ?? DEFAULT_USER_ROLE;
-
     const newRefreshToken = generateRefreshToken({ userId: payload.userId });
     const accessToken = generateToken({ userId: userWithRoles.id, email: userWithRoles.email, role: primaryRole });
     const csrfToken = generateCsrfToken();
@@ -125,7 +138,7 @@ class AuthService {
     const now = new Date();
     const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-    await prisma.session.update({
+    await client.session.update({
       where: { id: storedSession.id },
       data: { refreshToken: newRefreshToken, accessToken, csrfToken, updatedAt: now, expiresAt },
     });
@@ -133,11 +146,17 @@ class AuthService {
     return { accessToken, refreshToken: newRefreshToken, csrfToken };
   }
 
-  // Get current user with roles & permissions
-  async getCurrentUser(userId: string) {
+  /**
+   * Get current user with roles & permissions
+   * @param userId User ID
+   * @param txClient Optional transactional Prisma client
+   */
+  async getCurrentUser(userId: string, txClient?: PrismaClient) {
     if (!userId) throw new Error("User ID required");
 
-    const userWithRoles = (await prisma.user.findUnique({
+    const client = txClient ?? prisma;
+
+    const userWithRoles = (await client.user.findUnique({
       where: { id: userId },
       include: { userRoles: { include: { role: { include: { rolePermissions: { include: { permission: true } } } } } } },
     })) as UserWithRoles | null;

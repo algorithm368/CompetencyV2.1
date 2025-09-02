@@ -98,7 +98,6 @@ function DataTable<T extends object>({ fetchPage, columns, pageSizes = [5, 10, 2
     },
   });
 
-  const currentData = cache[pageIndex] ?? [];
   const startRow = pageIndex * pageSize + 1;
   const endRow = Math.min((pageIndex + 1) * pageSize, totalRows);
 
@@ -172,7 +171,7 @@ function DataTable<T extends object>({ fetchPage, columns, pageSizes = [5, 10, 2
                   </div>
                 </td>
               </tr>
-            ) : currentData.length === 0 ? (
+            ) : table.getRowModel().rows.length === 0 ? (
               <tr>
                 <td colSpan={columns.length} className="px-6 py-12 text-center">
                   <div className="flex flex-col items-center space-y-3 bg-gray-50 p-6 rounded-xl border border-dashed border-gray-200">
@@ -183,15 +182,28 @@ function DataTable<T extends object>({ fetchPage, columns, pageSizes = [5, 10, 2
                 </td>
               </tr>
             ) : (
-              table.getRowModel().rows.map((row, idx) => (
-                <tr key={row.id} className={`transition-colors duration-150 hover:bg-gray-50 ${idx % 2 === 0 ? "bg-white" : "bg-gray-25"}`}>
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 overflow-hidden truncate max-w-xs">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
+              <>
+                {table.getRowModel().rows.map((row, idx) => (
+                  <tr key={row.id} className={`transition-colors duration-150 hover:bg-gray-50 ${idx % 2 === 0 ? "bg-white" : "bg-gray-25"}`}>
+                    {row.getVisibleCells().map((cell) => (
+                      <td key={cell.id} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 overflow-hidden truncate max-w-xs">
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+
+                {table.getRowModel().rows.length < pageSize &&
+                  Array.from({ length: pageSize - table.getRowModel().rows.length }).map((_, idx) => (
+                    <tr key={`empty-${idx}`} className={(table.getRowModel().rows.length + idx) % 2 === 0 ? "bg-white" : "bg-gray-25"}>
+                      {columns.map((_, colIdx) => (
+                        <td key={colIdx} className="px-6 py-4">
+                          &nbsp;
+                        </td>
+                      ))}
+                    </tr>
                   ))}
-                </tr>
-              ))
+              </>
             )}
           </tbody>
         </table>

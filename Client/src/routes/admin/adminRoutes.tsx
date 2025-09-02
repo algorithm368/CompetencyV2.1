@@ -17,7 +17,6 @@ export const adminRoutes = (
 
     {/* TPQI */}
     <Route path="/tpqi/career" element={<ExportPages.CareerPage />} />
-
     {/* RBAC */}
     <Route path="/roles" element={<ExportPages.RolePage />} />
     <Route path="/role-permissions" element={<ExportPages.RolePermissionManager />} />
@@ -29,5 +28,11 @@ export const adminRoutes = (
     <Route path="/assets" element={<ExportPages.AssetPage />} />
     <Route path="/asset-instances" element={<ExportPages.AssetInstancePage />} />
     <Route path="/user-asset-instances" element={<ExportPages.UserAssetInstanceAssignmentPage />} />
+
+    <Route path="/tpqi/skill" element={<ExportPages.SkillPage />} />
+    <Route path="/tpqi/sector" element={<ExportPages.SectorPage />} />
+    <Route path="/tpqi/occupational" element={<ExportPages.OccupationalPage />} />
+    <Route path="/tpqi/knowledge" element={<ExportPages.KnowledgePage />} />
+    <Route path="/tpqi/unitcode" element={<ExportPages.UnitCodePage />} />
   </>
 );

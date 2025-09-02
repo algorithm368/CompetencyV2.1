@@ -11,7 +11,6 @@ import {
     UpdateOccupationalDto,
     OccupationalPageResult,
 } from "@Types/tpqi/OccupationalTypes";
-import { q } from "framer-motion/client";
 
 type ToastCallback = (
     message: string,

@@ -4,7 +4,7 @@ import {
     OccupationalPageResult,
     UpdateOccupationalDto,
     CreateOccupationalDto,
-} from "@Types/tpqi/OccupationalTypes";
+} from "@Types/tpqi/occupationalTypes";
 
 const BASE_URL = "/admin/tpqi/occupational";
 

@@ -1,7 +1,7 @@
 import React from "react";
 import { Modal, Button, Input, LoadingButton } from "@Components/Common/ExportComponent";
 
-interface AddEditSkillModalProps {
+interface AddEditOccupationalModalProps {
   isOpen: boolean;
   mode: "add" | "edit";
   initialText: string;
@@ -11,7 +11,7 @@ interface AddEditSkillModalProps {
   isLoading?: boolean;
 }
 
-export const AddEditSkillModal: React.FC<AddEditSkillModalProps> = ({
+export const AddEditOccupationalModal: React.FC<AddEditOccupationalModalProps> = ({
   isOpen,
   mode,
   initialText,
@@ -33,7 +33,7 @@ export const AddEditSkillModal: React.FC<AddEditSkillModalProps> = ({
       className="z-50"
       isOpen={isOpen}
       onClose={onClose}
-      title={mode === "add" ? "Add Skill" : "Edit Skill"}
+      title={mode === "add" ? "Add Occupational" : "Edit Occupational"}
       actions={
         <>
           <Button
@@ -55,15 +55,15 @@ export const AddEditSkillModal: React.FC<AddEditSkillModalProps> = ({
     >
       <div className="space-y-3">
         <div className="flex flex-col">
-          <label className="block text-sm mb-1 ml-0.5">Skill Name</label>
+          <label className="block text-sm mb-1 ml-0.5">Occupational Name</label>
           <Input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Enter skill name"
+            placeholder="Enter occupational name"
           />
         </div>
 
-        {/* Optional: expose category id if you want to edit it directly (kept hidden to mirror Career modal) */}
+        {/* Optional: expose/edit category id (or swap to a Select if you have a list) */}
         {/* <div className="flex flex-col">
           <label className="block text-sm mb-1 ml-0.5">Category ID (optional)</label>
           <Input
@@ -78,17 +78,17 @@ export const AddEditSkillModal: React.FC<AddEditSkillModalProps> = ({
   );
 };
 
-interface DeleteSkillModalProps {
+interface DeleteOccupationalModalProps {
   isOpen: boolean;
-  skillText?: string;
+  occupationalText?: string;
   onClose: () => void;
   onConfirm: () => void;
   isLoading?: boolean;
 }
 
-export const DeleteSkillModal: React.FC<DeleteSkillModalProps> = ({
+export const DeleteOccupationalModal: React.FC<DeleteOccupationalModalProps> = ({
   isOpen,
-  skillText,
+  occupationalText,
   onClose,
   onConfirm,
   isLoading = false,
@@ -98,7 +98,7 @@ export const DeleteSkillModal: React.FC<DeleteSkillModalProps> = ({
       className="z-50"
       isOpen={isOpen}
       onClose={onClose}
-      title="Delete Skill"
+      title="Delete Occupational"
       actions={
         <>
           <Button
@@ -119,7 +119,7 @@ export const DeleteSkillModal: React.FC<DeleteSkillModalProps> = ({
       }
     >
       <div className="space-y-3">
-        <p>Are you sure you want to delete the skill "{skillText}"?</p>
+        <p>Are you sure you want to delete the occupational "{occupationalText}"?</p>
       </div>
     </Modal>
   );

@@ -39,7 +39,7 @@ export function useSectorManager(
   const fetchPage = async (
     pageIndex: number,
     pageSize: number
-  ): Promise<SectorPageResult> => {
+  ): Promise<{ data: Sector[]; total: number }> => {
     const pageNumber = pageIndex + 1;
     const result = await SectorService.getAll(search, pageNumber, pageSize);
     return {
@@ -87,7 +87,7 @@ export function useSectorManager(
     (page > initialPrefetchPages && currentPageQuery.error);
 
   const sectorQuery = useQuery<Sector, Error>({
-    queryKey: ["sector", id],
+    queryKey: ["sectors", id],
     queryFn: () => {
       if (id === null) {
         return Promise.reject(new Error("Sector ID is required"));
@@ -112,7 +112,7 @@ export function useSectorManager(
     mutationFn: ({ id, data }) => SectorService.update(id, data),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: ["sectors"] });
-      queryClient.invalidateQueries({ queryKey: ["sector", updated.id] });
+      queryClient.invalidateQueries({ queryKey: ["sectors", updated.id] });
       onToast?.("Sector updated successfully", "success");
     },
     onError: (error) => {
@@ -143,6 +143,6 @@ export function useSectorManager(
     createSector,
     updateSector,
     deleteSector,
-    prefetchQueries,
+    fetchPage,
   };
 }

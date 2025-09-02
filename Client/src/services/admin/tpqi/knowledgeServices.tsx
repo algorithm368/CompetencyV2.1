@@ -4,7 +4,7 @@ import {
     KnowledgePageResult,
     UpdateKnowledgeDto,
     CreateKnowledgeDto,
-} from "@Types/tpqi/KnowledgeTypes";
+} from "@Types/tpqi/knowledgeTypes";
 
 const BASE_URL = "/admin/tpqi/knowledge";
 

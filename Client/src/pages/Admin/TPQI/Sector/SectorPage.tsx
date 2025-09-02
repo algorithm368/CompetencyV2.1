@@ -2,97 +2,90 @@ import { useState, useMemo, useEffect } from "react";
 import { FiPlus, FiSearch, FiSettings } from "react-icons/fi";
 import { RowActions, Button, Input, Toast, DataTable } from "@Components/Common/ExportComponent";
 import { AdminLayout } from "@Layouts/AdminLayout";
-import { useSkillManager } from "@Hooks/admin/tpqi/useSkillHooks";
-import { Skill, CreateSkillDto, UpdateSkillDto } from "@Types/tpqi/skillTypes";
-import { AddEditSkillModal, DeleteSkillModal } from "./SkillModals";
+import { useSectorManager } from "@Hooks/admin/tpqi/useSectorHooks";
+import { Sector, CreateSectorDto, UpdateSectorDto } from "@Types/tpqi/sectorTypes";
+import { AddEditSectorModal, DeleteSectorModal } from "./SectorModals";
 
-export default function SkillPage() {
+export default function SectorPage() {
   const [searchText, setSearchText] = useState<string>("");
   const [debouncedSearchText, setDebouncedSearchText] = useState<string>("");
   const [modalType, setModalType] = useState<"add" | "edit" | "delete" | null>(null);
-  const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
+  const [selectedSector, setSelectedSector] = useState<Sector | null>(null);
   const [page, setPage] = useState(1);
   const perPage = 10;
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
 
-  // debounce search
+  // Debounce search
   useEffect(() => {
-    const handler = setTimeout(() => setDebouncedSearchText(searchText), 500);
-    return () => clearTimeout(handler);
+    const t = setTimeout(() => setDebouncedSearchText(searchText), 500);
+    return () => clearTimeout(t);
   }, [searchText]);
 
-  // reset page on search
+  // Reset paging on new search
   useEffect(() => setPage(1), [debouncedSearchText]);
 
-  const handleToast = (message: string, type: "success" | "error" | "info" = "info") => {
+  const handleToast = (message: string, type: "success" | "error" | "info" = "info") =>
     setToast({ message, type });
-  };
 
-  const { fetchPage, skillsQuery, createSkill, updateSkill, deleteSkill } =
-    useSkillManager({ search: debouncedSearchText, page, perPage }, handleToast);
+  const { fetchPage, sectorsQuery, createSector, updateSector, deleteSector } =
+    useSectorManager({ search: debouncedSearchText, page, perPage }, handleToast);
 
-  // Modal handlers
+  // Modals
   const openAddModal = () => {
-    setSelectedSkill(null);
+    setSelectedSector(null);
     setModalType("add");
   };
-  const openEditModal = (sk: Skill) => {
-    setSelectedSkill(sk);
+  const openEditModal = (s: Sector) => {
+    setSelectedSector(s);
     setModalType("edit");
   };
-  const openDeleteModal = (sk: Skill) => {
-    setSelectedSkill(sk);
+  const openDeleteModal = (s: Sector) => {
+    setSelectedSector(s);
     setModalType("delete");
   };
   const closeModal = () => {
     setModalType(null);
-    setSelectedSkill(null);
+    setSelectedSector(null);
   };
 
-  // Confirm operations
-  const confirmAdd = (text: string) => {
-    const dto: CreateSkillDto = { name: text || null };
-    createSkill.mutate(dto, {
+  // Confirm ops
+  const confirmAdd = (name: string, categoryId: number | null) => {
+    const dto: CreateSectorDto = { name: name || null, categoryId: categoryId ?? null } as any;
+    createSector.mutate(dto, {
       onSuccess: () => {
         handleToast("Created successfully", "success");
         closeModal();
-        skillsQuery.refetch();
+        sectorsQuery.refetch();
       },
-      onError: (error: any) => {
-        handleToast("Failed to create: " + (error?.message || ""), "error");
-      },
+      onError: (err: any) => handleToast("Failed to create: " + (err?.message || ""), "error"),
     });
   };
 
-  const confirmEdit = (text: string) => {
-    if (!selectedSkill) return;
-    const dto: UpdateSkillDto = { name: text || null };
-    updateSkill.mutate(
-      { id: selectedSkill.id, data: dto },
+  const confirmEdit = (name: string, categoryId: number | null) => {
+    if (!selectedSector) return;
+    const dto: UpdateSectorDto = { name: name || null, categoryId: categoryId ?? null } as any;
+    updateSector.mutate(
+      { id: selectedSector.id, data: dto },
       {
         onSuccess: () => {
           handleToast("Updated successfully", "success");
           closeModal();
-          skillsQuery.refetch();
+          sectorsQuery.refetch();
         },
-        onError: (error: any) => {
-          handleToast("Failed to update: " + (error?.message || ""), "error");
-        },
+        onError: (err: any) => handleToast("Failed to update: " + (err?.message || ""), "error"),
       }
     );
   };
 
   const confirmDelete = () => {
-    if (!selectedSkill) return;
-    deleteSkill.mutate(selectedSkill.id, {
+    if (!selectedSector) return;
+    deleteSector.mutate(selectedSector.id, {
       onSuccess: () => {
         handleToast("Deleted successfully", "success");
         closeModal();
-        skillsQuery.refetch();
+        sectorsQuery.refetch();
       },
-      onError: (error: any) => {
-        handleToast("Failed to delete: " + (error?.message || ""), "error");
-      },
+      onError: (err: any) => handleToast("Failed to delete: " + (err?.message || ""), "error"),
     });
   };
 
@@ -100,7 +93,9 @@ export default function SkillPage() {
   const columns = useMemo(
     () => [
       { accessorKey: "id", header: "ID" },
-      { accessorKey: "name", header: "Skill name" },
+      { accessorKey: "name", header: "Sector name" },
+      // If your sector has a category name, you can add it:
+      // { accessorKey: "categoryName", header: "Category" },
       {
         id: "actions",
         header: () => (
@@ -108,9 +103,12 @@ export default function SkillPage() {
             <FiSettings />
           </span>
         ),
-        cell: ({ row }: { row: { original: Skill } }) => (
+        cell: ({ row }: { row: { original: Sector } }) => (
           <div className="text-right">
-            <RowActions onEdit={() => openEditModal(row.original)} onDelete={() => openDeleteModal(row.original)} />
+            <RowActions
+              onEdit={() => openEditModal(row.original)}
+              onDelete={() => openDeleteModal(row.original)}
+            />
           </div>
         ),
       },
@@ -121,15 +119,15 @@ export default function SkillPage() {
   return (
     <AdminLayout>
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 z-10">
-        <h1 className="text-3xl font-Poppins mb-2 sm:mb-0">Skills</h1>
+        <h1 className="text-3xl font-Poppins mb-2 sm:mb-0">Sectors</h1>
         <div className="flex flex-col items-end space-y-2">
           <Button size="md" onClick={openAddModal} className="flex items-center">
-            <FiPlus className="mr-2" /> Add Skill
+            <FiPlus className="mr-2" /> Add Sector
           </Button>
           <div className="relative">
             <Input
               type="text"
-              placeholder="Search skills..."
+              placeholder="Search sectors..."
               className="pl-3 pr-30 py-1 text-sm"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
@@ -139,7 +137,7 @@ export default function SkillPage() {
         </div>
       </div>
 
-      <DataTable<Skill>
+      <DataTable<Sector>
         key={debouncedSearchText}
         resetTrigger={debouncedSearchText}
         fetchPage={fetchPage}
@@ -149,22 +147,22 @@ export default function SkillPage() {
         onPageChange={(newPageIndex) => setPage(newPageIndex + 1)}
       />
 
-      <AddEditSkillModal
+      <AddEditSectorModal
         isOpen={modalType === "add" || modalType === "edit"}
         mode={modalType === "edit" ? "edit" : "add"}
-        initialText={selectedSkill?.name || ""}
-        initialCategoryId={selectedSkill?.id ?? null} // keep if your modal expects it; adjust as needed
+        initialText={selectedSector?.name || ""}
+        initialCategoryId={(selectedSector as any)?.categoryId ?? null}
         onClose={closeModal}
-        onConfirm={(text) => (modalType === "add" ? confirmAdd(text) : confirmEdit(text))}
-        isLoading={createSkill.status === "pending" || updateSkill.status === "pending"}
+        onConfirm={(name, catId) => (modalType === "add" ? confirmAdd(name, catId) : confirmEdit(name, catId))}
+        isLoading={createSector.status === "pending" || updateSector.status === "pending"}
       />
 
-      <DeleteSkillModal
+      <DeleteSectorModal
         isOpen={modalType === "delete"}
-        skillText={selectedSkill?.name ?? undefined}
+        sectorText={selectedSector?.name ?? undefined}
         onClose={closeModal}
         onConfirm={confirmDelete}
-        isLoading={deleteSkill.status === "pending"}
+        isLoading={deleteSector.status === "pending"}
       />
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}

@@ -6,7 +6,7 @@ import {
     CreateUnitCodeDto,
 } from "@Types/tpqi/unitCodeTypes";
 
-const BASE_URL = "/admin/tpqi/unitcode";
+const BASE_URL = "/admin/tpqi/unit-code";
 
 export const UnitCodeService = {
     async getAll(

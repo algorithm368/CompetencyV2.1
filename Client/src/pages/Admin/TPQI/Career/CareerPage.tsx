@@ -49,7 +49,7 @@ export default function CareerTablePage() {
     // Confirm operations
     const confirmAdd = (text: string) => {
         if (!selectedCareer) return;
-        const dto: CreateCareerDto = { name_career: text || null };
+        const dto: CreateCareerDto = { name: text || null };
         createCareer.mutate(dto, {
             onSuccess: () => {
                 handleToast("Created successfully", "success");
@@ -64,8 +64,8 @@ export default function CareerTablePage() {
 
     const confirmEdit = (text: string) => {
         if (!selectedCareer) return;
-        const dto: UpdateCareerDto = { name_career: text || null };
-        updateCareer.mutate({ id: selectedCareer.id_career, data: dto }, {
+        const dto: UpdateCareerDto = { name: text || null };
+        updateCareer.mutate({ id: selectedCareer.id, data: dto }, {
             onSuccess: () => {
                 handleToast("Updated successfully", "success");
                 closeModal();
@@ -79,7 +79,7 @@ export default function CareerTablePage() {
 
     const confirmDelete = () => {
         if (!selectedCareer) return;
-        deleteCareer.mutate(selectedCareer.id_career, {
+        deleteCareer.mutate(selectedCareer.id, {
             onSuccess: () => {
                 handleToast("Deleted successfully", "success");
                 closeModal();
@@ -94,8 +94,8 @@ export default function CareerTablePage() {
     // Table columns
     const columns = useMemo(
         () => [
-            { accessorKey: "id_career", header: "ID" },
-            { accessorKey: "name_career", header: "Career name" },
+            { accessorKey: "id", header: "ID" },
+            { accessorKey: "name", header: "Career name" },
             {
                 id: "actions",
                 header: () => (
@@ -141,8 +141,8 @@ export default function CareerTablePage() {
             <AddEditCareerModal
                 isOpen={modalType === "add" || modalType === "edit"}
                 mode={modalType === "edit" ? "edit" : "add"}
-                initialText={selectedCareer?.name_career || ""}
-                initialCategoryId={selectedCareer?.id_career ?? null}
+                initialText={selectedCareer?.name || ""}
+                initialCategoryId={selectedCareer?.id ?? null}
                 onClose={closeModal}
                 onConfirm={(text) => (modalType === "add" ? confirmAdd(text) : confirmEdit(text))}
                 isLoading={createCareer.status === "pending" || updateCareer.status === "pending"}
@@ -150,7 +150,7 @@ export default function CareerTablePage() {
 
             <DeleteCareerModal
                 isOpen={modalType === "delete"}
-                careerText={selectedCareer?.name_career ?? undefined}
+                careerText={selectedCareer?.name ?? undefined}
                 onClose={closeModal}
                 onConfirm={confirmDelete}
                 isLoading={deleteCareer.status === "pending"}

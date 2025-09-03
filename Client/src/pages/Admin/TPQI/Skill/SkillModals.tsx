@@ -62,17 +62,6 @@ export const AddEditSkillModal: React.FC<AddEditSkillModalProps> = ({
             placeholder="Enter skill name"
           />
         </div>
-
-        {/* Optional: expose category id if you want to edit it directly (kept hidden to mirror Career modal) */}
-        {/* <div className="flex flex-col">
-          <label className="block text-sm mb-1 ml-0.5">Category ID (optional)</label>
-          <Input
-            type="number"
-            value={categoryId ?? ""}
-            onChange={(e) => setCategoryId(e.target.value === "" ? null : Number(e.target.value))}
-            placeholder="Enter category id"
-          />
-        </div> */}
       </div>
     </Modal>
   );

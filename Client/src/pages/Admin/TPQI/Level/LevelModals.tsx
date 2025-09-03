@@ -1,39 +1,39 @@
 import React from "react";
 import { Modal, Button, Input, LoadingButton } from "@Components/Common/ExportComponent";
 
-interface AddEditCareerModalProps {
+interface AddEditLevelModalProps {
     isOpen: boolean;
     mode: "add" | "edit";
-    initialText: string;
-    initialCategoryId: number | null;
+    initialLevelName: string;
+    initialId: number | null;
     onClose: () => void;
-    onConfirm: (name: string, categoryId: number | null) => void;
+    onConfirm: (levelName: string, id: number | null) => void;
     isLoading?: boolean;
 }
 
-export const AddEditCareerModal: React.FC<AddEditCareerModalProps> = ({
+export const AddEditLevelModal: React.FC<AddEditLevelModalProps> = ({
     isOpen,
     mode,
-    initialText,
-    initialCategoryId,
+    initialLevelName,
+    initialId,
     onClose,
     onConfirm,
     isLoading = false,
 }) => {
-    const [name, setName] = React.useState(initialText);
-    const [categoryId, setCategoryId] = React.useState<number | null>(initialCategoryId);
+    const [levelName, setLevelName] = React.useState(initialLevelName);
+    const [id, setId] = React.useState<number | null>(initialId);
 
     React.useEffect(() => {
-        setName(initialText);
-        setCategoryId(initialCategoryId);
-    }, [initialText, initialCategoryId]);
+        setLevelName(initialLevelName);
+        setId(initialId);
+    }, [initialLevelName, initialId]);
 
     return (
         <Modal
             className="z-50"
             isOpen={isOpen}
             onClose={onClose}
-            title={mode === "add" ? "Add Career" : "Edit Career"}
+            title={mode === "add" ? "Add Level" : "Edit Level"}
             actions={
                 <>
                     <Button
@@ -44,7 +44,7 @@ export const AddEditCareerModal: React.FC<AddEditCareerModalProps> = ({
                         Cancel
                     </Button>
                     <LoadingButton
-                        onClick={() => onConfirm(name, categoryId)}
+                        onClick={() => onConfirm(levelName, id)}
                         isLoading={isLoading}
                         loadingText={mode === "add" ? "Creating..." : "Saving..."}
                     >
@@ -55,29 +55,40 @@ export const AddEditCareerModal: React.FC<AddEditCareerModalProps> = ({
         >
             <div className="space-y-3">
                 <div className="flex flex-col">
-                    <label className="block text-sm mb-1 ml-0.5">Career Name</label>
+                    <label className="block text-sm mb-1 ml-0.5">Level ID</label>
                     <Input
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="Enter career name"
+                        type="number"
+                        value={id ?? ""}
+                        onChange={(e) =>
+                            setId(e.target.value === "" ? null : Number(e.target.value))
+                        }
+                        placeholder="Enter level ID"
                     />
+                    <div className="flex flex-col">
+                        <label className="block text-sm mb-1 ml-0.5">Level Name</label>
+                        <Input
+                            value={levelName}
+                            onChange={(e) => setLevelName(e.target.value)}
+                            placeholder="Enter level name"
+                        />
+                    </div>
                 </div>
             </div>
         </Modal>
     );
 };
 
-interface DeleteCareerModalProps {
+interface DeleteLevelModalProps {
     isOpen: boolean;
-    careerText?: string;
+    levelText?: string;
     onClose: () => void;
     onConfirm: () => void;
     isLoading?: boolean;
 }
 
-export const DeleteCareerModal: React.FC<DeleteCareerModalProps> = ({
+export const DeleteLevelModal: React.FC<DeleteLevelModalProps> = ({
     isOpen,
-    careerText,
+    levelText,
     onClose,
     onConfirm,
     isLoading = false,
@@ -87,7 +98,7 @@ export const DeleteCareerModal: React.FC<DeleteCareerModalProps> = ({
             className="z-50"
             isOpen={isOpen}
             onClose={onClose}
-            title="Delete Career"
+            title="Delete Level"
             actions={
                 <>
                     <Button
@@ -108,7 +119,7 @@ export const DeleteCareerModal: React.FC<DeleteCareerModalProps> = ({
             }
         >
             <div className="space-y-3">
-                <p>Are you sure you want to delete the career "{careerText}"?</p>
+                <p>Are you sure you want to delete the level "{levelText}"?</p>
             </div>
         </Modal>
     );

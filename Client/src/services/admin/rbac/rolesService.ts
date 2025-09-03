@@ -10,6 +10,7 @@ export const RolesService = {
     if (search) params.append("search", search);
 
     const res: AxiosResponse<RolePageResult> = await api.get("/admin/rbac/roles", { params });
+
     return res.data;
   },
 

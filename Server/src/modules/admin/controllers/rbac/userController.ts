@@ -114,4 +114,20 @@ export class UserController {
       next(error);
     }
   }
+
+  static async searchUsersByEmail(req: Request, res: Response, next: NextFunction) {
+    try {
+      const emailQuery = req.query.email;
+      if (typeof emailQuery !== "string" || !emailQuery.trim()) {
+        res.status(400).json({ error: "email query parameter is required" });
+        return;
+      }
+
+      const users = await service.searchUsersByEmail(emailQuery.trim(), 10);
+
+      res.json(users.map(UserView));
+    } catch (error) {
+      next(error);
+    }
+  }
 }

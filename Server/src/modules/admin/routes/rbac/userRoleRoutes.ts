@@ -4,7 +4,7 @@ import { withAuth } from "@/middlewares/withAuth";
 
 const router = Router();
 
-router.post("/user-roles", withAuth({ resource: "UserRole", action: "create" }, UserRoleController.assignRole));
+router.post("/user-roles/assign-multiple", withAuth({ resource: "UserRole", action: "create" }, UserRoleController.assignRole));
 
 router.delete("/user-roles", withAuth({ resource: "UserRole", action: "delete" }, UserRoleController.revokeRole));
 

@@ -8,6 +8,7 @@ interface AuthenticatedRequest extends Request {
   user?: { userId?: string };
 }
 
+// ปรับฟังก์ชันนี้เพื่อ map ข้อมูลให้สอดคล้องกับข้อมูลที่ต้องการ
 function RolePermissionView(rp: RolePermission & { permission?: any }) {
   return {
     id: rp.id,
@@ -19,22 +20,16 @@ function RolePermissionView(rp: RolePermission & { permission?: any }) {
           id: rp.permission.id,
           operationId: rp.permission.operationId,
           assetId: rp.permission.assetId,
-          createdAt: rp.permission.createdAt,
-          updatedAt: rp.permission.updatedAt,
           operation: rp.permission.operation
             ? {
                 id: rp.permission.operation.id,
                 name: rp.permission.operation.name,
-                description: rp.permission.operation.description,
-                updatedAt: rp.permission.operation.updatedAt,
               }
             : undefined,
           asset: rp.permission.asset
             ? {
                 id: rp.permission.asset.id,
                 tableName: rp.permission.asset.tableName,
-                description: rp.permission.asset.description,
-                updatedAt: rp.permission.asset.updatedAt,
               }
             : undefined,
         }
@@ -42,6 +37,7 @@ function RolePermissionView(rp: RolePermission & { permission?: any }) {
   };
 }
 
+// ฟังก์ชันที่ใช้ map ข้อมูลทั้งหมด
 function RolePermissionListView(items: (RolePermission & { permission?: any })[]) {
   return items.map(RolePermissionView);
 }
@@ -50,14 +46,14 @@ export class RolePermissionController {
   // มอบสิทธิ์ให้ role
   static async assignPermission(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
-      const { roleId, permissionId } = req.body;
+      const { roleId, assetId, operationId } = req.body;
       const actor = req.user?.userId || "system";
 
-      if (typeof roleId !== "number" || typeof permissionId !== "number") {
-        return res.status(400).json({ error: "roleId and permissionId must be numbers" });
+      if (typeof roleId !== "number" || typeof assetId !== "number" || typeof operationId !== "number") {
+        return res.status(400).json({ error: "roleId, assetId, and operationId must be numbers" });
       }
 
-      const assigned = await service.assignPermissionToRole(roleId, permissionId, actor);
+      const assigned = await service.assignPermissionToRole(roleId, assetId, operationId, actor);
       return res.status(201).json(RolePermissionView(assigned));
     } catch (error) {
       next(error);
@@ -67,14 +63,14 @@ export class RolePermissionController {
   // ยกเลิกสิทธิ์ของ role
   static async revokePermission(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
-      const { roleId, permissionId } = req.body;
+      const { roleId, assetId, operationId } = req.body;
       const actor = req.user?.userId || "system";
 
-      if (typeof roleId !== "number" || typeof permissionId !== "number") {
-        return res.status(400).json({ error: "roleId and permissionId must be numbers" });
+      if (typeof roleId !== "number" || typeof assetId !== "number" || typeof operationId !== "number") {
+        return res.status(400).json({ error: "roleId, assetId and operationId must be numbers" });
       }
 
-      const revoked = await service.revokePermissionFromRole(roleId, permissionId, actor);
+      const revoked = await service.revokePermissionFromRoleByAssetOperation(roleId, assetId, operationId, actor);
       return res.status(200).json(RolePermissionView(revoked));
     } catch (error) {
       next(error);
@@ -90,6 +86,7 @@ export class RolePermissionController {
       }
 
       const permissions = await service.getPermissionsForRole(roleId);
+
       return res.status(200).json(RolePermissionListView(permissions));
     } catch (error) {
       next(error);

@@ -2,6 +2,7 @@ import { useQuery, useQueries, useMutation, useQueryClient } from "@tanstack/rea
 import { UsersService } from "@Services/admin/rbac/usersService";
 import { User } from "@Types/admin/rbac/userTypes";
 import { Role } from "@Types/admin/rbac/roleTypes";
+import { AxiosError } from "axios";
 
 type ToastCallback = (message: string, type?: "success" | "error" | "info") => void;
 
@@ -65,34 +66,61 @@ export function useUserManager(options?: { id?: string | null; search?: string; 
   });
 
   // Mutations
-  const createUser = useMutation<User, Error, User>({
+  const createUser = useMutation<User, unknown, User>({
     mutationFn: (payload: User) => UsersService.createUser(payload),
     onSuccess: (created: User) => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       queryClient.invalidateQueries({ queryKey: ["user", created.id] });
       onToast?.("User created successfully", "success");
     },
-    onError: () => onToast?.("Failed to create user", "error"),
+    onError: (err: unknown) => {
+      const error = err as AxiosError;
+      if (error.response?.status === 403) {
+        onToast?.("Forbidden: You do not have permission to create user", "error");
+      } else if (error.response?.status === 401) {
+        onToast?.("Unauthorized: Please login first", "error");
+      } else {
+        onToast?.("Failed to create user", "error");
+      }
+    },
   });
 
-  const updateUser = useMutation<User, Error, { id: string; payload: Partial<User> }>({
-    mutationFn: ({ id, payload }: { id: string; payload: Partial<User> }) => UsersService.updateUser(id, payload),
+  const updateUser = useMutation<User, unknown, { id: string; payload: Partial<User> }>({
+    mutationFn: ({ id, payload }: { id: string; payload: User }) => UsersService.updateUser(id, payload),
     onSuccess: (updated: User) => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       queryClient.invalidateQueries({ queryKey: ["user", updated.id] });
       onToast?.("User updated successfully", "success");
     },
-    onError: () => onToast?.("Failed to update user", "error"),
+    onError: (err: unknown) => {
+      const error = err as AxiosError;
+      if (error.response?.status === 403) {
+        onToast?.("Forbidden: You do not have permission to update this user", "error");
+      } else if (error.response?.status === 401) {
+        onToast?.("Unauthorized: Please login first", "error");
+      } else {
+        onToast?.("Failed to update user", "error");
+      }
+    },
   });
 
-  const deleteUser = useMutation<void, Error, string>({
+  const deleteUser = useMutation<void, unknown, string>({
     mutationFn: (userId: string) => UsersService.deleteUser(userId),
     onSuccess: (_data: void, userId: string) => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       queryClient.invalidateQueries({ queryKey: ["user", userId] });
       onToast?.("User deleted successfully", "success");
     },
-    onError: () => onToast?.("Failed to delete user", "error"),
+    onError: (err: unknown) => {
+      const error = err as AxiosError;
+      if (error.response?.status === 403) {
+        onToast?.("Forbidden: You do not have permission to delete this user", "error");
+      } else if (error.response?.status === 401) {
+        onToast?.("Unauthorized: Please login first", "error");
+      } else {
+        onToast?.("Failed to delete user", "error");
+      }
+    },
   });
 
   const assignRole = useMutation<void, Error, { userId: string; roleId: number }>({
@@ -101,7 +129,16 @@ export function useUserManager(options?: { id?: string | null; search?: string; 
       queryClient.invalidateQueries({ queryKey: ["userRoles", userId] });
       onToast?.("Role assigned successfully", "success");
     },
-    onError: () => onToast?.("Failed to assign role", "error"),
+    onError: (err: unknown) => {
+      const error = err as AxiosError;
+      if (error.response?.status === 403) {
+        onToast?.("Forbidden: You do not have permission to assign role", "error");
+      } else if (error.response?.status === 401) {
+        onToast?.("Unauthorized: Please login first", "error");
+      } else {
+        onToast?.("Failed to assign role", "error");
+      }
+    },
   });
 
   const revokeRole = useMutation<void, Error, { userId: string; roleId: number }>({
@@ -110,7 +147,16 @@ export function useUserManager(options?: { id?: string | null; search?: string; 
       queryClient.invalidateQueries({ queryKey: ["userRoles", userId] });
       onToast?.("Role revoked successfully", "success");
     },
-    onError: () => onToast?.("Failed to revoke role", "error"),
+    onError: (err: unknown) => {
+      const error = err as AxiosError;
+      if (error.response?.status === 403) {
+        onToast?.("Forbidden: You do not have permission to revoke role", "error");
+      } else if (error.response?.status === 401) {
+        onToast?.("Unauthorized: Please login first", "error");
+      } else {
+        onToast?.("Failed to revoke role", "error");
+      }
+    },
   });
 
   return {

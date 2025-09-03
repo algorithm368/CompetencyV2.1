@@ -16,7 +16,7 @@ const AdminNavbar: React.FC<AdminNavbarProps> = ({ onToggleSidebar }) => {
   const [loginOpen, setLoginOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-16 bg-white border border-gray-200 z-40 flex items-center px-4 md:px-6 transition-all duration-200">
+    <header className="fixed top-0 left-0 z-40 right-0 h-16 bg-white border border-gray-200 flex items-center px-4 md:px-6 transition-all duration-200">
       {/* Logo */}
       <div className="flex items-center space-x-3">
         <img src="/src/assets/competency-logo.png" alt="Logo" className="h-9 w-9 rounded-full object-cover" />

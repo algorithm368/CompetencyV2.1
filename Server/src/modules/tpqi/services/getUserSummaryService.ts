@@ -98,9 +98,9 @@ export async function getUserCareerSummaryByUserId(userId: string): Promise<User
         userEmail: user.email, // Use the email from competency database
       },
       include: {
-        Career: true,
-        Level: true,
-        CareerLevel: true,
+        career: true,
+        level: true,
+        careerLevel: true,
       },
       orderBy: [{ skillPercent: "desc" }, { knowledgePercent: "desc" }, { careerId: "asc" }],
     });
@@ -114,9 +114,9 @@ export async function getUserCareerSummaryByUserId(userId: string): Promise<User
     const careerSummaries: CareerSummaryInfo[] = summaryData.map((summary) => ({
       id: summary.id,
       careerId: summary.careerId,
-      careerName: summary.Career?.name || null,
+      careerName: summary.career?.name || null,
       levelId: summary.levelId,
-      levelName: summary.Level?.name || null,
+      levelName: summary.level?.name || null,
       careerLevelId: summary.careerLevelId,
       skillPercent: summary.skillPercent ? Number(summary.skillPercent) : null,
       knowledgePercent: summary.knowledgePercent ? Number(summary.knowledgePercent) : null,

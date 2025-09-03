@@ -28,6 +28,10 @@ export class BaseRepository<T extends Record<string, any>, K extends keyof T> {
     return this.manager.delete<T>({ where: { [this.pkField]: id } as Record<K, T[K]> }, actor, requestId, undefined, txClient);
   }
 
+  async count(where?: any, txClient?: any) {
+    return this.manager.count({ where }, txClient);
+  }
+
   /** Paginate with offset */
   async paginateOffset(page: number, perPage: number, args?: Parameters<DatabaseManagement<any>["findMany"]>[0], txClient?: any): Promise<{ data: T[]; total: number }> {
     const skip = (page - 1) * perPage;

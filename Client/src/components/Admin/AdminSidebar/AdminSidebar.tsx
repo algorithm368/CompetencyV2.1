@@ -14,7 +14,7 @@ const mainMenu = [
   { label: "Dashboard", path: "/admin/dashboard", icon: <FiHome /> },
   { label: "Users", path: "/admin/users", icon: <FiUsers /> },
   { label: "Session Management", path: "/admin/session", icon: <FiLock /> },
-  { label: "Backup", path: "/admin/backup", icon: <FiCopy /> },
+  // { label: "Backup", path: "/admin/backup", icon: <FiCopy /> },
   { label: "Logs", path: "/admin/logs", icon: <FiBarChart2 /> },
 ];
 
@@ -49,7 +49,7 @@ const frameworks = [
       { label: "Skill", path: "/admin/tpqi/skill" },
       { label: "Occupational", path: "/admin/tpqi/occupational" },
       { label: "Knowledge", path: "/admin/tpqi/knowledge" },
-      { label: "Unit Code", path: "/admin/tpqi/unitcode" }
+      { label: "Unit Code", path: "/admin/tpqi/unitcode" },
     ],
   },
   {

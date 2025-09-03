@@ -17,15 +17,11 @@ export function useRolePermissionManager(roleId: number | null, onToast?: ToastC
     enabled: roleId !== null,
   });
 
-  // Assign permission
-  const assignPermissionToRole = useMutation<
-    RolePermission, // return type
-    Error,
-    { roleId: number; permissionId: number }
-  >({
-    mutationFn: ({ roleId, permissionId }) => RolePermissionsService.assignPermissionToRole(roleId, permissionId),
-    onSuccess: (_, { roleId }) => {
-      queryClient.invalidateQueries({ queryKey: ["rolePermissions", roleId] });
+  // Assign
+  const assignPermissionToRole = useMutation<RolePermission, Error, { roleId: number; assetId: number; operationId: number }>({
+    mutationFn: ({ roleId, assetId, operationId }: { roleId: number; assetId: number; operationId: number }) => RolePermissionsService.assignPermissionToRole(roleId, assetId, operationId),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["rolePermissions", variables.roleId] });
       onToast?.("Permission assigned to role successfully", "success");
     },
     onError: () => {
@@ -33,15 +29,12 @@ export function useRolePermissionManager(roleId: number | null, onToast?: ToastC
     },
   });
 
-  // Revoke permission
-  const revokePermissionFromRole = useMutation<void, Error, { roleId: number; permissionId: number }>({
-    mutationFn: ({ roleId, permissionId }) => RolePermissionsService.revokePermissionFromRole(roleId, permissionId),
-    onSuccess: (_, { roleId }) => {
-      queryClient.invalidateQueries({ queryKey: ["rolePermissions", roleId] });
+  // Revoke
+  const revokePermissionFromRole = useMutation<void, Error, { roleId: number; assetId: number; operationId: number }>({
+    mutationFn: ({ roleId, assetId, operationId }: { roleId: number; assetId: number; operationId: number }) => RolePermissionsService.revokePermissionFromRole(roleId, assetId, operationId),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["rolePermissions", variables.roleId] });
       onToast?.("Permission revoked from role successfully", "success");
-    },
-    onError: () => {
-      onToast?.("Failed to revoke permission from role", "error");
     },
   });
 

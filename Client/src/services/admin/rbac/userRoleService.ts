@@ -22,6 +22,7 @@ export const UserRoleService = {
     const res: AxiosResponse<UserRoleListResponse> = await api.get("/admin/rbac/user-roles", {
       params,
     });
+    console.log(res.data);
 
     return res.data;
   },

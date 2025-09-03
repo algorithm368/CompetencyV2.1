@@ -2,10 +2,10 @@ import { AxiosResponse } from "axios";
 import api from "@Services/api";
 import { User } from "@Types/admin/rbac/userTypes";
 import { Role } from "@Types/admin/rbac/roleTypes";
-import { Session } from "@Types/admin/rbac/sessionTypes";
+import { SessionView } from "@Types/admin/rbac/sessionTypes";
 
 export interface UserWithStatus extends User {
-  sessions?: Session[];
+  sessions?: SessionView[];
   status: "online" | "offline";
 }
 export interface UserPageResult {
@@ -58,6 +58,12 @@ export const UsersService = {
 
   getUserRoles: async (userId: string): Promise<Role[]> => {
     const res: AxiosResponse<Role[]> = await api.get(`/admin/rbac/user-roles/user/${userId}`);
+    return res.data;
+  },
+  searchUsersByEmail: async (email: string): Promise<User[]> => {
+    const params = new URLSearchParams();
+    params.append("email", email);
+    const res: AxiosResponse<User[]> = await api.get("/admin/rbac/users/search-by-email", { params });
     return res.data;
   },
 };

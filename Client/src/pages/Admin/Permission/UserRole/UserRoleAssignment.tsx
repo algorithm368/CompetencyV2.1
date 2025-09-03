@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { FiPlus, FiSearch, FiSettings } from "react-icons/fi";
 import { RowActions, Button, Input, Toast, DataTable } from "@Components/Common/ExportComponent";
 import { useUserRoleManager } from "@Hooks/admin/rbac/useUserRoleManager";
@@ -15,9 +15,10 @@ export default function UserRoleAssignmentPage() {
   const [page, setPage] = useState(1);
   const perPage = 10;
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
+
   const { rolesQuery } = useRoleManager({});
   const allRoles = rolesQuery.data?.data ?? [];
-  // Debounce search
+
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedSearchText(searchText), 500);
     return () => clearTimeout(handler);
@@ -31,7 +32,6 @@ export default function UserRoleAssignmentPage() {
 
   const { fetchPage, assignRolesToUser, revokeRoleFromUser } = useUserRoleManager({ search: debouncedSearchText, page, perPage }, handleToast);
 
-  // Modal handlers
   const openAssignModal = (role?: UserRole) => {
     setSelectedUserRole(role ?? null);
     setModalType("assign");
@@ -45,7 +45,6 @@ export default function UserRoleAssignmentPage() {
     setModalType(null);
   };
 
-  // Confirmation handlers
   const confirmAssign = (userId: string, roleIds: number[]) => {
     const dto: UserRoleAssignmentDto = { userId, roleIds };
     assignRolesToUser.mutate(dto, {

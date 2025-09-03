@@ -1,17 +1,32 @@
-// --- RolePermission ---
-import { Permission } from "./permissionTypes";
-
+import { Role } from "./roleTypes";
 export interface RolePermission {
   id: number;
   roleId: number;
   permissionId: number;
-  grantedAt: string;
+  grantedAt: string | Date;
 
-  role?: {
+  role?: Role;
+
+  permission?: {
     id: number;
-    name: string;
-    description?: string | null;
-  };
+    operationId: number;
+    assetId: number;
+    createdAt: string | Date;
+    updatedAt: string | Date;
 
-  permission?: Permission; // ใช้ type Permission ที่รวม operation และ asset แล้ว
+    operation?: {
+      id: number;
+      name: string;
+      description?: string | null;
+      updatedAt: string | Date;
+    };
+
+    asset?: {
+      id: number;
+      tableName: string;
+      description?: string | null;
+      updatedAt: string | Date;
+      instances?: any[];
+    };
+  };
 }

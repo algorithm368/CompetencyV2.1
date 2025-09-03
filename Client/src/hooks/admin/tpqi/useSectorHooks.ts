@@ -1,21 +1,9 @@
-import {
-  useQuery,
-  useQueries,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useQuery, useQueries, useMutation, useQueryClient } from "@tanstack/react-query";
 import { SectorService } from "@Services/admin/tpqi/sectorServices";
-import {
-  Sector,
-  CreateSectorDto,
-  UpdateSectorDto,
-  SectorPageResult,
-} from "@Types/tpqi/sectorTypes";
+import { Sector, CreateSectorDto, UpdateSectorDto, SectorPageResult } from "@Types/tpqi/sectorTypes";
+import { AxiosError } from "axios";
 
-type ToastCallback = (
-  message: string,
-  type?: "success" | "error" | "info"
-) => void;
+type ToastCallback = (message: string, type?: "success" | "error" | "info") => void;
 
 export function useSectorManager(
   options?: {
@@ -27,19 +15,10 @@ export function useSectorManager(
   },
   onToast?: ToastCallback
 ) {
-  const {
-    id = null,
-    search = "",
-    page = 1,
-    perPage = 10,
-    initialPrefetchPages = 3,
-  } = options || {};
+  const { id = null, search = "", page = 1, perPage = 10, initialPrefetchPages = 3 } = options || {};
   const queryClient = useQueryClient();
 
-  const fetchPage = async (
-    pageIndex: number,
-    pageSize: number
-  ): Promise<{ data: Sector[]; total: number }> => {
+  const fetchPage = async (pageIndex: number, pageSize: number): Promise<{ data: Sector[]; total: number }> => {
     const pageNumber = pageIndex + 1;
     const result = await SectorService.getAll(search, pageNumber, pageSize);
     return {
@@ -74,17 +53,11 @@ export function useSectorManager(
     return currentPageQuery.data;
   })();
 
-  const isLoading =
-    prefetchQueries.some((q) => q.isLoading) ||
-    (page > initialPrefetchPages && currentPageQuery.isLoading);
+  const isLoading = prefetchQueries.some((q) => q.isLoading) || (page > initialPrefetchPages && currentPageQuery.isLoading);
 
-  const isError =
-    prefetchQueries.some((q) => q.isError) ||
-    (page > initialPrefetchPages && currentPageQuery.isError);
+  const isError = prefetchQueries.some((q) => q.isError) || (page > initialPrefetchPages && currentPageQuery.isError);
 
-  const error =
-    prefetchQueries.find((q) => q.error)?.error ||
-    (page > initialPrefetchPages && currentPageQuery.error);
+  const error = prefetchQueries.find((q) => q.error)?.error || (page > initialPrefetchPages && currentPageQuery.error);
 
   const sectorQuery = useQuery<Sector, Error>({
     queryKey: ["sectors", id],
@@ -97,37 +70,58 @@ export function useSectorManager(
     enabled: id !== null,
   });
 
-  const createSector = useMutation<Sector, Error, CreateSectorDto>({
+  const createSector = useMutation<Sector, unknown, CreateSectorDto>({
     mutationFn: (dto) => SectorService.create(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sectors"] });
       onToast?.("Sector created successfully", "success");
     },
-    onError: (error) => {
-      onToast?.(`Failed to create sector: ${error.message}`, "error");
+    onError: (err: unknown) => {
+      const error = err as AxiosError;
+      if (error.response?.status === 403) {
+        onToast?.("Forbidden: You do not have permission to create sector", "error");
+      } else if (error.response?.status === 401) {
+        onToast?.("Unauthorized: Please login first", "error");
+      } else {
+        onToast?.("Failed to create sector", "error");
+      }
     },
   });
 
-  const updateSector = useMutation<Sector, Error, { id: number; data: UpdateSectorDto }>({
+  const updateSector = useMutation<Sector, unknown, { id: number; data: UpdateSectorDto }>({
     mutationFn: ({ id, data }) => SectorService.update(id, data),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: ["sectors"] });
       queryClient.invalidateQueries({ queryKey: ["sectors", updated.id] });
       onToast?.("Sector updated successfully", "success");
     },
-    onError: (error) => {
-      onToast?.(`Failed to update sector: ${error.message}`, "error");
+    onError: (err: unknown) => {
+      const error = err as AxiosError;
+      if (error.response?.status === 403) {
+        onToast?.("Forbidden: You do not have permission to update sector", "error");
+      } else if (error.response?.status === 401) {
+        onToast?.("Unauthorized: Please login first", "error");
+      } else {
+        onToast?.("Failed to update sector", "error");
+      }
     },
   });
 
-  const deleteSector = useMutation<void, Error, number>({
+  const deleteSector = useMutation<void, unknown, number>({
     mutationFn: (delId) => SectorService.delete(delId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sectors"] });
       onToast?.("Sector deleted successfully", "success");
     },
-    onError: (error) => {
-      onToast?.(`Failed to delete sector: ${error.message}`, "error");
+    onError: (err: unknown) => {
+      const error = err as AxiosError;
+      if (error.response?.status === 403) {
+        onToast?.("Forbidden: You do not have permission to delete sector", "error");
+      } else if (error.response?.status === 401) {
+        onToast?.("Unauthorized: Please login first", "error");
+      } else {
+        onToast?.("Failed to delete sector", "error");
+      }
     },
   });
 

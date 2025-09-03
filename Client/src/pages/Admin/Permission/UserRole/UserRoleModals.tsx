@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Modal, Button, LoadingButton, Checkbox } from "@Components/Common/ExportComponent";
+import React, { useState, useEffect, useRef } from "react";
+import { Modal, Button, LoadingButton, Checkbox, AutocompleteInput } from "@Components/Common/ExportComponent";
 import { UserRole } from "@Types/admin/rbac/userRoleTypes";
 
 interface AssignRoleModalProps {
@@ -7,18 +7,24 @@ interface AssignRoleModalProps {
   selectedRole?: UserRole | null;
   allRoles: { id: number; name: string }[];
   onClose: () => void;
-  onConfirm: (userEmail: string, roleIds: number[]) => void;
+  onConfirm: (userId: string, roleIds: number[]) => void;
   isLoading?: boolean;
 }
 
 export const AssignRoleModal: React.FC<AssignRoleModalProps> = ({ isOpen, selectedRole, allRoles, onClose, onConfirm, isLoading = false }) => {
   const [userEmail, setUserEmail] = useState(selectedRole?.userEmail || "");
+  const [userId, setUserId] = useState<string | null>(selectedRole?.userId || null);
   const [selectedRoleIds, setSelectedRoleIds] = useState<number[]>(selectedRole ? [selectedRole.roleId] : []);
+  const [searchResults, setSearchResults] = useState<{ email: string; id: string }[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       setUserEmail(selectedRole?.userEmail || "");
+      setUserId(selectedRole?.userId || null);
       setSelectedRoleIds(selectedRole ? [selectedRole.roleId] : []);
+      setSearchResults([]);
     }
   }, [isOpen, selectedRole]);
 
@@ -26,9 +32,28 @@ export const AssignRoleModal: React.FC<AssignRoleModalProps> = ({ isOpen, select
     setSelectedRoleIds((prev) => (prev.includes(roleId) ? prev.filter((id) => id !== roleId) : [...prev, roleId]));
   };
 
+  const handleSearch = (value: string) => {
+    setUserEmail(value);
+    setUserId(null); // reset userId until selected from list
+
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(async () => {
+      if (!value) return setSearchResults([]);
+      setSearchLoading(true);
+      try {
+        const res = await (await import("@Services/admin/rbac/usersService")).UsersService.searchUsersByEmail(value);
+        setSearchResults(res.map((u: any) => ({ email: u.email, id: u.id })));
+      } catch {
+        setSearchResults([]);
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 300);
+  };
+
   const handleConfirm = () => {
-    if (!userEmail || selectedRoleIds.length === 0) return;
-    onConfirm(userEmail, selectedRoleIds);
+    if (!userId || selectedRoleIds.length === 0) return;
+    onConfirm(userId, selectedRoleIds);
   };
 
   return (
@@ -50,12 +75,27 @@ export const AssignRoleModal: React.FC<AssignRoleModalProps> = ({ isOpen, select
     >
       <div className="space-y-4">
         <div className="flex flex-col">
-          <label>User Email</label>
-          <input type="email" className="border rounded p-2" value={userEmail} onChange={(e) => setUserEmail(e.target.value)} placeholder="Enter user email" disabled={isLoading} />
+          <label className="font-medium text-sm mb-1">User Email</label>
+          <AutocompleteInput
+            options={searchResults.map((u) => u.email)}
+            value={userEmail}
+            onChange={handleSearch}
+            onSelect={(email: string) => {
+              const selected = searchResults.find((u) => u.email === email);
+              if (selected) {
+                setUserId(selected.id);
+                setUserEmail(selected.email);
+              }
+            }}
+            placeholder="Search user by email"
+            disabled={isLoading}
+            isLoading={searchLoading}
+            className="border rounded p-2"
+          />
         </div>
 
         <div className="flex flex-col">
-          <label>Select Roles</label>
+          <label className="font-medium text-sm mb-1">Select Roles</label>
           <div className="flex flex-col space-y-2 max-h-64 overflow-y-auto border p-2 rounded">
             {allRoles.map((role) => (
               <label key={role.id} className="flex items-center space-x-2">

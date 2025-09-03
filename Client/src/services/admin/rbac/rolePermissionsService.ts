@@ -3,13 +3,13 @@ import api from "@Services/api";
 import { RolePermission } from "@Types/admin/rbac/rolePermissionTypes";
 
 export const RolePermissionsService = {
-  assignPermissionToRole: async (roleId: number, permissionId: number): Promise<RolePermission> => {
-    const res: AxiosResponse<RolePermission> = await api.post("/admin/rbac/role-permissions", { roleId, permissionId });
+  assignPermissionToRole: async (roleId: number, assetId: number, operationId: number): Promise<RolePermission> => {
+    const res = await api.post("/admin/rbac/role-permissions", { roleId, assetId, operationId });
     return res.data;
   },
 
-  revokePermissionFromRole: async (roleId: number, permissionId: number): Promise<void> => {
-    await api.delete("/admin/rbac/role-permissions", { data: { roleId, permissionId } });
+  revokePermissionFromRole: async (roleId: number, assetId: number, operationId: number): Promise<void> => {
+    await api.delete("/admin/rbac/role-permissions", { data: { roleId, assetId, operationId } });
   },
 
   getRolePermissions: async (roleId: number): Promise<RolePermission[]> => {

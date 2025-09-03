@@ -48,20 +48,31 @@ class AuthService {
     // Find or create user
     let user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      user = await prisma.user.create({ data: { email, firstNameEN, lastNameEN, profileImage } });
-    } else {
-      const needsUpdate = !user.profileImage || user.profileImage === "noimage.jpg" || !user.firstNameEN || !user.lastNameEN;
+      // Find default role
+      const defaultRole = await prisma.role.findUnique({
+        where: { name: DEFAULT_USER_ROLE },
+      });
+      if (!defaultRole) throw new Error(`Default role "${DEFAULT_USER_ROLE}" not found`);
 
-      if (needsUpdate) {
-        user = await prisma.user.update({
-          where: { email },
-          data: {
-            profileImage: user.profileImage === "noimage.jpg" ? profileImage : undefined,
-            firstNameEN: user.firstNameEN || firstNameEN,
-            lastNameEN: user.lastNameEN || lastNameEN,
+      // Create user + assign default role
+      user = await prisma.user.create({
+        data: {
+          email,
+          firstNameEN,
+          lastNameEN,
+          profileImage,
+          userRoles: {
+            create: [
+              {
+                roleId: defaultRole.id,
+              },
+            ],
           },
-        });
-      }
+        },
+        include: {
+          userRoles: true,
+        },
+      });
     }
 
     // Load roles

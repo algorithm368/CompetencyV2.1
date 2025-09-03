@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { FiCheckCircle, FiXCircle, FiInfo, FiX } from "react-icons/fi";
 
 type ToastType = "success" | "error" | "info";
@@ -15,16 +16,8 @@ export default function Toast({ message, type = "info", duration = 3000, onClose
 
   useEffect(() => {
     setVisible(true);
-
-    const hideTimer = setTimeout(() => {
-      setVisible(false);
-    }, duration);
-
-    // After fade-out animation, call onClose
-    const closeTimer = setTimeout(() => {
-      onClose();
-    }, duration + 300);
-
+    const hideTimer = setTimeout(() => setVisible(false), duration);
+    const closeTimer = setTimeout(onClose, duration + 300);
     return () => {
       clearTimeout(hideTimer);
       clearTimeout(closeTimer);
@@ -43,7 +36,7 @@ export default function Toast({ message, type = "info", duration = 3000, onClose
     info: "bg-blue-50 border-blue-300",
   };
 
-  return (
+  const toastElement = (
     <div
       role="alert"
       aria-live="assertive"
@@ -54,7 +47,7 @@ export default function Toast({ message, type = "info", duration = 3000, onClose
         ${bgColors[type]}
         transition-opacity duration-300
         ${visible ? "opacity-100" : "opacity-0 pointer-events-none"}
-        z-1000
+        z-[9999]
       `}
     >
       {icons[type]}
@@ -71,4 +64,5 @@ export default function Toast({ message, type = "info", duration = 3000, onClose
       </button>
     </div>
   );
+  return createPortal(toastElement, document.body);
 }

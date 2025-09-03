@@ -12,6 +12,8 @@ router.get("/users/:id", withAuth({ resource: "User", action: "read" }, UserCont
 
 router.get("/users/by-email", withAuth({ resource: "User", action: "read" }, UserController.getUserByEmail));
 
+router.get("/users/search-by-email", withAuth({ resource: "User", action: "read" }, UserController.searchUsersByEmail));
+
 router.put("/users/:id", withAuth({ resource: "User", action: "update" }, UserController.updateUser));
 
 // ลบ user เฉพาะ admin

@@ -33,17 +33,28 @@ export class UserRoleController {
   // มอบ role ให้ user
   static async assignRole(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
-      const { userId, roleId } = req.body;
+      const { userId, roleIds } = req.body;
       const actor = req.user?.userId || "system";
 
-      if (!userId || typeof roleId !== "number") {
-        return res.status(400).json({ error: "userId and roleId are required" });
+      if (!userId || !Array.isArray(roleIds) || roleIds.length === 0) {
+        console.warn("[RBAC] Missing userId or roleIds in request body", req.body);
+        return res.status(400).json({ error: "userId and roleIds are required" });
       }
 
-      const assigned = await service.assignRoleToUser(userId, roleId, actor);
-      return res.status(201).json(UserRoleView(assigned));
+      const assignedRoles = [];
+      for (const roleId of roleIds) {
+        try {
+          const assigned = await service.assignRoleToUser(userId, roleId, actor);
+          assignedRoles.push(assigned);
+        } catch (err: any) {
+          console.warn(`[RBAC] Failed to assign role ${roleId} to ${userId}:`, err.message);
+        }
+      }
+
+      return res.status(201).json(assignedRoles.map(UserRoleView));
     } catch (error: any) {
-      return res.status(400).json({ error: error.message });
+      console.error("[RBAC] assignRole error:", error);
+      return res.status(500).json({ error: error.message });
     }
   }
 

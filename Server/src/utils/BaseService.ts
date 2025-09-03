@@ -12,13 +12,19 @@ export class BaseService<T extends Record<string, any>, K extends keyof T> {
     const where: any = {};
 
     if (search && search.trim()) {
+      const trimmed = search.trim();
       where.OR = this.searchFields.map((fieldPath) => {
         const parts = fieldPath.split(".");
-        let nested: any = { contains: search.trim() };
-        for (let i = parts.length - 1; i >= 1; i--) {
-          nested = { [parts[i]]: nested };
+        if (parts.length === 1) {
+          const key = parts[0] as keyof T;
+          return { [key]: typeof trimmed === "string" ? { contains: trimmed } : trimmed };
+        } else {
+          let nested: any = { contains: trimmed };
+          for (let i = parts.length - 1; i >= 1; i--) {
+            nested = { [parts[i]]: nested };
+          }
+          return { [parts[0]]: nested };
         }
-        return { [parts[0]]: nested };
       });
     }
 
@@ -40,7 +46,6 @@ export class BaseService<T extends Record<string, any>, K extends keyof T> {
 
     return { data, total };
   }
-
   /**
    * Get record by primary key.
    */

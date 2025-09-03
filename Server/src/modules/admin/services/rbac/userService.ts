@@ -5,7 +5,7 @@ import { BaseService } from "@Utils/BaseService";
 
 export class UserService extends BaseService<User, keyof User> {
   constructor() {
-    super(new UserRepository(), ["id", "email", "firstNameTH", "lastNameTH"], "id", { sessions: true });
+    super(new UserRepository(), ["email", "firstNameTH", "lastNameTH"], "id");
   }
 
   async getUserByEmail(email: string): Promise<User | null> {
@@ -64,5 +64,14 @@ export class UserService extends BaseService<User, keyof User> {
     });
 
     return { data: dataWithStatus, total };
+  }
+
+  async searchUsersByEmail(email: string, limit = 10): Promise<User[]> {
+    if (!email.trim()) return [];
+    const users = await this.repo.findMany({
+      where: { email: { contains: email.trim(), mode: "insensitive" } },
+      take: limit,
+    });
+    return users;
   }
 }

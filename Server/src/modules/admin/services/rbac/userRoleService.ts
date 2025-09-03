@@ -4,26 +4,37 @@ import { BaseService } from "@Utils/BaseService";
 
 export class UserRoleService extends BaseService<UserRole, keyof UserRole> {
   constructor() {
-    super(new UserRolesRepository(), ["userId", "roleId"], "id");
+    super(new UserRolesRepository(), ["userId"], "id");
   }
 
   async assignRoleToUser(userId: string, roleId: number, actor: string = "system") {
-    const existing = await this.repo.findFirst({
-      where: { userId, roleId },
-    });
-    if (existing) {
-      throw new Error("Role already assigned to user");
+    try {
+      console.log(`[RBAC] assignRoleToUser called`, { userId, roleId, actor });
+
+      const existing = await this.repo.findFirst({ where: { userId, roleId } });
+      if (existing) {
+        console.log(`[RBAC] Role already assigned to user`, { userId, roleId });
+        throw new Error("Role already assigned to user");
+      }
+
+      // log ก่อน create
+      console.log(`[RBAC] Creating UserRole...`, { userId, roleId, assignedAt: new Date() });
+
+      const result = await this.repo.create({ userId, roleId, assignedAt: new Date() }, actor);
+
+      // log หลัง create
+      console.log(`[RBAC] UserRole created successfully`, { result });
+
+      return result;
+    } catch (error) {
+      console.error(`[RBAC] Failed to assign role ${roleId} to user ${userId}:`, error);
+      throw error;
     }
-    return this.repo.create({ userId, roleId, assignedAt: new Date() }, actor);
   }
 
   async revokeRoleFromUser(userId: string, roleId: number, actor: string = "system") {
-    const existing = await this.repo.findFirst({
-      where: { userId, roleId },
-    });
-    if (!existing) {
-      throw new Error("Role not assigned to user");
-    }
+    const existing = await this.repo.findFirst({ where: { userId, roleId } });
+    if (!existing) throw new Error("Role not assigned to user");
     return this.repo.delete(existing.id, actor);
   }
 
@@ -38,28 +49,17 @@ export class UserRoleService extends BaseService<UserRole, keyof UserRole> {
 
   async getAll(search?: string, page?: number, perPage?: number) {
     const where: any = {};
-    if (search) {
-      const userMatch = search.match(/user:(\w+)/);
-      if (userMatch) where.userId = userMatch[1];
 
-      const roleMatch = search.match(/role:(\d+)/);
-      if (roleMatch) where.roleId = parseInt(roleMatch[1], 10);
-
-      where.OR = this.searchFields.map((fieldPath) => {
-        const parts = fieldPath.split(".");
-        let nested: any = { contains: search.trim() };
-        for (let i = parts.length - 1; i >= 1; i--) {
-          nested = { [parts[i]]: nested };
-        }
-        return { [parts[0]]: nested };
-      });
+    if (search && search.trim()) {
+      const trimmed = search.trim();
+      where.user = { email: { contains: trimmed } };
     }
 
     const commonQuery: any = {
       where,
       include: {
-        role: { select: { id: true, name: true, description: true } }, // role info
-        user: { select: { email: true } }, // user email
+        role: { select: { id: true, name: true, description: true } },
+        user: { select: { id: true, email: true } },
       },
     };
 

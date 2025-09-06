@@ -74,6 +74,7 @@ const SfiaSkillLevels: React.FC<SfiaSkillLevelsProps> = memo(
       error: evidenceError,
     } = useEvidenceFetcher(skillCode);
 
+
     useEffect(() => {
       if (evidenceData && Object.keys(evidenceData).length > 0) {
         initializeEvidenceUrls(

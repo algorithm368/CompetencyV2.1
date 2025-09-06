@@ -1,4 +1,5 @@
 import api from "@Services/api";
+import axios from "axios";
 import { ApiResponse } from "../../types/competency/ApiResponse";
 
 /**
@@ -49,16 +50,23 @@ export class GetSfiaSummaryService {
       );
       return response.data;
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error("Error fetching SFIA summary:", error.message);
-        throw new Error(
-          (error as { response?: { data?: { message?: string } } })?.response
-            ?.data?.message || "Failed to fetch SFIA summary"
-        );
-      } else {
-        console.error("Unexpected error:", error);
-        throw new Error("Failed to fetch SFIA summary");
+      // Gracefully handle 404: treat as empty portfolio instead of an error
+      if (axios.isAxiosError(error) && error.response?.status === 404) {
+        const empty: SfiaSummaryStats = {
+          totalSkills: 0,
+          averagePercent: 0,
+          completedSkills: 0,
+          skillSummaries: [],
+        };
+        return { success: true, data: empty };
       }
+
+      // Other errors: propagate with friendly message
+      const message = axios.isAxiosError(error)
+        ? error.response?.data?.message || "Failed to fetch SFIA summary"
+        : "Failed to fetch SFIA summary";
+      console.error("Error fetching SFIA summary:", message);
+      throw new Error(message);
     }
   }
 

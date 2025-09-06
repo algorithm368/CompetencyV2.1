@@ -1,15 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
 import { GetSfiaEvidenceService } from "../../services/getSfiaEvidenceAPI";
 
-interface EvidenceData {
+interface EvidenceMap {
   [subSkillId: number]: {
     url: string;
-    approvalStatus?: string;
+    approvalStatus?: string | null;
   };
 }
 
 export function useEvidenceFetcher(skillCode: string) {
-  const [evidenceData, setEvidenceData] = useState<EvidenceData>({});
+  const [evidenceData, setEvidenceData] = useState<EvidenceMap>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,42 +27,32 @@ export function useEvidenceFetcher(skillCode: string) {
       });
 
       if (response.success && response.data) {
-        const transformedData: EvidenceData = Object.keys(response.data).reduce(
-          (acc, key) => {
-            const subSkillId = parseInt(key, 10);
-            const evidenceItem =
-              response.data![key as keyof typeof response.data];
+        type EvidenceItem = { id: number; evidenceUrl?: string | null; approvalStatus?: string | null };
+        // response.data.evidences is an array of { id, evidenceUrl, approvalStatus }
+        const transformed: EvidenceMap = (response.data.evidences || []).reduce(
+          (acc: EvidenceMap, item: EvidenceItem) => {
             if (
-              evidenceItem &&
-              typeof evidenceItem === "object" &&
-              !Array.isArray(evidenceItem) &&
-              "url" in evidenceItem
+              item &&
+              typeof item === "object" &&
+              typeof item.id === "number"
             ) {
-              acc[subSkillId] = {
-                url: (evidenceItem as { url: string }).url,
-                approvalStatus: (evidenceItem as { approvalStatus?: string })
-                  .approvalStatus,
-              };
-            }
-            if (
-              evidenceItem &&
-              typeof evidenceItem === "object" &&
-              !Array.isArray(evidenceItem) &&
-              "url" in evidenceItem
-            ) {
-              if (typeof (evidenceItem as { url: string }).url === "string") {
-                acc[subSkillId] = {
-                  url: (evidenceItem as { url: string }).url,
-                  approvalStatus: (evidenceItem as { approvalStatus?: string })
-                    .approvalStatus,
-                };
+              const id = item.id;
+              const url =
+                typeof item.evidenceUrl === "string" ? item.evidenceUrl : "";
+              const approvalStatus =
+                typeof item.approvalStatus === "string"
+                  ? item.approvalStatus
+                  : null;
+              // If multiple records exist per subskill, keep the first non-empty URL
+              if (!acc[id] || (url && !acc[id].url)) {
+                acc[id] = { url, approvalStatus };
               }
             }
             return acc;
           },
-          {} as EvidenceData
+          {} as EvidenceMap
         );
-        setEvidenceData(transformedData);
+        setEvidenceData(transformed);
       } else {
         setEvidenceData({});
         setError(response.message || "No evidence found");

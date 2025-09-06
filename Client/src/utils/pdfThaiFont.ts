@@ -1,33 +1,60 @@
 import jsPDF from "jspdf";
 
+// Cache base64 once to avoid re-downloading the font on subsequent exports
+let cachedBase64: string | null = null;
+
 export async function embedThaiFont(doc: jsPDF): Promise<void> {
   const fontUrl = "/fonts/THSarabunNew.ttf";
-  console.log("Loading Thai font from:", fontUrl);
-  
+
   try {
-    const response = await fetch(fontUrl);
-    if (!response.ok) {
-      console.error("Failed to fetch font, status:", response.status);
-      throw new Error(`Font loading failed: ${response.status}`);
+    // If the font already appears in this document, just select it
+    try {
+      const list: Record<string, unknown> | undefined =
+        typeof (
+          doc as unknown as { getFontList?: () => Record<string, unknown> }
+        ).getFontList === "function"
+          ? (
+              doc as unknown as { getFontList: () => Record<string, unknown> }
+            ).getFontList()
+          : undefined;
+      if (list && Object.hasOwn(list, "THSarabunNew")) {
+        doc.setFont("THSarabunNew", "normal");
+        return;
+      }
+    } catch {
+      // Non-fatal: proceed to ensure registration
     }
-    
-    const buffer = await response.arrayBuffer();
-    const b64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
-    
-    // Add font to VFS
-    doc.addFileToVFS("THSarabunNew.ttf", b64);
-    
-    // Add both normal and bold variants
+
+    // Ensure base64 is available (download only once per session)
+    if (!cachedBase64) {
+      const response = await fetch(fontUrl);
+      if (!response.ok) {
+        throw new Error(`Font loading failed: ${response.status}`);
+      }
+
+      const buffer = await response.arrayBuffer();
+      // Convert ArrayBuffer -> base64 (chunk-safe)
+      const bytes = new Uint8Array(buffer);
+      let binary = "";
+      const chunkSize = 0x8000;
+      for (let i = 0; i < bytes.length; i += chunkSize) {
+        binary += String.fromCharCode(
+          ...bytes.subarray(i, Math.min(i + chunkSize, bytes.length))
+        );
+      }
+      cachedBase64 = btoa(binary);
+    }
+
+    // Register font in this document (VFS and face mapping)
+    doc.addFileToVFS("THSarabunNew.ttf", cachedBase64);
     doc.addFont("THSarabunNew.ttf", "THSarabunNew", "normal");
+    // Map bold to the same file (works reasonably; add a real bold TTF if available)
     doc.addFont("THSarabunNew.ttf", "THSarabunNew", "bold");
-    
-    // Set default font
+
+    // Default to Thai font
     doc.setFont("THSarabunNew", "normal");
-    
-    console.log("Thai font loaded successfully");
   } catch (error) {
     console.error("Error loading Thai font:", error);
-    console.warn("Falling back to default font");
-    // Don't throw error, let it fall back to default font
+    // Fall back gracefully (jsPDF default font)
   }
 }

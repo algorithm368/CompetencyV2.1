@@ -14,14 +14,15 @@ export async function generatePortfolioPdf(
   const contentWidth = pageWidth - 2 * margin;
   let cursorY = margin;
 
-  // CV Color Scheme
+  // Formal CV color scheme (neutral, print-friendly)
   const colors = {
-    primary: [52, 73, 94], // Dark blue-gray
-    secondary: [52, 152, 219], // Professional blue
-    accent: [46, 204, 113], // Green
-    light: [236, 240, 241], // Light gray
-    text: [44, 62, 80], // Dark text
-    muted: [127, 140, 141], // Muted text
+    primary: [33, 37, 41], // near-black
+    secondary: [73, 80, 87], // gray-700
+    accent: [45, 55, 72], // subtle slate
+    light: [245, 246, 248], // very light gray
+    text: [33, 37, 41],
+    muted: [108, 117, 125],
+    tableHead: [230, 230, 230],
   };
 
   // Embed Thai font first
@@ -54,14 +55,66 @@ export async function generatePortfolioPdf(
 
   // Helper function to draw section separator
   const drawSectionSeparator = (y: number) => {
-    doc.setDrawColor(
-      colors.secondary[0],
-      colors.secondary[1],
-      colors.secondary[2]
-    );
-    doc.setLineWidth(3);
+    doc.setDrawColor(colors.secondary[0], colors.secondary[1], colors.secondary[2]);
+    doc.setLineWidth(1.5);
     doc.line(margin, y, pageWidth - margin, y);
     return y + 15;
+  };
+
+  // Helper: render a clean header with name and contact details
+  const renderFormalHeader = (y: number) => {
+    const safeJoin = (parts: (string | null | undefined)[]) =>
+      parts.filter((p) => !!p && String(p).trim().length > 0).join(" • ");
+    const fullNameTH = safeJoin([
+      userProfile.firstNameTH ?? "",
+      userProfile.lastNameTH ?? "",
+    ]);
+    const fullNameEN = safeJoin([
+      userProfile.firstNameEN ?? "",
+      userProfile.lastNameEN ?? "",
+    ]);
+
+    // Name
+    setThaiFont("bold", 22);
+    doc.setTextColor(colors.text[0], colors.text[1], colors.text[2]);
+    renderThaiText(
+      (fullNameTH || fullNameEN || userProfile.email.split("@")[0]).normalize(
+        "NFC"
+      ),
+      margin,
+      y
+    );
+    y += 24;
+
+    // English name (if Thai and English both exist)
+    if (fullNameTH && fullNameEN) {
+      setThaiFont("normal", 12);
+      doc.setTextColor(colors.muted[0], colors.muted[1], colors.muted[2]);
+      renderThaiText(fullNameEN.normalize("NFC"), margin, y);
+      y += 18;
+    }
+
+    // Contact line
+    setThaiFont("normal", 11);
+    doc.setTextColor(colors.secondary[0], colors.secondary[1], colors.secondary[2]);
+    const contact = safeJoin([
+      userProfile.email,
+      userProfile.phone,
+      userProfile.line ? `Line: ${userProfile.line}` : undefined,
+      userProfile.address,
+    ]);
+    if (contact) {
+      renderThaiText(contact.normalize("NFC"), margin, y);
+      y += 14;
+    }
+
+    // Thin separator
+    doc.setDrawColor(colors.secondary[0], colors.secondary[1], colors.secondary[2]);
+    doc.setLineWidth(0.8);
+    doc.line(margin, y, pageWidth - margin, y);
+    y += 18;
+
+    return y;
   };
 
   // Helper function to render metrics cards
@@ -81,21 +134,22 @@ export async function generatePortfolioPdf(
     metrics.forEach((metric, index) => {
       const x = margin + index * (cardWidth + cardSpacing);
 
-      // Card background
-      doc.setFillColor(colors.light[0], colors.light[1], colors.light[2]);
-      doc.rect(x, cursorY, cardWidth, cardHeight, "F");
+  // Card background (formal, subtle border)
+  doc.setFillColor(255, 255, 255);
+  doc.setDrawColor(230, 230, 230);
+  doc.rect(x, cursorY, cardWidth, cardHeight, "FD");
 
       // Progress bar background
-      doc.setFillColor(220, 220, 220);
+  doc.setFillColor(235, 235, 235);
       doc.rect(x + 10, cursorY + cardHeight - 15, cardWidth - 20, 8, "F");
 
       // Progress bar fill
-      doc.setFillColor(metric.color[0], metric.color[1], metric.color[2]);
+  doc.setFillColor(90, 90, 90);
       const progressWidth = (cardWidth - 20) * (metric.progress / 100);
       doc.rect(x + 10, cursorY + cardHeight - 15, progressWidth, 8, "F");
 
       // Metric value
-      doc.setTextColor(metric.color[0], metric.color[1], metric.color[2]);
+  doc.setTextColor(colors.text[0], colors.text[1], colors.text[2]);
       setThaiFont("bold", 18);
       doc.text(
         typeof metric.value === "number"
@@ -112,7 +166,7 @@ export async function generatePortfolioPdf(
 
       // Progress percentage
       setThaiFont("bold", 10);
-      doc.text(`${metric.progress}%`, x + cardWidth - 30, cursorY + 20);
+  doc.text(`${metric.progress}%`, x + cardWidth - 30, cursorY + 20);
     });
 
     return cursorY + cardHeight + 30;
@@ -156,15 +210,10 @@ export async function generatePortfolioPdf(
     return achievementList;
   };
 
-  // Professional Competency Metrics - Dashboard Style
-  cursorY = drawSectionSeparator(cursorY);
-
-  setThaiFont("bold", 16);
-  renderThaiText("COMPETENCY METRICS", margin, cursorY);
-  cursorY += 25;
+  // Header
+  cursorY = renderFormalHeader(cursorY);
 
   const overallStats = portfolioData.overallStats;
-
   const metrics = [
     {
       label: "SFIA Skills",
@@ -186,11 +235,9 @@ export async function generatePortfolioPdf(
     },
   ];
 
-  cursorY = renderMetricsCards(metrics, cursorY);
-
   doc.setTextColor(colors.text[0], colors.text[1], colors.text[2]);
   setThaiFont("bold", 16);
-  renderThaiText("EXECUTIVE SUMMARY", margin, cursorY);
+  renderThaiText("PROFILE SUMMARY", margin, cursorY);
   cursorY += 20;
 
   setThaiFont("normal", 11);
@@ -210,56 +257,15 @@ export async function generatePortfolioPdf(
   doc.text(summaryLines, margin, cursorY);
   cursorY += summaryLines.length * 14 + 25;
 
-  // Professional Competency Metrics - Dashboard Style
+  // Competency overview metrics
   cursorY = drawSectionSeparator(cursorY);
 
   setThaiFont("bold", 16);
-  renderThaiText("COMPETENCY METRICS", margin, cursorY);
+  renderThaiText("COMPETENCY OVERVIEW", margin, cursorY);
   cursorY += 25;
 
-  // Create metrics cards layout
-  const cardWidth = (contentWidth - 20) / 3;
-  const cardHeight = 60;
-  const cardSpacing = 10;
-
-  // metrics already declared above, so no need to redeclare here
-
-  metrics.forEach((metric, index) => {
-    const x = margin + index * (cardWidth + cardSpacing);
-
-    // Card background
-    doc.setFillColor(colors.light[0], colors.light[1], colors.light[2]);
-    doc.rect(x, cursorY, cardWidth, cardHeight, "F");
-
-    // Progress bar background
-    doc.setFillColor(220, 220, 220);
-    doc.rect(x + 10, cursorY + cardHeight - 15, cardWidth - 20, 8, "F");
-
-    // Progress bar fill
-    doc.setFillColor(metric.color[0], metric.color[1], metric.color[2]);
-    const progressWidth = (cardWidth - 20) * (metric.progress / 100);
-    doc.rect(x + 10, cursorY + cardHeight - 15, progressWidth, 8, "F");
-
-    // Metric value
-    doc.setTextColor(metric.color[0], metric.color[1], metric.color[2]);
-    setThaiFont("bold", 18);
-    doc.text(
-      typeof metric.value === "number" ? metric.value.toString() : metric.value,
-      x + 10,
-      cursorY + 20
-    );
-
-    // Metric label
-    doc.setTextColor(colors.text[0], colors.text[1], colors.text[2]);
-    setThaiFont("normal", 10);
-    doc.text(metric.label, x + 10, cursorY + 35);
-
-    // Progress percentage
-    setThaiFont("bold", 10);
-    doc.text(`${metric.progress}%`, x + cardWidth - 30, cursorY + 20);
-  });
-
-  cursorY += cardHeight + 30;
+  // Render metrics cards using helper
+  cursorY = renderMetricsCards(metrics, cursorY);
 
   // Check if we need a new page
   if (cursorY > 650) {
@@ -271,9 +277,9 @@ export async function generatePortfolioPdf(
   if (portfolioData.sfiaSkills.length > 0) {
     cursorY = drawSectionSeparator(cursorY);
 
-    setThaiFont("bold", 16);
-    doc.setTextColor(colors.text[0], colors.text[1], colors.text[2]);
-    renderThaiText("TECHNICAL SKILLS (SFIA FRAMEWORK)", margin, cursorY);
+  setThaiFont("bold", 16);
+  doc.setTextColor(colors.text[0], colors.text[1], colors.text[2]);
+  renderThaiText("TECHNICAL SKILLS (SFIA FRAMEWORK)", margin, cursorY);
     cursorY += 25;
 
     // Group skills by category for better presentation
@@ -331,12 +337,8 @@ export async function generatePortfolioPdf(
         textColor: [colors.text[0], colors.text[1], colors.text[2]],
       },
       headStyles: {
-        fillColor: [
-          colors.secondary[0],
-          colors.secondary[1],
-          colors.secondary[2],
-        ],
-        textColor: [255, 255, 255],
+        fillColor: colors.tableHead as [number, number, number],
+        textColor: [0, 0, 0],
         fontStyle: "bold",
         font: "THSarabunNew",
         fontSize: 11,
@@ -356,7 +358,7 @@ export async function generatePortfolioPdf(
           cellWidth: contentWidth * 0.1,
           halign: "center",
           font: "THSarabunNew",
-          fillColor: [241, 248, 233],
+          fillColor: [245, 245, 245],
         },
       },
     });
@@ -391,9 +393,9 @@ export async function generatePortfolioPdf(
   if (portfolioData.tpqiCareers.length > 0) {
     cursorY = drawSectionSeparator(cursorY);
 
-    setThaiFont("bold", 16);
-    doc.setTextColor(colors.text[0], colors.text[1], colors.text[2]);
-    renderThaiText("CAREER PATHWAY READINESS (TPQI)", margin, cursorY);
+  setThaiFont("bold", 16);
+  doc.setTextColor(colors.text[0], colors.text[1], colors.text[2]);
+  renderThaiText("CAREER PATHWAY READINESS (TPQI)", margin, cursorY);
     cursorY += 25;
 
     const tpqiTableData: string[][] = [];
@@ -422,7 +424,7 @@ export async function generatePortfolioPdf(
       ]);
     });
 
-    autoTable(doc, {
+  autoTable(doc, {
       startY: cursorY,
       head: [
         [
@@ -444,8 +446,8 @@ export async function generatePortfolioPdf(
         textColor: [colors.text[0], colors.text[1], colors.text[2]],
       },
       headStyles: {
-        fillColor: [colors.accent[0], colors.accent[1], colors.accent[2]],
-        textColor: [255, 255, 255],
+        fillColor: colors.tableHead as [number, number, number],
+    textColor: [0, 0, 0],
         fontStyle: "bold",
         font: "THSarabunNew",
         fontSize: 11,
@@ -502,22 +504,14 @@ export async function generatePortfolioPdf(
     cursorY += lines.length * 14 + 5;
   });
 
-  // Professional Footer with Branding
+  // Minimal footer
   const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
 
-    // Footer background
-    doc.setFillColor(colors.light[0], colors.light[1], colors.light[2]);
-    doc.rect(0, 800, pageWidth, 42, "F");
-
     // Footer line
-    doc.setDrawColor(
-      colors.secondary[0],
-      colors.secondary[1],
-      colors.secondary[2]
-    );
-    doc.setLineWidth(2);
+    doc.setDrawColor(colors.secondary[0], colors.secondary[1], colors.secondary[2]);
+    doc.setLineWidth(0.8);
     doc.line(0, 800, pageWidth, 800);
 
     // Footer content
@@ -536,19 +530,10 @@ export async function generatePortfolioPdf(
       820
     );
 
-    // Right side - Page number and professional touch
+  // Right side - Page number
     const pageText = `Page ${i} of ${pageCount}`;
     const textWidth = doc.getTextWidth(pageText);
     doc.text(pageText, pageWidth - margin - textWidth, 820);
-
-    // Professional tagline
-    setThaiFont("normal", 8);
-    doc.setTextColor(colors.muted[0], colors.muted[1], colors.muted[2]);
-    renderThaiText(
-      "Professional Skills Assessment & Career Readiness Profile",
-      margin,
-      832
-    );
   }
 
   // Generate professional filename

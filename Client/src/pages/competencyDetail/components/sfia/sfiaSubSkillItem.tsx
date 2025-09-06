@@ -54,42 +54,26 @@ const useEvidenceFetcher = (
       });
 
       if (response.success && response.data) {
-        const evidences: { id: number; url?: string }[] = Array.isArray(
-          response.data.evidences
-        )
-          ? response.data.evidences
-              .filter(
-                (evidence: unknown): evidence is { id: number; url?: string } =>
-                  typeof evidence === "object" &&
-                  evidence !== null &&
-                  !Array.isArray(evidence) &&
-                  "id" in evidence &&
-                  typeof (evidence as { id: number; url?: string }).id ===
-                    "number"
-              )
-              .map((evidence) => {
-                if (
-                  typeof evidence === "object" &&
-                  evidence !== null &&
-                  "id" in evidence
-                ) {
-                  return {
-                    id: (evidence as { id: number; url?: string }).id,
-                    url:
-                      (evidence as { id: number; url?: string }).url ||
-                      undefined,
-                  };
-                }
-                throw new Error("Invalid evidence format");
-              })
+        type EvidenceItem = { id: number; evidenceUrl?: string | null };
+        const evidences: EvidenceItem[] = Array.isArray(response.data.evidences)
+          ? response.data.evidences.filter(
+              (evidence: unknown): evidence is EvidenceItem =>
+                typeof evidence === "object" &&
+                evidence !== null &&
+                !Array.isArray(evidence) &&
+                "id" in evidence &&
+                typeof (evidence as EvidenceItem).id === "number"
+            )
           : [];
+
         const subSkillEvidence = evidences.find(
-          (evidence: { id: number; url?: string }) => evidence.id === subskillId
+          (evidence) => evidence.id === subskillId
         );
 
-        if (subSkillEvidence?.url) {
-          onEvidenceLoaded?.(subSkillEvidence.url);
-          onUrlChange(subSkillEvidence.url);
+        const url = subSkillEvidence?.evidenceUrl ?? undefined;
+        if (url) {
+          onEvidenceLoaded?.(url);
+          onUrlChange(url);
         }
       }
       setEvidenceLoaded(true);

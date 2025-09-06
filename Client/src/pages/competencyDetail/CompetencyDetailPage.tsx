@@ -32,6 +32,9 @@ import {
 } from "./hooks";
 import { useCompetencyDetailError } from "./hooks/competency/useCompetencyDetailError";
 import { sanitizeUrlParams, isMalformedParam } from "@Utils/errorHandler";
+import { SfiaLevel, SfiaCompetency } from "./types/sfia";
+import { TpqiUnit } from "./types/tpqi";
+import type { TpqiCompetency as TpqiCompetencyView } from "./components/tpqi/types";
 
 import { getFrameworkIcon, getFrameworkColor } from "./utils/frameworkUtils";
 import InvalidUrl from "./components/states/InvalidUrl";
@@ -407,7 +410,11 @@ const CompetencyDetailPage: React.FC = () => {
 
               {!loading && error && (
                 <ErrorState
-                  error={error}
+                  error={
+                    typeof error === "string"
+                      ? error
+                      : error?.message || "An unknown error occurred"
+                  }
                   source={validatedSource as "sfia" | "tpqi"}
                   id={validatedId || ""}
                   retryCount={retryCount}
@@ -423,38 +430,74 @@ const CompetencyDetailPage: React.FC = () => {
                   initial="hidden"
                   animate="visible"
                 >
-                  <PageHeader
-                    source={validatedSource as "sfia" | "tpqi"}
-                    id={validatedId || ""}
-                    competencyTitle={competencyTitle}
-                    lastFetched={lastFetched || undefined}
-                    quickNavItems={quickNavItems}
-                    competencyData={competencyData}
-                    isBookmarked={isBookmarked}
-                    isFavorited={isFavorited}
-                    onBack={() => navigate(-1)}
-                    onBookmark={handleBookmark}
-                    onFavorite={handleFavorite}
-                    onShare={handleShare}
-                    onPrint={handlePrint}
-                    onDownload={handleDownload}
-                    onTooltip={setShowTooltip}
-                    getFrameworkIcon={getFrameworkIcon}
-                    getFrameworkColor={getFrameworkColor}
-                    itemVariants={accessibleItemVariants}
-                  />
+                  {validatedSource === "sfia" &&
+                    Array.isArray(competencyData) && (
+                      <PageHeader
+                        source="sfia"
+                        id={validatedId || ""}
+                        competencyTitle={competencyTitle}
+                        lastFetched={lastFetched || undefined}
+                        quickNavItems={quickNavItems}
+                        competencyData={competencyData as SfiaLevel[]}
+                        isBookmarked={isBookmarked}
+                        isFavorited={isFavorited}
+                        onBack={() => navigate(-1)}
+                        onBookmark={handleBookmark}
+                        onFavorite={handleFavorite}
+                        onShare={handleShare}
+                        onPrint={handlePrint}
+                        onDownload={handleDownload}
+                        onTooltip={setShowTooltip}
+                        getFrameworkIcon={getFrameworkIcon}
+                        getFrameworkColor={getFrameworkColor}
+                        itemVariants={accessibleItemVariants}
+                      />
+                    )}
+                  {validatedSource === "tpqi" &&
+                    Array.isArray(competencyData) && (
+                      <PageHeader
+                        source="tpqi"
+                        id={validatedId || ""}
+                        competencyTitle={competencyTitle}
+                        lastFetched={lastFetched || undefined}
+                        quickNavItems={quickNavItems}
+                        competencyData={competencyData as TpqiUnit[]}
+                        isBookmarked={isBookmarked}
+                        isFavorited={isFavorited}
+                        onBack={() => navigate(-1)}
+                        onBookmark={handleBookmark}
+                        onFavorite={handleFavorite}
+                        onShare={handleShare}
+                        onPrint={handlePrint}
+                        onDownload={handleDownload}
+                        onTooltip={setShowTooltip}
+                        getFrameworkIcon={getFrameworkIcon}
+                        getFrameworkColor={getFrameworkColor}
+                        itemVariants={accessibleItemVariants}
+                      />
+                    )}
 
                   {/* Content Section */}
                   <motion.div variants={itemVariants} className="space-y-8">
                     {validatedSource === "sfia" &&
-                      "competency" in competencyData &&
-                      competencyData.competency && (
-                        <SfiaSection competency={competencyData.competency} />
+                      competencyData?.competency &&
+                      "category" in competencyData.competency &&
+                      "levels" in competencyData.competency && (
+                        <SfiaSection
+                          competency={
+                            competencyData.competency as SfiaCompetency
+                          }
+                        />
                       )}
                     {validatedSource === "tpqi" &&
-                      "competency" in competencyData &&
-                      competencyData.competency && (
-                        <TpqiContainer competency={competencyData.competency} />
+                      competencyData?.competency &&
+                      "occupational" in competencyData.competency &&
+                      "skills" in competencyData.competency && (
+                        <TpqiContainer
+                          competency={
+                            competencyData.competency as TpqiCompetencyView
+                          }
+                        />
                       )}
                   </motion.div>
 

@@ -1,4 +1,3 @@
-// components/AdvisorSection.tsx
 import React from "react";
 import { advisorInfo } from "../../data/advisorData";
 import { useInView } from "../../hooks/useInView";

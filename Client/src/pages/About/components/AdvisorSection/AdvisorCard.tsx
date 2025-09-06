@@ -7,7 +7,7 @@ import { AdvisorSocialLinks } from "./AdvisorSocialLinks";
 
 interface AdvisorCardProps {
   advisor: AdvisorInfo;
-  cardRef: React.RefObject<HTMLDivElement>;
+  cardRef: React.RefObject<HTMLDivElement | null>;
   cardInView: boolean;
 }
 

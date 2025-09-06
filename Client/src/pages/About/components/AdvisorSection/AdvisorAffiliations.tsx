@@ -1,6 +1,9 @@
-// components/AdvisorAffiliations.tsx
 import React from "react";
-import { AffiliationLink } from "../types/advisor.types";
+
+interface AffiliationLink {
+  name: string;
+  url: string;
+}
 
 interface AdvisorAffiliationsProps {
   affiliations: AffiliationLink[];
@@ -20,9 +23,7 @@ export const AdvisorAffiliations: React.FC<AdvisorAffiliationsProps> = ({
         transitionDelay: cardInView ? "800ms" : "0ms",
       }}
     >
-      <h3 className="text-xl font-semibold text-gray-900 mb-4 text-teal-700">
-        สังกัด
-      </h3>
+      <h3 className="text-xl font-semibold mb-4 text-teal-700">สังกัด</h3>
       <div className="space-y-2">
         {affiliations.map((affiliation) => (
           <a

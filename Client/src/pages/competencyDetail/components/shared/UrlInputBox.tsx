@@ -30,12 +30,17 @@ const UrlInputBox: React.FC<UrlInputBoxProps> = ({
 }) => {
   const [isRemoving, setIsRemoving] = useState(false);
 
-  // Handle remove animation
-  const handleRemoveClick = () => {
-    if (readonly && onDelete) {
+  // Handle delete action for readonly mode
+  const handleDeleteClick = () => {
+    if (onDelete) {
       console.log("Calling onDelete function...");
       onDelete();
-    } else if (!readonly && onRemove) {
+    }
+  };
+
+  // Handle remove animation for editable mode
+  const handleRemoveClick = () => {
+    if (onRemove) {
       console.log("Calling onRemove function...");
       setIsRemoving(true);
       // Add small delay for animation
@@ -55,36 +60,61 @@ const UrlInputBox: React.FC<UrlInputBoxProps> = ({
 
   // Determine input styling based on state
   const getInputClassName = () => {
-    const baseClassName = "w-full px-3 py-2 pr-10 border rounded transition-all duration-300 ease-in-out ";
-    
+    const baseClassName =
+      "w-full px-3 py-2 pr-10 border rounded transition-all duration-300 ease-in-out ";
+
     if (readonly) {
-      return baseClassName + "bg-green-50 border-green-300 text-green-800 cursor-not-allowed placeholder-gray-400";
+      return (
+        baseClassName +
+        "bg-green-50 border-green-300 text-green-800 cursor-not-allowed placeholder-gray-400"
+      );
     }
-    
+
     if (disabled || loading || deleting) {
-      return baseClassName + "bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed placeholder-gray-400";
+      return (
+        baseClassName +
+        "bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed placeholder-gray-400"
+      );
     }
-    
+
     if (isRemoving) {
-      return baseClassName + "bg-red-50 border-red-300 text-red-700 transform scale-95 placeholder-gray-400";
+      return (
+        baseClassName +
+        "bg-red-50 border-red-300 text-red-700 transform scale-95 placeholder-gray-400"
+      );
     }
-    
-    return baseClassName + "bg-white border-gray-300 text-gray-900 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 hover:border-blue-300 placeholder-gray-400";
+
+    return (
+      baseClassName +
+      "bg-white border-gray-300 text-gray-900 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 hover:border-blue-300 placeholder-gray-400"
+    );
   };
 
   // Determine button styling
   const getButtonClassName = () => {
-    const baseClassName = "px-3 py-2 rounded transition-all duration-200 flex items-center gap-2 ";
-    
+    const baseClassName =
+      "px-3 py-2 rounded transition-all duration-200 flex items-center gap-2 ";
+
     if (readonly) {
       if (deleting) {
-        return baseClassName + "bg-red-200 text-red-800 cursor-not-allowed border border-red-300";
+        return (
+          baseClassName +
+          "bg-red-200 text-red-800 cursor-not-allowed border border-red-300"
+        );
       }
-      return baseClassName + "bg-red-100 text-red-700 hover:bg-red-200 border border-red-200 hover:scale-105";
+      return (
+        baseClassName +
+        "bg-red-100 text-red-700 hover:bg-red-200 border border-red-200 hover:scale-105"
+      );
     }
-    
-    const disabledClass = disabled && !readonly ? " opacity-50 cursor-not-allowed" : "";
-    return baseClassName + "bg-orange-100 text-orange-700 hover:bg-orange-200 border border-orange-200 hover:scale-105" + disabledClass;
+
+    const disabledClass =
+      disabled && !readonly ? " opacity-50 cursor-not-allowed" : "";
+    return (
+      baseClassName +
+      "bg-orange-100 text-orange-700 hover:bg-orange-200 border border-orange-200 hover:scale-105" +
+      disabledClass
+    );
   };
 
   // Render delete button content
@@ -105,17 +135,25 @@ const UrlInputBox: React.FC<UrlInputBoxProps> = ({
         </>
       );
     }
-    
+
     return (
       <>
-        <FaTrash className={`w-3 h-3 transition-transform duration-200 ${isRemoving ? 'scale-110' : ''}`} />
-        <span>{isRemoving ? 'Removing...' : 'Remove'}</span>
+        <FaTrash
+          className={`w-3 h-3 transition-transform duration-200 ${
+            isRemoving ? "scale-110" : ""
+          }`}
+        />
+        <span>{isRemoving ? "Removing..." : "Remove"}</span>
       </>
     );
   };
 
   return (
-    <div className={`flex flex-col gap-2 mt-2 transition-all duration-300 ${colorClass || ""} ${isRemoving ? 'opacity-75 transform scale-95' : ''}`}>
+    <div
+      className={`flex flex-col gap-2 mt-2 transition-all duration-300 ${
+        colorClass || ""
+      } ${isRemoving ? "opacity-75 transform scale-95" : ""}`}
+    >
       <div className="flex gap-2">
         <div className="relative flex-1">
           <input
@@ -153,25 +191,43 @@ const UrlInputBox: React.FC<UrlInputBoxProps> = ({
         </div>
 
         {/* Action buttons */}
-        <div className={`flex gap-2 transition-all duration-200 ${isRemoving ? 'scale-95' : ''}`}>
-          {/* Remove/Delete button */}
-          {url && (
-            <button
-              type="button"
-              className={getButtonClassName()}
-              onClick={(e) => {
-                console.log("Delete button clicked!", { readonly, onDelete, onRemove });
-                e.preventDefault();
-                handleRemoveClick();
-              }}
-              disabled={(disabled || loading || deleting) && !readonly}
-              title={
-                readonly ? "Delete evidence permanently" : "Remove evidence"
-              }
-            >
-              {renderDeleteButtonContent()}
-            </button>
-          )}
+        <div>
+          {url &&
+            (readonly ? (
+              <button
+                type="button"
+                className={getButtonClassName()}
+                onClick={(e) => {
+                  console.log("Delete button clicked!", {
+                    readonly,
+                    onDelete,
+                  });
+                  e.preventDefault();
+                  handleDeleteClick();
+                }}
+                disabled={disabled || loading || deleting}
+                title="Delete evidence permanently"
+              >
+                {renderDeleteButtonContent()}
+              </button>
+            ) : (
+              <button
+                type="button"
+                className={getButtonClassName()}
+                onClick={(e) => {
+                  console.log("Remove button clicked!", {
+                    readonly,
+                    onRemove,
+                  });
+                  e.preventDefault();
+                  handleRemoveClick();
+                }}
+                disabled={disabled || loading || deleting}
+                title="Remove evidence"
+              >
+                {renderDeleteButtonContent()}
+              </button>
+            ))}
 
           {/* Submit button */}
           {!readonly && (

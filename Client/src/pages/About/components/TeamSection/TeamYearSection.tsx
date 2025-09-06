@@ -1,5 +1,5 @@
 import React from "react";
-import { Team } from "../types/team.types";
+import { Team } from "../../types/team.types";
 import { AnimatedTitle, AnimatedDivider } from "./AnimatedComponents";
 import { MemberCard } from "./MemberCard";
 

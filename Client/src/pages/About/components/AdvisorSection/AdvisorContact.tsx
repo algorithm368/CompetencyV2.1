@@ -1,5 +1,5 @@
 import React from "react";
-import { ContactInfo } from "../types/advisor.types";
+import { ContactInfo } from "../../types/advisor.types";
 import {
   FaMapMarkerAlt,
   FaEnvelope,

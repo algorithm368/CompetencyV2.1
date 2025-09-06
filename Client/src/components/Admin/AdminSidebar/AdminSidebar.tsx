@@ -1,76 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { NavLink, useLocation } from "react-router-dom";
-import { FiHome, FiUsers, FiLock, FiChevronDown, FiChevronRight, FiCopy, FiBarChart2, FiKey, FiChevronLeft } from "react-icons/fi";
-
-interface AdminSidebarProps {
-  collapsed: boolean;
-  mobileOpen: boolean;
-  onToggle: () => void;
-  onMobileClose: () => void;
-}
-
-// Main menu
-const mainMenu = [
-  { label: "Dashboard", path: "/admin/dashboard", icon: <FiHome /> },
-  { label: "Users", path: "/admin/users", icon: <FiUsers /> },
-  { label: "Session Management", path: "/admin/session", icon: <FiLock /> },
-  // { label: "Backup", path: "/admin/backup", icon: <FiCopy /> },
-  { label: "Logs", path: "/admin/logs", icon: <FiBarChart2 /> },
-];
-
-// RBAC groups
-const rbacGroups = [
-  {
-    title: "RBAC",
-    icon: <FiKey />,
-    key: "rbac",
-    items: [
-      { label: "Roles", path: "/admin/roles" },
-      { label: "Role Permissions", path: "/admin/role-permissions" },
-      { label: "Permissions", path: "/admin/permissions" },
-      { label: "Operations", path: "/admin/operations" },
-      { label: "Assets", path: "/admin/assets" },
-      { label: "Asset Instances", path: "/admin/asset-instances" },
-      { label: "User Roles", path: "/admin/user-roles" },
-      { label: "User Asset Instances", path: "/admin/user-asset-instances" },
-    ],
-  },
-];
-
-// Frameworks groups
-const frameworks = [
-  {
-    title: "TPQI",
-    icon: <FiCopy />,
-    key: "tpqi",
-    items: [
-      { label: "Sector", path: "/admin/tpqi/sector" },
-      { label: "Career", path: "/admin/tpqi/career" },
-      { label: "Skill", path: "/admin/tpqi/skill" },
-      { label: "Occupational", path: "/admin/tpqi/occupational" },
-      { label: "Knowledge", path: "/admin/tpqi/knowledge" },
-      { label: "Unit Code", path: "/admin/tpqi/unitcode" },
-    ],
-  },
-  {
-    title: "SFIA",
-    icon: <FiBarChart2 />,
-    key: "sfia",
-    items: [
-      { label: "Skills", path: "/admin/sfia/skill" },
-      { label: "Levels", path: "/admin/sfia/level" },
-      { label: "Categories", path: "/admin/sfia/category" },
-      { label: "SubCategories", path: "/admin/sfia/subcategory" },
-      { label: "Descriptions", path: "/admin/sfia/description" },
-    ],
-  },
-];
+import { useLocation, useNavigate } from "react-router-dom";
+import { FiChevronDown, FiChevronRight, FiChevronLeft, FiAlertCircle } from "react-icons/fi";
+import { checkViewPermission } from "@Services/competency/authService";
+import { rbacGroups, frameworks, mainMenu } from "./MenuItem";
+import { Modal } from "@Components/Common/Modal/Modal";
+import { AdminSidebarProps, MenuItemBase, Group } from "./AdminSidebarType";
 
 const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, mobileOpen, onToggle, onMobileClose }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
+  const [loadingPaths, setLoadingPaths] = useState<Record<string, boolean>>({});
+  const [modalState, setModalState] = useState<{ isOpen: boolean; message: string }>({
+    isOpen: false,
+    message: "",
+  });
 
-  // เปิด group ที่ตรงกับ path ปัจจุบันอัตโนมัติ
   useEffect(() => {
     const allGroups = [...rbacGroups, ...frameworks];
     const newOpenSections: Record<string, boolean> = {};
@@ -82,7 +27,50 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, mobileOpen, onTo
     setOpenSections(newOpenSections);
   }, [location.pathname]);
 
-  const renderGroup = (group: (typeof rbacGroups)[0] | (typeof frameworks)[0]) => (
+  const handleClick = async (item: MenuItemBase) => {
+    if (!item.resource) {
+      navigate(item.path);
+      onMobileClose();
+      return;
+    }
+
+    setLoadingPaths((prev) => ({ ...prev, [item.path]: true }));
+
+    try {
+      const res = await checkViewPermission(item.resource);
+      if (res.allowed) {
+        navigate(item.path);
+      } else {
+        setModalState({ isOpen: true, message: "You do not have permission to access this page" });
+      }
+    } catch {
+      setModalState({ isOpen: true, message: "An error occurred while checking permissions." });
+    } finally {
+      setLoadingPaths((prev) => ({ ...prev, [item.path]: false }));
+      onMobileClose();
+    }
+  };
+
+  const renderItem = (item: MenuItemBase) => {
+    const isActive = location.pathname === item.path;
+
+    return (
+      <li key={item.path}>
+        <button
+          onClick={() => handleClick(item)}
+          className={`flex items-center gap-3 px-4 py-2.5 rounded-md w-full text-left transition
+          ${isActive ? "bg-indigo-50 text-indigo-600 font-medium" : "text-gray-700 hover:bg-gray-100"}
+          ${loadingPaths[item.path] ? "opacity-50 cursor-wait" : ""}`}
+          disabled={loadingPaths[item.path]}
+        >
+          {item.icon && <span className="text-lg">{item.icon}</span>}
+          <span>{item.label}</span>
+        </button>
+      </li>
+    );
+  };
+
+  const renderGroup = (group: Group) => (
     <li key={group.key}>
       <button
         type="button"
@@ -94,26 +82,29 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, mobileOpen, onTo
         {openSections[group.key] ? <FiChevronDown className="text-gray-500" /> : <FiChevronRight className="text-gray-500" />}
       </button>
 
-      {openSections[group.key] && (
-        <ul className="pl-11 space-y-1 mt-1 transition-all">
-          {group.items.map((link) => (
-            <li key={link.path}>
-              <NavLink
-                to={link.path}
-                className={({ isActive }) => `block px-3 py-2 rounded-md text-sm transition ${isActive ? "bg-indigo-50 text-indigo-600 font-medium" : "text-gray-700 hover:bg-gray-100"}`}
-                onClick={onMobileClose}
-              >
-                {link.label}
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-      )}
+      {openSections[group.key] && <ul className="pl-11 space-y-1 mt-1 transition-all">{group.items.map(renderItem)}</ul>}
     </li>
   );
 
   return (
     <>
+      {/* Modal */}
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={() => setModalState({ isOpen: false, message: "" })}
+        className="p-0"
+        actions={
+          <button onClick={() => setModalState({ isOpen: false, message: "" })} className="px-6 py-2 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 transition-all shadow-md">
+            Close
+          </button>
+        }
+      >
+        <div className="flex flex-col items-center justify-center gap-4 p-6">
+          <FiAlertCircle className="w-12 h-12 text-red-600" />
+          <p className="text-gray-800 text-center text-base md:text-lg">{modalState.message}</p>
+        </div>
+      </Modal>
+
       {/* Mobile overlay */}
       <div className={`fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden transition-opacity ${mobileOpen ? "opacity-50 visible" : "opacity-0 invisible"}`} onClick={onMobileClose} />
 
@@ -135,24 +126,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, mobileOpen, onTo
             {/* Main */}
             <div className="mb-6">
               <p className="px-4 text-xs font-semibold uppercase text-gray-400 mb-2 tracking-wider">Main</p>
-              <ul className="space-y-1">
-                {mainMenu.map((item) => (
-                  <li key={item.path}>
-                    <NavLink
-                      to={item.path}
-                      className={({ isActive }) =>
-                        `flex items-center gap-3 px-4 py-2.5 rounded-md transition-all duration-200 border-l-4 ${
-                          isActive ? "bg-indigo-50 text-indigo-600 font-semibold border-indigo-600" : "text-gray-700 hover:bg-gray-100 border-transparent"
-                        }`
-                      }
-                      onClick={onMobileClose}
-                    >
-                      {item.icon && <span className="text-lg">{item.icon}</span>}
-                      <span className="truncate">{item.label}</span>
-                    </NavLink>
-                  </li>
-                ))}
-              </ul>
+              <ul className="space-y-1">{mainMenu.map(renderItem)}</ul>
             </div>
 
             {/* RBAC Groups */}

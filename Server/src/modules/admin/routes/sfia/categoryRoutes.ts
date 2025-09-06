@@ -1,13 +1,15 @@
 import { Router, RequestHandler } from "express";
 import { CategoryController } from "@Admin/controllers/sfia/categoryController";
-import { withAuth } from "@/middlewares/withAuth";
+import { authenticate, authorizePermission } from "@Middlewares/authMiddleware";
 
 const router: Router = Router();
 
-router.get("/:id", withAuth({ resource: "Category", action: "create" }, CategoryController.getById as RequestHandler));
-router.get("/", withAuth({ resource: "Category", action: "create" }, CategoryController.getAll as RequestHandler));
-router.post("/", withAuth({ resource: "Category", action: "create" }, CategoryController.create as RequestHandler));
-router.put("/:id", withAuth({ resource: "Category", action: "create" }, CategoryController.update as RequestHandler));
-router.delete("/:id", withAuth({ resource: "Category", action: "create" }, CategoryController.delete as RequestHandler));
+const withPermission = (action: string) => [authenticate, authorizePermission(`category:${action}`) as RequestHandler];
+
+router.get("/", ...withPermission("view"), CategoryController.getAll as RequestHandler);
+router.get("/:id", ...withPermission("view"), CategoryController.getById as RequestHandler);
+router.post("/", ...withPermission("create"), CategoryController.create as RequestHandler);
+router.put("/:id", ...withPermission("edit"), CategoryController.update as RequestHandler);
+router.delete("/:id", ...withPermission("delete"), CategoryController.delete as RequestHandler);
 
 export default router;

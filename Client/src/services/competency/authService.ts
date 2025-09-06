@@ -25,6 +25,10 @@ export interface CurrentUserResponse {
   expiresIn: number;
   csrfToken: string;
 }
+export interface CheckViewResponse {
+  allowed: boolean;
+  message?: string;
+}
 
 // Login with Google
 export async function loginWithGoogle(idToken: string): Promise<GoogleLoginResponse> {
@@ -53,5 +57,16 @@ export async function getCurrentUser(): Promise<CurrentUserResponse> {
   const response = await api.get<CurrentUserResponse>("/competency/auth/me", {
     withCredentials: true,
   });
+  return response.data;
+}
+
+export async function checkViewPermission(resource: string): Promise<CheckViewResponse> {
+  if (!resource) throw new Error("Resource is required");
+
+  const response = await api.get<CheckViewResponse>("/competency/auth/check-view", {
+    params: { resource },
+    withCredentials: true,
+  });
+
   return response.data;
 }

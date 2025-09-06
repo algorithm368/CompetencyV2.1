@@ -4,7 +4,7 @@ import { AxiosError } from "axios";
 /**
  * Local ApiResponse generic (safe small shape, avoid coupling)
  */
-interface ApiResponse<T = any> {
+interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   message?: string;
@@ -35,7 +35,10 @@ export interface TpqiEvidenceData {
     [skillId: number]: { evidenceUrl: string; approvalStatus: string | null };
   };
   knowledge: {
-    [knowledgeId: number]: { evidenceUrl: string; approvalStatus: string | null };
+    [knowledgeId: number]: {
+      evidenceUrl: string;
+      approvalStatus: string | null;
+    };
   };
 }
 
@@ -43,11 +46,16 @@ export interface TpqiEvidenceData {
  * Fetch TPQI evidence by unitCode.
  * Returns normalized TpqiEvidenceData (always contains skills & knowledge objects).
  */
-export async function fetchTpqiEvidenceByUnitCode(unitCode: string): Promise<TpqiEvidenceData> {
+export async function fetchTpqiEvidenceByUnitCode(
+  unitCode: string
+): Promise<TpqiEvidenceData> {
   try {
-    const res = await api.post<ApiResponse<RawTpqiEvidencePayload>>("/tpqi/evidence/get", {
-      unitCode,
-    });
+    const res = await api.post<ApiResponse<RawTpqiEvidencePayload>>(
+      "/tpqi/evidence/get",
+      {
+        unitCode,
+      }
+    );
 
     const apiBody = res.data;
 
@@ -92,7 +100,7 @@ export async function fetchTpqiEvidenceByUnitCode(unitCode: string): Promise<Tpq
     // Create a helpful message and rethrow
     let message = "Failed to fetch TPQI evidence";
     if (err instanceof AxiosError) {
-      message = (err.response?.data as any)?.message ?? err.message ?? message;
+      message = err.response?.data?.message ?? err.message ?? message;
     } else if (err instanceof Error) {
       message = err.message;
     }

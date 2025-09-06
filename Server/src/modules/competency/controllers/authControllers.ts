@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import AuthService from "@Competency/services/authServices";
 import { AuthenticatedRequest } from "@Middlewares/authMiddleware";
+import { PermissionService } from "@Competency/services/checkPermission";
 
 const ACCESS_TOKEN_EXPIRATION = Number(process.env.JWT_ACCESS_EXPIRATION || 3600);
 const REFRESH_TOKEN_MAX_AGE = Number(process.env.JWT_REFRESH_EXPIRATION || 604800);
@@ -116,5 +117,26 @@ export const getCurrentUser = async (req: AuthenticatedRequest, res: Response) =
     });
   } catch (err: any) {
     res.status(StatusCodes.NOT_FOUND).json({ message: err.message || "User not found" });
+  }
+};
+
+export const checkViewAccess = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { resource } = req.query;
+    if (!resource) {
+      return res.status(400).json({ allowed: false, message: "resource is required" });
+    }
+    let allowed = false;
+    if (req.user) {
+      allowed = await PermissionService.hasInstancePermission(req.user, String(resource), "read");
+
+      if (!allowed) {
+        allowed = await PermissionService.hasPermission(req.user, String(resource), "read");
+      }
+    }
+    res.status(200).json({ allowed });
+  } catch (err: any) {
+    console.error("[checkViewAccess] Error:", err);
+    res.status(500).json({ allowed: false, message: err.message || "Internal server error" });
   }
 };

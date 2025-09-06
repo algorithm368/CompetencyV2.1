@@ -1,38 +1,39 @@
 import * as ExportPages from "@Pages/ExportPages";
-import { Route } from "react-router-dom";
 
-export const adminRoutes = (
-  <>
-    {/* Main */}
-    <Route path="/dashboard" element={<ExportPages.DashboardPage />} />
-    <Route path="/users" element={<ExportPages.UserPage />} />
-    <Route path="/logs" element={<ExportPages.LogPage />} />
-    <Route path="/session" element={<ExportPages.SessionPage />} />
+export interface RouteItem {
+  path: string;
+  element: React.ReactNode;
+  resource?: string;
+}
 
-    {/* SFIA */}
-    <Route path="/sfia/category" element={<ExportPages.CategoryPage />} />
-    <Route path="/sfia/level" element={<ExportPages.LevelPage />} />
-    <Route path="/sfia/subcategory" element={<ExportPages.SubcategoryPage />} />
-    <Route path="/sfia/description" element={<ExportPages.DescriptionPage />} />
+export const adminRoutes: RouteItem[] = [
+  { path: "/dashboard", element: <ExportPages.DashboardPage />, resource: "Dashboard" },
+  { path: "/users", element: <ExportPages.UserPage />, resource: "User" },
+  { path: "/logs", element: <ExportPages.LogPage />, resource: "Log" },
+  { path: "/session", element: <ExportPages.SessionPage />, resource: "Session" },
 
-    {/* TPQI */}
-    <Route path="/tpqi/career" element={<ExportPages.CareerPage />} />
-    {/* RBAC */}
-    <Route path="/roles" element={<ExportPages.RolePage />} />
-    <Route path="/role-permissions" element={<ExportPages.RolePermissionManager />} />
-    <Route path="/permissions" element={<ExportPages.PermissionPage />} />
-    <Route path="/operations" element={<ExportPages.OperationPage />} />
-    <Route path="/user-roles" element={<ExportPages.UserRoleAssignmentPage />} />
+  // SFIA
+  { path: "/sfia/category", element: <ExportPages.CategoryPage />, resource: "Category" },
+  { path: "/sfia/level", element: <ExportPages.LevelPage />, resource: "Level" },
+  { path: "/sfia/subcategory", element: <ExportPages.SubcategoryPage />, resource: "Subcategory" },
+  { path: "/sfia/description", element: <ExportPages.DescriptionPage />, resource: "Description" },
 
-    {/* Assets */}
-    <Route path="/assets" element={<ExportPages.AssetPage />} />
-    <Route path="/asset-instances" element={<ExportPages.AssetInstancePage />} />
-    <Route path="/user-asset-instances" element={<ExportPages.UserAssetInstanceAssignmentPage />} />
+  // TPQI
+  { path: "/tpqi/career", element: <ExportPages.CareerPage />, resource: "Career" },
+  { path: "/roles", element: <ExportPages.RolePage />, resource: "Role" },
+  { path: "/role-permissions", element: <ExportPages.RolePermissionManager />, resource: "RolePermission" },
+  { path: "/permissions", element: <ExportPages.PermissionPage />, resource: "Permission" },
+  { path: "/operations", element: <ExportPages.OperationPage />, resource: "Operation" },
+  { path: "/user-roles", element: <ExportPages.UserRoleAssignmentPage />, resource: "UserRole" },
 
-    <Route path="/tpqi/skill" element={<ExportPages.SkillPage />} />
-    <Route path="/tpqi/sector" element={<ExportPages.SectorPage />} />
-    <Route path="/tpqi/occupational" element={<ExportPages.OccupationalPage />} />
-    <Route path="/tpqi/knowledge" element={<ExportPages.KnowledgePage />} />
-    <Route path="/tpqi/unitcode" element={<ExportPages.UnitCodePage />} />
-  </>
-);
+  // Assets
+  { path: "/assets", element: <ExportPages.AssetPage />, resource: "Asset" },
+  { path: "/asset-instances", element: <ExportPages.AssetInstancePage />, resource: "AssetInstance" },
+  { path: "/user-asset-instances", element: <ExportPages.UserAssetInstanceAssignmentPage />, resource: "UserAssetInstance" },
+
+  { path: "/tpqi/skill", element: <ExportPages.SkillPage />, resource: "Skill" },
+  { path: "/tpqi/sector", element: <ExportPages.SectorPage />, resource: "Sector" },
+  { path: "/tpqi/occupational", element: <ExportPages.OccupationalPage />, resource: "Occupational" },
+  { path: "/tpqi/knowledge", element: <ExportPages.KnowledgePage />, resource: "Knowledge" },
+  { path: "/tpqi/unitcode", element: <ExportPages.UnitCodePage />, resource: "UnitCode" },
+];

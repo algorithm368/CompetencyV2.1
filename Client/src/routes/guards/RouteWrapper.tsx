@@ -9,7 +9,6 @@ export interface RouteItem {
 
 interface RouteWrapperProps {
   routes: RouteItem[];
-  fallbackPath?: string;
 }
 
 const RouteWrapper: React.FC<RouteWrapperProps> = ({ routes }) => {

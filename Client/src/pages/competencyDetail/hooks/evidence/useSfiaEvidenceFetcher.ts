@@ -27,9 +27,44 @@ export function useEvidenceFetcher(skillCode: string) {
       });
 
       if (response.success && response.data) {
-        setEvidenceData(response.data);
+        const transformedData: EvidenceData = Object.keys(response.data).reduce(
+          (acc, key) => {
+            const subSkillId = parseInt(key, 10);
+            const evidenceItem =
+              response.data![key as keyof typeof response.data];
+            if (
+              evidenceItem &&
+              typeof evidenceItem === "object" &&
+              !Array.isArray(evidenceItem) &&
+              "url" in evidenceItem
+            ) {
+              acc[subSkillId] = {
+                url: (evidenceItem as { url: string }).url,
+                approvalStatus: (evidenceItem as { approvalStatus?: string })
+                  .approvalStatus,
+              };
+            }
+            if (
+              evidenceItem &&
+              typeof evidenceItem === "object" &&
+              !Array.isArray(evidenceItem) &&
+              "url" in evidenceItem
+            ) {
+              if (typeof (evidenceItem as { url: string }).url === "string") {
+                acc[subSkillId] = {
+                  url: (evidenceItem as { url: string }).url,
+                  approvalStatus: (evidenceItem as { approvalStatus?: string })
+                    .approvalStatus,
+                };
+              }
+            }
+            return acc;
+          },
+          {} as EvidenceData
+        );
+        setEvidenceData(transformedData);
       } else {
-        setEvidenceData(null);
+        setEvidenceData({});
         setError(response.message || "No evidence found");
       }
     } catch (err) {

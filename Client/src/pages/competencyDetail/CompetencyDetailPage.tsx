@@ -238,8 +238,6 @@ const CompetencyDetailPage: React.FC = () => {
     [competencyData?.competency?.competency_name, validatedSource]
   );
 
-  console.log("Competency Data:", competencyData);
-
   /**
    * Memoized quick navigation items based on the framework source
    *

@@ -1,5 +1,9 @@
 import React, { useMemo, useEffect, useCallback, memo } from "react";
-import { FaCertificate, FaSpinner } from "react-icons/fa";
+import {
+  FaCertificate,
+  FaSpinner,
+  FaExclamationTriangle,
+} from "react-icons/fa";
 import {
   useTpqiEvidenceSender,
   TpqiEvidenceState,
@@ -311,7 +315,6 @@ const SkillsList: React.FC<SkillsListProps> = memo(
                 deleting={isDeleting}
                 error={error}
                 colorVariant="blue"
-                skillType="skill"
                 placeholder="Enter skill evidence URL"
                 onUrlChange={handleUrlChange(skill.id)}
                 onRemove={handleRemove(skill.id)}
@@ -379,7 +382,6 @@ const KnowledgeList: React.FC<KnowledgeListProps> = memo(
                 deleting={isDeleting}
                 error={error}
                 colorVariant="purple"
-                skillType="knowledge"
                 placeholder="Enter knowledge evidence URL"
                 onUrlChange={handleUrlChange(item.id)}
                 onRemove={handleRemove(item.id)}

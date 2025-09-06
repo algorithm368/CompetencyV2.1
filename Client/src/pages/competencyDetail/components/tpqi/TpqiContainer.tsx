@@ -1,7 +1,8 @@
 import React from "react";
 import TpqiSkillKnowledgeItems from "./TpqiSkillKnowledgeItems";
-import { TpqiUnit } from "../../../../types/tpqi";
+import { TpqiUnit } from "@Pages/competencyDetail/types/tpqi";
 import { OverviewSection } from "../ui/OverviewAndNotes";
+import { TpqiCompetency } from "./types";
 
 interface TpqiContainerProps {
   competency: TpqiCompetency;
@@ -26,17 +27,17 @@ const TpqiContainer: React.FC<TpqiContainerProps> = ({ competency }) => {
   ) {
     const unit: TpqiUnit = {
       id: 1,
-      unit_code: competency.competency_code || "TPQI_UNIT",
+      unit_code: competency.competency_id || "TPQI_UNIT",
       unit_name: competency.competency_name || "TPQI Competency Unit",
       skills:
         competency.skills?.map((skill) => ({
-          id: parseInt(skill.id),
+          id: skill.id,
           skill_name: skill.name_skill,
           skill_description: undefined, // Add description if available in API
         })) || [],
       knowledge:
         competency.knowledge?.map((knowledge) => ({
-          id: parseInt(knowledge.id),
+          id: knowledge.id,
           knowledge_name: knowledge.name_knowledge,
           knowledge_description: undefined, // Add description if available in API
         })) || [],

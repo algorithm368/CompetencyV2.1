@@ -8,10 +8,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import App from "./App";
 import { AuthProvider } from "./contexts/AuthContext";
 import ScrollToTop from "./components/Common/ScrolToTop";
-import { initializeGlobalErrorHandlers } from "@Utils/errorHandler";
 import "./styles/global.css";
-
-initializeGlobalErrorHandlers();
 
 const rootElement = document.getElementById("root");
 if (!rootElement) throw new Error("Root element not found");

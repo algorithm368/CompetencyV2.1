@@ -18,7 +18,7 @@ interface SubSkillItemProps {
   loading: boolean;
   /** Indicates whether the deletion process is currently in progress. */
   deleting?: boolean;
-  /** Error message related to the evidence submission (if any). */
+  /** Error message related to the evidence submission (if unknown). */
   error: string;
   /** Callback to handle URL/description input changes. */
   onUrlChange: (value: string) => void;
@@ -33,7 +33,12 @@ interface SubSkillItemProps {
 }
 
 // Custom hook for evidence fetching
-const useEvidenceFetcher = (skillCode: string, subskillId: number, onUrlChange: (value: string) => void, onEvidenceLoaded?: (evidence: string) => void) => {
+const useEvidenceFetcher = (
+  skillCode: string,
+  subskillId: number,
+  onUrlChange: (value: string) => void,
+  onEvidenceLoaded?: (evidence: string) => void
+) => {
   const [evidenceLoading, setEvidenceLoading] = useState(false);
   const [evidenceLoaded, setEvidenceLoaded] = useState(false);
 
@@ -49,11 +54,26 @@ const useEvidenceFetcher = (skillCode: string, subskillId: number, onUrlChange: 
       });
 
       if (response.success && response.data) {
-        const subSkillEvidence = response.data.evidences?.find((evidence: unknown) => evidence.id === subskillId);
+        type EvidenceItem = { id: number; evidenceUrl?: string | null };
+        const evidences: EvidenceItem[] = Array.isArray(response.data.evidences)
+          ? response.data.evidences.filter(
+              (evidence: unknown): evidence is EvidenceItem =>
+                typeof evidence === "object" &&
+                evidence !== null &&
+                !Array.isArray(evidence) &&
+                "id" in evidence &&
+                typeof (evidence as EvidenceItem).id === "number"
+            )
+          : [];
 
-        if (subSkillEvidence?.url) {
-          onEvidenceLoaded?.(subSkillEvidence.url);
-          onUrlChange(subSkillEvidence.url);
+        const subSkillEvidence = evidences.find(
+          (evidence) => evidence.id === subskillId
+        );
+
+        const url = subSkillEvidence?.evidenceUrl ?? undefined;
+        if (url) {
+          onEvidenceLoaded?.(url);
+          onUrlChange(url);
         }
       }
       setEvidenceLoaded(true);
@@ -94,7 +114,12 @@ const SubSkillItem: React.FC<SubSkillItemProps> = ({
   onEvidenceLoaded,
 }) => {
   // Custom hook for evidence fetching
-  const { evidenceLoading } = useEvidenceFetcher(skillCode, subskill.id, onUrlChange, onEvidenceLoaded);
+  const { evidenceLoading } = useEvidenceFetcher(
+    skillCode,
+    subskill.id,
+    onUrlChange,
+    onEvidenceLoaded
+  );
 
   // Debug wrapper for onDelete
   const handleDeleteDebug = () => {
@@ -110,7 +135,7 @@ const SubSkillItem: React.FC<SubSkillItemProps> = ({
   return (
     <EvidenceItem
       id={`subskill-${subskill.id}`}
-      text={subskill.subskill_text}
+      text={subskill.subskill_text ?? ""}
       url={url}
       approvalStatus={approvalStatus}
       submitted={submitted}
@@ -119,13 +144,12 @@ const SubSkillItem: React.FC<SubSkillItemProps> = ({
       error={error}
       evidenceLoading={evidenceLoading}
       colorVariant="blue"
-      skillType="skill"
       placeholder="Enter evidence URL"
       subSkillId={subskill.id}
-      onUrlChange={onUrlChange}
       onRemove={onRemove}
       onSubmit={onSubmit}
       onDelete={handleDeleteDebug}
+      onUrlChange={onUrlChange}
     />
   );
 };

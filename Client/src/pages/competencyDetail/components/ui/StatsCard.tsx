@@ -1,47 +1,27 @@
 import React from "react";
+import type { SfiaLevel, SfiaDescription } from "../../types/sfia";
+import type { TpqiUnit } from "../../types/tpqi";
 
-// Type definitions for better code organization
-interface SfiaSubSkill {
-  id: number;
-  subskill_text: string | null;
-}
-
-interface SfiaDescription {
-  id: number;
-  description_text: string | null;
-  subskills: SfiaSubSkill[];
-}
-
-interface SfiaLevel {
-  id: number;
-  level_name: string | null;
-  descriptions: SfiaDescription[];
-}
-
-interface SfiaCompetency {
-  competency_id: string;
-  competency_name: string | null;
-  overall: string | null;
-  note: string | null;
-  category: {
-    id: number;
-    category_text: string | null;
-  } | null;
-  levels: SfiaLevel[];
-}
-
-interface CompetencyData {
-  competency?: SfiaCompetency;
+type LegacySfiaData = {
+  competency?: { levels?: SfiaLevel[] | null } | null;
   totalLevels?: number;
+};
+
+type LegacyTpqiData = {
   totalSkills?: number;
   totalKnowledge?: number;
   totalOccupational?: number;
-}
+};
 
-interface StatsCardProps {
-  source: string;
-  competencyData: CompetencyData;
-}
+type StatsCardProps =
+  | {
+      source: "sfia";
+      competencyData: SfiaLevel[] | LegacySfiaData; // array of levels or legacy object
+    }
+  | {
+      source: "tpqi";
+      competencyData: TpqiUnit[] | LegacyTpqiData; // array of units or legacy totals
+    };
 
 const StatsCard: React.FC<StatsCardProps> = ({ source, competencyData }) => {
   // Helper functions for calculating subskills
@@ -62,62 +42,57 @@ const StatsCard: React.FC<StatsCardProps> = ({ source, competencyData }) => {
     );
   };
 
-  // Calculate total subskills based on source type
-  const calculateTotalSubskills = (): number => {
-    if (source !== "sfia" || !competencyData?.competency?.levels) {
-      return competencyData?.totalSkills || 0;
+  // Calculate totals based on source
+  const totals = (() => {
+    if (source === "sfia") {
+      const levels: SfiaLevel[] = Array.isArray(competencyData)
+        ? competencyData
+        : competencyData.competency?.levels ?? [];
+      const totalLevels = Array.isArray(competencyData)
+        ? levels.length
+        : competencyData.totalLevels ?? levels.length;
+      const totalSubskills = Array.isArray(levels)
+        ? levels.reduce((total, level) => total + countLevelSubskills(level), 0)
+        : 0;
+      return { totalLevels, totalSubskills };
     }
-
-    return competencyData.competency.levels.reduce(
-      (total, level) => total + countLevelSubskills(level),
-      0
-    );
-  };
-
-  const totalSubskills = calculateTotalSubskills();
+    // TPQI
+    if (Array.isArray(competencyData)) {
+      const units = competencyData;
+      const totalOccupational = units.length;
+      const totalSkills = units.reduce((sum, u) => sum + (u.skills?.length || 0), 0);
+      const totalKnowledge = units.reduce(
+        (sum, u) => sum + (u.knowledge?.length || 0),
+        0
+      );
+      return { totalOccupational, totalSkills, totalKnowledge };
+    }
+    return {
+      totalOccupational: competencyData.totalOccupational ?? 0,
+      totalSkills: competencyData.totalSkills ?? 0,
+      totalKnowledge: competencyData.totalKnowledge ?? 0,
+    };
+  })();
 
   // Render SFIA stats
   const renderSfiaStats = () => {
-    if (source !== "sfia" || !("totalLevels" in competencyData)) return null;
-
+    if (source !== "sfia") return null;
     return (
       <>
-        <StatRow
-          label="Levels"
-          value={competencyData.totalLevels}
-          colorClass="text-blue-600"
-        />
-        <StatRow
-          label="Subskills"
-          value={totalSubskills}
-          colorClass="text-blue-600"
-        />
+        <StatRow label="Levels" value={totals.totalLevels} colorClass="text-blue-600" />
+        <StatRow label="Subskills" value={totals.totalSubskills} colorClass="text-blue-600" />
       </>
     );
   };
 
   // Render TPQI stats
   const renderTpqiStats = () => {
-    if (source !== "tpqi" || !("totalOccupational" in competencyData))
-      return null;
-
+    if (source !== "tpqi") return null;
     return (
       <>
-        <StatRow
-          label="Skills"
-          value={totalSubskills}
-          colorClass="text-green-600"
-        />
-        <StatRow
-          label="Knowledge"
-          value={competencyData.totalKnowledge}
-          colorClass="text-green-600"
-        />
-        <StatRow
-          label="Occupational"
-          value={competencyData.totalOccupational}
-          colorClass="text-green-600"
-        />
+        <StatRow label="Skills" value={totals.totalSkills} colorClass="text-green-600" />
+        <StatRow label="Knowledge" value={totals.totalKnowledge} colorClass="text-green-600" />
+        <StatRow label="Occupational" value={totals.totalOccupational} colorClass="text-green-600" />
       </>
     );
   };
@@ -130,8 +105,8 @@ const StatsCard: React.FC<StatsCardProps> = ({ source, competencyData }) => {
         {renderSfiaStats()}
         {renderTpqiStats()}
 
-        {/* Show a friendly message when no data is available */}
-        {!renderSfiaStats() && !renderTpqiStats() && (
+  {/* Show a friendly message when no data is available */}
+  {!renderSfiaStats() && !renderTpqiStats() && (
           <div className="text-gray-500 text-center py-4">
             <span className="text-2xl">🔍</span>
             <p className="mt-2">No statistics available</p>

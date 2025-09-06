@@ -74,9 +74,20 @@ const SfiaSkillLevels: React.FC<SfiaSkillLevelsProps> = memo(
       error: evidenceError,
     } = useEvidenceFetcher(skillCode);
 
+
     useEffect(() => {
       if (evidenceData && Object.keys(evidenceData).length > 0) {
-        initializeEvidenceUrls(evidenceData);
+        initializeEvidenceUrls(
+          Object.fromEntries(
+            Object.entries(evidenceData).map(([key, value]) => [
+              key,
+              {
+                ...value,
+                approvalStatus: value.approvalStatus ?? null,
+              },
+            ])
+          )
+        );
       }
     }, [evidenceData, initializeEvidenceUrls]);
 
@@ -340,13 +351,7 @@ const SubSkillsSection: React.FC<SubSkillsSectionProps> = memo(
     );
     const handleDelete = useCallback(
       (subskillId: number) => () => {
-        const deleteFunction = handlers.onDelete(subskillId);
-
-        if (typeof deleteFunction === "function") {
-          return deleteFunction();
-        } else {
-          console.error("🟡 handlers.onDelete did not return a function");
-        }
+        handlers.onDelete(subskillId);
       },
       [handlers]
     );

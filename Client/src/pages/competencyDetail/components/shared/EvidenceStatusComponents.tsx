@@ -72,9 +72,7 @@ export const StatusIcon: React.FC<StatusIconProps> = ({
       );
     case EvidenceStatus.DELETING:
       return (
-        <FaSpinner
-          className="w-5 h-5 text-red-500 animate-spin flex-shrink-0"
-        />
+        <FaSpinner className="w-5 h-5 text-red-500 animate-spin flex-shrink-0" />
       );
     case EvidenceStatus.ERROR:
       return (
@@ -192,40 +190,44 @@ export const StatusMessages: React.FC<StatusMessagesProps> = ({
       )}
 
       {/* Status-specific messages */}
-      {status !== EvidenceStatus.LOADING && status !== EvidenceStatus.DELETING && status !== EvidenceStatus.ERROR && (
-        <>
-          {status === EvidenceStatus.APPROVED && (
-            <div className="flex items-center gap-2 text-green-600 text-sm bg-green-50 border border-green-200 rounded p-2">
-              <FaCheckCircle className="w-3 h-3" />
-              <span>{config.message}</span>
-            </div>
-          )}
-          {status === EvidenceStatus.REJECTED && (
-            <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 border border-red-200 rounded p-2">
-              <FaTimesCircle className="w-3 h-3" />
-              <span>{config.message}</span>
-            </div>
-          )}
-          {status === EvidenceStatus.PENDING && (
-            <div className="flex items-center gap-2 text-yellow-600 text-sm bg-yellow-50 border border-yellow-200 rounded p-2">
-              <FaClock className="w-3 h-3" />
-              <span>{config.message}</span>
-            </div>
-          )}
-          {status === EvidenceStatus.READY_TO_SUBMIT && (
-            <div className={`flex items-center gap-2 ${colors.ready} text-sm`}>
-              <FaCheckCircle className="w-3 h-3" />
-              <span>{config.message}</span>
-            </div>
-          )}
-          {status === EvidenceStatus.NOT_STARTED && (
-            <div className="flex items-center gap-2 text-gray-500 text-sm">
-              <FaCertificate className="w-3 h-3" />
-              <span>{config.message}</span>
-            </div>
-          )}
-        </>
-      )}
+      {status !== EvidenceStatus.LOADING &&
+        status !== EvidenceStatus.DELETING &&
+        status !== EvidenceStatus.ERROR && (
+          <>
+            {status === EvidenceStatus.APPROVED && (
+              <div className="flex items-center gap-2 text-green-600 text-sm bg-green-50 border border-green-200 rounded p-2">
+                <FaCheckCircle className="w-3 h-3" />
+                <span>{config.message}</span>
+              </div>
+            )}
+            {status === EvidenceStatus.REJECTED && (
+              <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 border border-red-200 rounded p-2">
+                <FaTimesCircle className="w-3 h-3" />
+                <span>{config.message}</span>
+              </div>
+            )}
+            {status === EvidenceStatus.PENDING && (
+              <div className="flex items-center gap-2 text-yellow-600 text-sm bg-yellow-50 border border-yellow-200 rounded p-2">
+                <FaClock className="w-3 h-3" />
+                <span>{config.message}</span>
+              </div>
+            )}
+            {status === EvidenceStatus.READY_TO_SUBMIT && (
+              <div
+                className={`flex items-center gap-2 ${colors.ready} text-sm`}
+              >
+                <FaCheckCircle className="w-3 h-3" />
+                <span>{config.message}</span>
+              </div>
+            )}
+            {status === EvidenceStatus.NOT_STARTED && (
+              <div className="flex items-center gap-2 text-gray-500 text-sm">
+                <FaCertificate className="w-3 h-3" />
+                <span>{config.message}</span>
+              </div>
+            )}
+          </>
+        )}
     </div>
   );
 };

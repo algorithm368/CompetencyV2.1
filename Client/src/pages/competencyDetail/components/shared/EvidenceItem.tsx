@@ -28,8 +28,6 @@ interface EvidenceItemProps {
   evidenceLoading?: boolean;
   /** Color variant for styling (blue, purple, green) */
   colorVariant?: "blue" | "purple" | "green";
-  /** Type of skill/knowledge for messaging */
-  skillType?: string;
   /** Placeholder text for the input */
   placeholder?: string;
   /** SubSkill ID for deletion operations */
@@ -61,7 +59,6 @@ export const EvidenceItem: React.FC<EvidenceItemProps> = ({
   error,
   evidenceLoading = false,
   colorVariant = "blue",
-  skillType = "skill",
   placeholder = "Enter evidence URL",
   onUrlChange,
   onRemove,
@@ -139,11 +136,8 @@ export const EvidenceItem: React.FC<EvidenceItemProps> = ({
 
         <StatusMessages
           status={status}
-          evidenceLoading={evidenceLoading}
-          loading={loading}
           error={error}
           colorVariant={colorVariant}
-          skillType={skillType}
         />
       </div>
     </li>

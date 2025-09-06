@@ -1,4 +1,5 @@
 import api from "../api";
+import axios from "axios";
 
 // Interface matching the database schema
 export interface UserProfileData {
@@ -86,8 +87,8 @@ class ProfileService {
       return response.data.data;
     } catch (error) {
       console.error("Error updating user profile:", error);
-      if (error.response?.data?.message) {
-        throw new Error(error.response.data.message);
+      if (axios.isAxiosError(error) && error.response?.data?.message) {
+        throw new Error((error.response?.data as { message: string }).message);
       }
       throw new Error("Failed to update user profile");
     }

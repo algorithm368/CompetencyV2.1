@@ -12,14 +12,18 @@ export interface GetEvidenceRequest {
 /**
  * Response interface for SFIA evidence retrieval.
  */
+// Server returns a SkillEvidenceCollection shape
+export interface EvidenceInfo {
+  id: number;
+  evidenceUrl: string | null;
+  approvalStatus?: string | null;
+}
+
 export interface EvidenceData {
-  id: string;
   skillCode: string;
   userId: string;
-  evidences: string[];
-  description?: string;
-  createdAt?: string;
-  updatedAt?: string;
+  evidences: EvidenceInfo[];
+  totalEvidences: number;
 }
 
 /**

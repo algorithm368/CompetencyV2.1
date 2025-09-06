@@ -79,7 +79,7 @@ export function useProfile(options?: UseProfileOptions) {
   /**
    * Load user profile data
    */
-  const loadProfile = useCallback(async () => {
+  const loadProfile = useCallback(async (): Promise<UserProfileData | null> => {
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
@@ -99,6 +99,8 @@ export function useProfile(options?: UseProfileOptions) {
           minute: "2-digit",
         }),
       }));
+
+      return profileData;
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Failed to load profile";
@@ -108,6 +110,7 @@ export function useProfile(options?: UseProfileOptions) {
         error: errorMessage,
       }));
       callbacksRef.current.onLoadError?.(errorMessage);
+      return null;
     }
   }, []); // Empty dependency array since we use refs for callbacks
 

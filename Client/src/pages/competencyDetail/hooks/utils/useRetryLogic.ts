@@ -1,11 +1,21 @@
 import { useCallback, useRef } from "react";
-import { APIError, isNetworkError, isTimeoutError, isNotFoundError } from "../../services/competencyDetailAPI";
+import {
+  APIError,
+  isNetworkError,
+  isTimeoutError,
+  isNotFoundError,
+} from "../../services/competencyDetailAPI";
 import { CompetencySource } from "../types";
 
 /**
  * Custom hook for managing retry logic
  */
-export function useRetryLogic(maxRetries: number, retryDelay: number, autoRetryOnNetworkError: boolean, getCacheKey: (source: CompetencySource, code: string) => string) {
+export function useRetryLogic(
+  maxRetries: number,
+  retryDelay: number,
+  autoRetryOnNetworkError: boolean,
+  getCacheKey: (source: CompetencySource, code: string) => string
+) {
   // Retry attempts tracking
   const retryAttemptsRef = useRef<Map<string, number>>(new Map());
 
@@ -26,12 +36,18 @@ export function useRetryLogic(maxRetries: number, retryDelay: number, autoRetryO
       }
 
       // Always retry on network/timeout errors if auto-retry is enabled
-      if (autoRetryOnNetworkError && (isNetworkError(error) || isTimeoutError(error))) {
+      if (
+        autoRetryOnNetworkError &&
+        (isNetworkError(error) || isTimeoutError(error))
+      ) {
         return true;
       }
 
       // Don't retry on 404 or client errors (4xx)
-      if (isNotFoundError(error) || (error.status && error.status >= 400 && error.status < 500)) {
+      if (
+        isNotFoundError(error) ||
+        (error.status && error.status >= 400 && error.status < 500)
+      ) {
         return false;
       }
 
@@ -51,7 +67,9 @@ export function useRetryLogic(maxRetries: number, retryDelay: number, autoRetryO
       code: string
     ): Promise<T> => {
       const cacheKey = getCacheKey(source, code);
-      let lastError: APIError;
+      let lastError: APIError = new APIError(
+        "No error occurred during retries"
+      );
 
       // Try initial call + retries
       for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -63,7 +81,10 @@ export function useRetryLogic(maxRetries: number, retryDelay: number, autoRetryO
 
           return result;
         } catch (error) {
-          lastError = error instanceof APIError ? error : new APIError("Unknown error occurred");
+          lastError =
+            error instanceof APIError
+              ? error
+              : new APIError("Unknown error occurred");
 
           // Update retry tracking
           retryAttemptsRef.current.set(cacheKey, attempt + 1);

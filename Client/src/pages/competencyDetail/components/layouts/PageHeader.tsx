@@ -1,5 +1,7 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
+import type { SfiaLevel } from "../../types/sfia";
+import type { TpqiUnit } from "../../types/tpqi";
 import BackButton from "../ui/BackButton";
 import HeaderActions from "../ui/HeaderActions";
 import FrameworkBadge from "../ui/FrameworkBadge";
@@ -12,13 +14,11 @@ interface QuickNavItem {
   href: string;
 }
 
-interface PageHeaderProps {
-  source: "sfia" | "tpqi";
+type BasePageHeaderProps = {
   id: string;
   competencyTitle: string;
   lastFetched?: Date;
   quickNavItems: QuickNavItem[];
-  competencyData: unknown;
   isBookmarked: boolean;
   isFavorited: boolean;
   onBack: () => void;
@@ -30,8 +30,22 @@ interface PageHeaderProps {
   onTooltip: (key: string | null) => void;
   getFrameworkIcon: (framework: string) => React.ReactNode;
   getFrameworkColor: (framework: string) => string;
-  itemVariants: unknown;
-}
+  itemVariants: Variants | undefined;
+};
+
+type SfiaHeaderProps = BasePageHeaderProps & {
+  source: "sfia";
+  // Use SFIA levels array (adjust if your StatsCard expects a different SFIA shape)
+  competencyData: SfiaLevel[];
+};
+
+type TpqiHeaderProps = BasePageHeaderProps & {
+  source: "tpqi";
+  // Use TPQI units array (adjust if your StatsCard expects a different TPQI shape)
+  competencyData: TpqiUnit[];
+};
+
+type PageHeaderProps = SfiaHeaderProps | TpqiHeaderProps;
 
 const PageHeader: React.FC<PageHeaderProps> = ({
   source,
@@ -95,7 +109,11 @@ const PageHeader: React.FC<PageHeaderProps> = ({
           variants={itemVariants}
           className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 border border-gray-200 shadow-xl lg:min-w-80"
         >
-          <StatsCard source={source} competencyData={competencyData} />
+          {source === "sfia" ? (
+            <StatsCard source="sfia" competencyData={competencyData} />
+          ) : (
+            <StatsCard source="tpqi" competencyData={competencyData} />
+          )}
         </motion.div>
       </div>
     </motion.header>

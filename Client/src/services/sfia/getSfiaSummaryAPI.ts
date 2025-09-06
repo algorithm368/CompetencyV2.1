@@ -1,4 +1,5 @@
 import api from "@Services/api";
+import axios from "axios";
 import { ApiResponse } from "../../types/competency/ApiResponse";
 
 /**
@@ -21,6 +22,7 @@ export interface SfiaSummaryStats {
   totalSkills: number;
   averagePercent: number; // Changed from avgSkillPercent to match API
   completedSkills: number;
+  skillSummaries: SfiaSkillSummary[];
 }
 
 /**
@@ -36,14 +38,6 @@ export interface GetSfiaSummaryResponse extends ApiResponse {
  */
 export class GetSfiaSummaryService {
   /**
-   * Creates an instance of GetSfiaSummaryService.
-   *
-   * @param baseApiUrl - The base URL of the backend API.
-   * @param accessToken - The Bearer token for authenticated API access.
-   */
-  constructor() {}
-
-  /**
    * Retrieves the SFIA summary for the authenticated user.
    *
    * @returns Promise<GetSfiaSummaryResponse>
@@ -51,20 +45,42 @@ export class GetSfiaSummaryService {
    */
   async getUserSummary(): Promise<GetSfiaSummaryResponse> {
     try {
-      const response = await api.get<GetSfiaSummaryResponse>("/sfia/summary/user");
+      const response = await api.get<GetSfiaSummaryResponse>(
+        "/sfia/summary/user"
+      );
       return response.data;
-    } catch (error: any) {
-      console.error("Error fetching SFIA summary:", error);
-      throw new Error(error.response?.data?.message || "Failed to fetch SFIA summary");
+    } catch (error: unknown) {
+      // Gracefully handle 404: treat as empty portfolio instead of an error
+      if (axios.isAxiosError(error) && error.response?.status === 404) {
+        const empty: SfiaSummaryStats = {
+          totalSkills: 0,
+          averagePercent: 0,
+          completedSkills: 0,
+          skillSummaries: [],
+        };
+        return { success: true, data: empty };
+      }
+
+      // Other errors: propagate with friendly message
+      const message = axios.isAxiosError(error)
+        ? error.response?.data?.message || "Failed to fetch SFIA summary"
+        : "Failed to fetch SFIA summary";
+      console.error("Error fetching SFIA summary:", message);
+      throw new Error(message);
     }
   }
 
   /**
-
    * Checks if the response contains valid summary data.
    */
   hasSummaryData(response: GetSfiaSummaryResponse): boolean {
-    return response.success && !!response.data && Array.isArray(response.data.skillSummaries) && response.data.skillSummaries.length > 0;
+    const data = response.data;
+    return Boolean(
+      response.success &&
+        data &&
+        Array.isArray(data.skillSummaries) &&
+        data.skillSummaries.length > 0
+    );
   }
 
   /**
@@ -75,12 +91,15 @@ export class GetSfiaSummaryService {
     skillsByCategory: Map<string, SfiaSkillSummary[]>;
     averageByLevel: Map<string, number>;
   } {
-    const highPerformanceSkills = summaryData.skillSummaries.filter((skill) => skill.skillPercent >= 80);
+    const highPerformanceSkills = summaryData.skillSummaries.filter(
+      (skill) => skill.skillPercent >= 80
+    );
 
     const skillsByCategory = new Map<string, SfiaSkillSummary[]>();
     summaryData.skillSummaries.forEach((skill) => {
       const categoryName = skill.categoryName;
-      if (!skillsByCategory.has(categoryName)) skillsByCategory.set(categoryName, []);
+      if (!skillsByCategory.has(categoryName))
+        skillsByCategory.set(categoryName, []);
       skillsByCategory.get(categoryName)!.push(skill);
     });
 
@@ -94,7 +113,9 @@ export class GetSfiaSummaryService {
     });
 
     levelGroups.forEach((percentages, levelName) => {
-      const average = percentages.reduce((sum, percent) => sum + percent, 0) / percentages.length;
+      const average =
+        percentages.reduce((sum, percent) => sum + percent, 0) /
+        percentages.length;
       averageByLevel.set(levelName, Math.round(average * 100) / 100);
     });
 

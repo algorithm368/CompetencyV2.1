@@ -12,13 +12,25 @@ interface AutocompleteInputProps {
   onSelect?: (value: string) => void;
 }
 
-const AutocompleteInput: React.FC<AutocompleteInputProps> = ({ value, onChange, options, placeholder = "", disabled = false, isLoading = false, className = "", onSelect }) => {
+const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
+  value,
+  onChange,
+  options,
+  placeholder = "",
+  disabled = false,
+  isLoading = false,
+  className = "",
+  onSelect,
+}) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         setShowDropdown(false);
       }
     };
@@ -54,7 +66,11 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = ({ value, onChange, 
       {showDropdown && options.length > 0 && (
         <ul className="absolute z-50 w-full max-h-60 overflow-y-auto mt-1 bg-white border rounded shadow-lg">
           {options.map((opt, idx) => (
-            <li key={idx} className="px-3 py-2 hover:bg-indigo-100 cursor-pointer" onClick={() => handleSelect(opt)}>
+            <li
+              key={idx}
+              className="px-3 py-2 hover:bg-indigo-100 cursor-pointer"
+              onClick={() => handleSelect(opt)}
+            >
               {opt}
             </li>
           ))}

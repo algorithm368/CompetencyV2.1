@@ -52,3 +52,16 @@ export interface EvidenceType {
   type: "skill" | "knowledge";
   id: number;
 }
+
+export interface TpqiCompetency {
+  competency_id: string;
+  competency_name: string | null;
+  overall: string | null;
+  note: string | null;
+  occupational: {
+    id: number;
+    occupational_text: string | null;
+  } | null;
+  skills: TpqiSkill[];
+  knowledge: TpqiKnowledge[];
+}

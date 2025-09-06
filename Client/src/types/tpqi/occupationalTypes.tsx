@@ -1,6 +1,7 @@
 export interface Occupational {
   id: number;
   name?: string | null;
+  categoryId?: number | null;
 }
 
 export interface OccupationalPageResult {

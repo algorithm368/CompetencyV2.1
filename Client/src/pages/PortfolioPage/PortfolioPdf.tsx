@@ -1,10 +1,12 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { embedThaiFont } from "@Utils/pdfThaiFont";
-import { OccupationType, SkillType } from "../mockOccupations";
-import { UserType } from "../mockOccupations";
+import { OccupationType, SkillType, UserType } from "../mockOccupations";
 
-export async function generatePortfolioPdf(user: UserType, occupation: OccupationType) {
+export async function generatePortfolioPdf(
+  user: UserType,
+  occupation: OccupationType
+) {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const margin = 40;
   let cursorY = margin;
@@ -19,19 +21,30 @@ export async function generatePortfolioPdf(user: UserType, occupation: Occupatio
   doc.setFont("THSarabunNew");
   doc.text(`Name: ${user.name}`, margin, cursorY);
   cursorY += 20;
-  doc.text(`Email: ${user.name.toLowerCase().replace(" ", ".")}@example.com`, margin, cursorY);
+  doc.text(
+    `Email: ${user.name.toLowerCase().replace(" ", ".")}@example.com`,
+    margin,
+    cursorY
+  );
   cursorY += 20;
   doc.text(`Role: Full Stack Developer`, margin, cursorY);
   cursorY += 20;
   doc.text(`Location: Bangkok, Thailand`, margin, cursorY);
   cursorY += 20;
-  doc.text("Bio: Passionate developer with experience in building full-stack applications. Skilled in React, Node.js, and cloud deployment. Always eager to learn new technologies and improve code quality.", margin, cursorY, {
-    maxWidth: 500,
-  });
+  doc.text(
+    "Bio: Passionate developer with experience in building full-stack applications. Skilled in React, Node.js, and cloud deployment. Always eager to learn new technologies and improve code quality.",
+    margin,
+    cursorY,
+    {
+      maxWidth: 500,
+    }
+  );
   cursorY += 40;
 
   const totalSkills = occupation.skills.length;
-  const evidenceCount = Object.values(user.evidenceUrls).filter((url) => url.trim() !== "").length;
+  const evidenceCount = Object.values(user.evidenceUrls).filter(
+    (url) => url.trim() !== ""
+  ).length;
 
   doc.setFontSize(14);
   doc.text("Statistics", margin, cursorY);
@@ -44,7 +57,10 @@ export async function generatePortfolioPdf(user: UserType, occupation: Occupatio
   doc.text(`Evidence Submitted: ${evidenceCount}`, margin, cursorY);
   cursorY += 30;
 
-  const levelProgressData: Record<string, { total: number; completed: number }> = {};
+  const levelProgressData: Record<
+    string,
+    { total: number; completed: number }
+  > = {};
   occupation.skills.forEach((skill) => {
     const lvl = skill.level;
     if (!levelProgressData[lvl]) {
@@ -71,14 +87,34 @@ export async function generatePortfolioPdf(user: UserType, occupation: Occupatio
   doc.text("รายละเอียดทักษะ (Skills Details)", margin, cursorY);
   cursorY += 20;
 
-  const tableColumn = ["Skill Name", "Framework", "Level", "Has Evidence", "Evidence URL", "Responsibilities", "Requirements"];
+  const tableColumn = [
+    "Skill Name",
+    "Framework",
+    "Level",
+    "Has Evidence",
+    "Evidence URL",
+    "Responsibilities",
+    "Requirements",
+  ];
   const tableRows: string[][] = [];
 
   occupation.skills.forEach((skill: SkillType) => {
     const hasEv = Boolean(user.evidenceUrls[skill.id]?.trim() !== "");
-    const respText = skill.responsibilities.length ? skill.responsibilities.join("\n") : "-";
-    const reqText = skill.requirements.length ? skill.requirements.join("\n") : "-";
-    tableRows.push([skill.name, skill.framework, skill.level, hasEv ? "Yes" : "No", hasEv ? user.evidenceUrls[skill.id] : "-", respText, reqText]);
+    const respText = skill.responsibilities.length
+      ? skill.responsibilities.join("\n")
+      : "-";
+    const reqText = skill.requirements.length
+      ? skill.requirements.join("\n")
+      : "-";
+    tableRows.push([
+      skill.name,
+      skill.framework,
+      skill.level,
+      hasEv ? "Yes" : "No",
+      hasEv ? user.evidenceUrls[skill.id] : "-",
+      respText,
+      reqText,
+    ]);
   });
 
   autoTable(doc, {

@@ -75,7 +75,9 @@ export interface UserCareerSummaryCollection {
  *   console.log('No career summaries found for this user');
  * }
  */
-export async function getUserCareerSummaryByUserId(userId: string): Promise<UserCareerSummaryCollection | null> {
+export async function getUserCareerSummaryByUserId(
+  userId: string
+): Promise<UserCareerSummaryCollection | null> {
   try {
     // Validate input parameters
     if (!userId) {
@@ -98,11 +100,15 @@ export async function getUserCareerSummaryByUserId(userId: string): Promise<User
         userEmail: user.email, // Use the email from competency database
       },
       include: {
-        career: true,
-        level: true,
-        careerLevel: true,
+        Career: true,
+        Level: true,
+        CareerLevel: true,
       },
-      orderBy: [{ skillPercent: "desc" }, { knowledgePercent: "desc" }, { careerId: "asc" }],
+      orderBy: [
+        { skillPercent: "desc" },
+        { knowledgePercent: "desc" },
+        { careerId: "asc" },
+      ],
     });
 
     // If no summaries found, return null
@@ -111,30 +117,58 @@ export async function getUserCareerSummaryByUserId(userId: string): Promise<User
     }
 
     // Transform the raw database result to match our interface
-    const careerSummaries: CareerSummaryInfo[] = summaryData.map((summary) => ({
-      id: summary.id,
-      careerId: summary.careerId,
-      careerName: summary.career?.name || null,
-      levelId: summary.levelId,
-      levelName: summary.level?.name || null,
-      careerLevelId: summary.careerLevelId,
-      skillPercent: summary.skillPercent ? Number(summary.skillPercent) : null,
-      knowledgePercent: summary.knowledgePercent ? Number(summary.knowledgePercent) : null,
-    }));
+    const careerSummaries: CareerSummaryInfo[] = summaryData.map(
+      (summary: any) => ({
+        id: summary.id,
+        careerId: summary.careerId,
+        careerName: summary.Career?.name || null,
+        levelId: summary.levelId,
+        levelName: summary.Level?.name || null,
+        careerLevelId: summary.careerLevelId,
+        skillPercent: summary.skillPercent
+          ? Number(summary.skillPercent)
+          : null,
+        knowledgePercent: summary.knowledgePercent
+          ? Number(summary.knowledgePercent)
+          : null,
+      })
+    );
 
     // Calculate statistics
-    const validSkillPercentages = careerSummaries.map((career) => career.skillPercent).filter((percent): percent is number => percent !== null);
+    const validSkillPercentages = careerSummaries
+      .map((career) => career.skillPercent)
+      .filter((percent): percent is number => percent !== null);
 
-    const validKnowledgePercentages = careerSummaries.map((career) => career.knowledgePercent).filter((percent): percent is number => percent !== null);
+    const validKnowledgePercentages = careerSummaries
+      .map((career) => career.knowledgePercent)
+      .filter((percent): percent is number => percent !== null);
 
     const totalCareers = careerSummaries.length;
 
-    const averageSkillPercent = validSkillPercentages.length > 0 ? Math.round((validSkillPercentages.reduce((sum, percent) => sum + percent, 0) / validSkillPercentages.length) * 100) / 100 : 0;
+    const averageSkillPercent =
+      validSkillPercentages.length > 0
+        ? Math.round(
+            (validSkillPercentages.reduce((sum, percent) => sum + percent, 0) /
+              validSkillPercentages.length) *
+              100
+          ) / 100
+        : 0;
 
     const averageKnowledgePercent =
-      validKnowledgePercentages.length > 0 ? Math.round((validKnowledgePercentages.reduce((sum, percent) => sum + percent, 0) / validKnowledgePercentages.length) * 100) / 100 : 0;
+      validKnowledgePercentages.length > 0
+        ? Math.round(
+            (validKnowledgePercentages.reduce(
+              (sum, percent) => sum + percent,
+              0
+            ) /
+              validKnowledgePercentages.length) *
+              100
+          ) / 100
+        : 0;
 
-    const completedCareers = careerSummaries.filter((career) => career.skillPercent === 100 && career.knowledgePercent === 100).length;
+    const completedCareers = careerSummaries.filter(
+      (career) => career.skillPercent === 100 && career.knowledgePercent === 100
+    ).length;
 
     return {
       careerSummaries,

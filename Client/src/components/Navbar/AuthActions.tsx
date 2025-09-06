@@ -32,7 +32,7 @@ const AuthActions: React.FC<AuthActionsProps> = ({
         )}
         {isLoggedIn && (
           <div className="scale-90">
-            <ProfileDisplay profile={user} onLogout={onLogout} />
+            <ProfileDisplay profile={user ?? null} onLogout={onLogout} />
           </div>
         )}
       </div>
@@ -42,7 +42,7 @@ const AuthActions: React.FC<AuthActionsProps> = ({
   return (
     <div className="hidden md:flex items-center space-x-4">
       {isLoggedIn ? (
-        <ProfileDisplay profile={user} onLogout={onLogout} />
+        <ProfileDisplay profile={user ?? null} onLogout={onLogout} />
       ) : (
         <button
           onClick={onLogin}

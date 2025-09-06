@@ -1,7 +1,7 @@
 import React from "react";
 
 interface AdvisorHeaderProps {
-  headerRef: React.RefObject<HTMLDivElement>;
+  headerRef: React.RefObject<HTMLDivElement | null>;
   headerInView: boolean;
 }
 

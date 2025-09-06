@@ -65,7 +65,7 @@ const containerVariants = {
 
 // Custom hook for scroll functionality
 const useScrollToTop = () => {
-  const shouldReduceMotion = useReducedMotion();
+  const shouldReduceMotion = useReducedMotion() ?? false;
 
   return () => {
     if (shouldReduceMotion) {
@@ -243,7 +243,7 @@ const SearchResultsWithLazyLoad: React.FC<SearchResultsWithLazyLoadProps> = ({
   onSearch,
   searchDelay = 500, // Default 500ms delay
 }) => {
-  const shouldReduceMotion = useReducedMotion();
+  const shouldReduceMotion = useReducedMotion() ?? false;
   const [hasSearched, setHasSearched] = useState(false);
   const scrollToTop = useScrollToTop();
 

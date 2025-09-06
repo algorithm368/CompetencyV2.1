@@ -15,6 +15,19 @@ export interface SfiaLevel {
   descriptions: SfiaDescription[];
 }
 
+// Represents a full SFIA competency, including metadata and its levels
+export interface SfiaCompetency {
+  competency_id: string;
+  competency_name: string | null;
+  overall: string | null;
+  note: string | null;
+  category: {
+    id: number;
+    category_text: string | null;
+  } | null;
+  levels: SfiaLevel[];
+}
+
 export interface SubmitEvidenceRequest {
   subSkillId: number;
   evidenceText: string;

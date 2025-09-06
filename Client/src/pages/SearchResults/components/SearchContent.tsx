@@ -21,9 +21,18 @@ const SearchTypingState: React.FC<{ query: string }> = ({ query }) => (
   >
     <div className="flex items-center gap-3 text-gray-500 bg-white/60 backdrop-blur-sm rounded-lg px-4 py-3 border border-gray-100">
       <div className="flex space-x-1">
-        <div className="w-2 h-2 bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-        <div className="w-2 h-2 bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-        <div className="w-2 h-2 bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+        <div
+          className="w-2 h-2 bg-teal-400 rounded-full animate-bounce"
+          style={{ animationDelay: "0ms" }}
+        ></div>
+        <div
+          className="w-2 h-2 bg-teal-400 rounded-full animate-bounce"
+          style={{ animationDelay: "150ms" }}
+        ></div>
+        <div
+          className="w-2 h-2 bg-teal-400 rounded-full animate-bounce"
+          style={{ animationDelay: "300ms" }}
+        ></div>
       </div>
       <span className="text-sm font-medium">กำลังพิมพ์ "{query}"...</span>
     </div>
@@ -32,6 +41,7 @@ const SearchTypingState: React.FC<{ query: string }> = ({ query }) => (
 
 interface CompetencyItem {
   id: string;
+  name: string; // Add the missing 'name' property
   framework: string;
   [key: string]: unknown;
 }
@@ -48,7 +58,7 @@ interface SearchContentProps {
   onNewSearch: () => void;
 }
 const createAnimationVariants = (prefersReducedMotion: boolean) => {
-  if (prefersReducedMotion) return {};
+  if (prefersReducedMotion) return undefined;
 
   return {
     initial: { opacity: 0.95 }, // Start with high opacity to prevent harsh transitions
@@ -83,7 +93,7 @@ const AnimatedStateWrapper: React.FC<{
       variants={variants}
       initial={prefersReducedMotion ? false : "initial"}
       animate={prefersReducedMotion ? false : "animate"}
-      exit={prefersReducedMotion ? false : "exit"}
+      exit={prefersReducedMotion ? undefined : "exit"}
       style={{ willChange: "opacity" }}
       className="flex-1 flex flex-col"
     >
@@ -110,7 +120,7 @@ const SearchContent: React.FC<SearchContentProps> = ({
   onSuggestionClick,
   onNewSearch,
 }) => {
-  const prefersReducedMotion = useReducedMotion();
+  const prefersReducedMotion = useReducedMotion() ?? false;
 
   // Render conditions to determine which component state to show
   const renderConditions = {
@@ -119,7 +129,8 @@ const SearchContent: React.FC<SearchContentProps> = ({
     hasError: error && !loading && !isTyping,
     hasNoQuery: !loading && !error && !query && !isTyping,
     isEmpty: !loading && !error && query && pageItems.length === 0 && !isTyping,
-    hasResults: !loading && !error && query && pageItems.length > 0 && !isTyping,
+    hasResults:
+      !loading && !error && query && pageItems.length > 0 && !isTyping,
   };
 
   return (

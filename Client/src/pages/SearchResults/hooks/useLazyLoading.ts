@@ -13,7 +13,7 @@ interface UseLazyLoadingReturn<T = unknown> {
   hasMore: boolean;
   isLoading: boolean;
   loadMoreItems: () => void;
-  sentinelRef: React.RefObject<HTMLDivElement>;
+  sentinelRef: React.RefObject<HTMLDivElement | null>;
   reset: () => void;
 }
 
@@ -55,7 +55,7 @@ export const useLazyLoading = <T = unknown>({
   const reset = useCallback(() => {
     setDisplayedCount(initialLoad);
     setIsLoading(false);
-    
+
     // Clear any pending timeouts
     if (loadingTimeoutRef.current) {
       clearTimeout(loadingTimeoutRef.current);

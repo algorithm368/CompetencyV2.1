@@ -7,7 +7,6 @@ import HeaderActions from "../ui/HeaderActions";
 import FrameworkBadge from "../ui/FrameworkBadge";
 import QuickNavigation from "../ui/QuickNavigation";
 import CompetencyInfo from "../ui/CompetencyInfo";
-import StatsCard from "../ui/StatsCard";
 
 interface QuickNavItem {
   label: string;
@@ -53,7 +52,6 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   competencyTitle,
   lastFetched,
   quickNavItems,
-  competencyData,
   isBookmarked,
   isFavorited,
   onBack,
@@ -103,18 +101,6 @@ const PageHeader: React.FC<PageHeaderProps> = ({
 
           <QuickNavigation source={source} items={quickNavItems} />
         </div>
-
-        {/* Enhanced Stats Card */}
-        <motion.div
-          variants={itemVariants}
-          className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 border border-gray-200 shadow-xl lg:min-w-80"
-        >
-          {source === "sfia" ? (
-            <StatsCard source="sfia" competencyData={competencyData} />
-          ) : (
-            <StatsCard source="tpqi" competencyData={competencyData} />
-          )}
-        </motion.div>
       </div>
     </motion.header>
   );

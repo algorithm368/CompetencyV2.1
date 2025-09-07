@@ -134,7 +134,7 @@ const LoadingStates: React.FC<{
         <span className="text-green-600">Loading existing evidence...</span>
       </div>
     )}
-    {evidenceError && (
+    {evidenceError && evidenceError !== "Unauthorized: No token provided" && (
       <div
         className="flex items-center justify-center gap-2 py-4 text-red-600 bg-red-50 border border-red-200 rounded-lg mx-4"
         role="alert"

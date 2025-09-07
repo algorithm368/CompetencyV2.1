@@ -74,7 +74,6 @@ const SfiaSkillLevels: React.FC<SfiaSkillLevelsProps> = memo(
       error: evidenceError,
     } = useEvidenceFetcher(skillCode);
 
-
     useEffect(() => {
       if (evidenceData && Object.keys(evidenceData).length > 0) {
         initializeEvidenceUrls(
@@ -149,7 +148,7 @@ const LoadingStates: React.FC<{
         <span className="text-blue-600">🔄 Loading existing evidence...</span>
       </output>
     )}
-    {evidenceError && (
+    {evidenceError && evidenceError !== "Unauthorized: No token provided" && (
       <div className="text-center py-4" role="alert" aria-live="assertive">
         <span className="text-red-600">
           ⚠️ Failed to load evidence: {evidenceError}

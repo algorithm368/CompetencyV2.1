@@ -27,7 +27,11 @@ export function useEvidenceFetcher(skillCode: string) {
       });
 
       if (response.success && response.data) {
-        type EvidenceItem = { id: number; evidenceUrl?: string | null; approvalStatus?: string | null };
+        type EvidenceItem = {
+          id: number;
+          evidenceUrl?: string | null;
+          approvalStatus?: string | null;
+        };
         // response.data.evidences is an array of { id, evidenceUrl, approvalStatus }
         const transformed: EvidenceMap = (response.data.evidences || []).reduce(
           (acc: EvidenceMap, item: EvidenceItem) => {

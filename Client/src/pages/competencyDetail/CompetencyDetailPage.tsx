@@ -430,52 +430,69 @@ const CompetencyDetailPage: React.FC = () => {
                   initial="hidden"
                   animate="visible"
                 >
-                  {validatedSource === "sfia" &&
-                    Array.isArray(competencyData) && (
-                      <PageHeader
-                        source="sfia"
-                        id={validatedId || ""}
-                        competencyTitle={competencyTitle}
-                        lastFetched={lastFetched || undefined}
-                        quickNavItems={quickNavItems}
-                        competencyData={competencyData as SfiaLevel[]}
-                        isBookmarked={isBookmarked}
-                        isFavorited={isFavorited}
-                        onBack={() => navigate(-1)}
-                        onBookmark={handleBookmark}
-                        onFavorite={handleFavorite}
-                        onShare={handleShare}
-                        onPrint={handlePrint}
-                        onDownload={handleDownload}
-                        onTooltip={setShowTooltip}
-                        getFrameworkIcon={getFrameworkIcon}
-                        getFrameworkColor={getFrameworkColor}
-                        itemVariants={accessibleItemVariants}
-                      />
-                    )}
-                  {validatedSource === "tpqi" &&
-                    Array.isArray(competencyData) && (
-                      <PageHeader
-                        source="tpqi"
-                        id={validatedId || ""}
-                        competencyTitle={competencyTitle}
-                        lastFetched={lastFetched || undefined}
-                        quickNavItems={quickNavItems}
-                        competencyData={competencyData as TpqiUnit[]}
-                        isBookmarked={isBookmarked}
-                        isFavorited={isFavorited}
-                        onBack={() => navigate(-1)}
-                        onBookmark={handleBookmark}
-                        onFavorite={handleFavorite}
-                        onShare={handleShare}
-                        onPrint={handlePrint}
-                        onDownload={handleDownload}
-                        onTooltip={setShowTooltip}
-                        getFrameworkIcon={getFrameworkIcon}
-                        getFrameworkColor={getFrameworkColor}
-                        itemVariants={accessibleItemVariants}
-                      />
-                    )}
+                  {validatedSource === "sfia" && (
+                    <PageHeader
+                      source="sfia"
+                      id={validatedId || ""}
+                      competencyTitle={competencyTitle}
+                      lastFetched={lastFetched || undefined}
+                      quickNavItems={quickNavItems}
+                      competencyData={
+                        "competency" in competencyData &&
+                        competencyData.competency &&
+                        "category" in competencyData.competency &&
+                        "levels" in competencyData.competency
+                          ? (competencyData.competency.levels as SfiaLevel[])
+                          : []
+                      }
+                      isBookmarked={isBookmarked}
+                      isFavorited={isFavorited}
+                      onBack={() => navigate(-1)}
+                      onBookmark={handleBookmark}
+                      onFavorite={handleFavorite}
+                      onShare={handleShare}
+                      onPrint={handlePrint}
+                      onDownload={handleDownload}
+                      onTooltip={setShowTooltip}
+                      getFrameworkIcon={getFrameworkIcon}
+                      getFrameworkColor={getFrameworkColor}
+                      itemVariants={accessibleItemVariants}
+                    />
+                  )}
+                  {validatedSource === "tpqi" && (
+                    <PageHeader
+                      source="tpqi"
+                      id={validatedId || ""}
+                      competencyTitle={competencyTitle}
+                      lastFetched={lastFetched || undefined}
+                      quickNavItems={quickNavItems}
+                      competencyData={
+                        validatedSource === "tpqi" &&
+                        Array.isArray(competencyData)
+                          ? (competencyData.map((item) => ({
+                              id: item.id, // Ensure the id property is included
+                              unit_code: item.unit_code,
+                              unit_name: item.unit_name,
+                              skills: item.skills || [],
+                              knowledge: item.knowledge || [],
+                              occupational: item.occupational || [],
+                            })) as TpqiUnit[])
+                          : []
+                      }
+                      isBookmarked={isBookmarked}
+                      isFavorited={isFavorited}
+                      onBack={() => navigate(-1)}
+                      onBookmark={handleBookmark}
+                      onFavorite={handleFavorite}
+                      onShare={handleShare}
+                      onPrint={handlePrint}
+                      onDownload={handleDownload}
+                      onTooltip={setShowTooltip}
+                      getFrameworkIcon={getFrameworkIcon}
+                      getFrameworkColor={getFrameworkColor}
+                      itemVariants={accessibleItemVariants}
+                    />
+                  )}
 
                   {/* Content Section */}
                   <motion.div variants={itemVariants} className="space-y-8">

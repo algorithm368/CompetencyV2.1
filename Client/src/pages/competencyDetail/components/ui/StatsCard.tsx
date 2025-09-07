@@ -60,7 +60,10 @@ const StatsCard: React.FC<StatsCardProps> = ({ source, competencyData }) => {
     if (Array.isArray(competencyData)) {
       const units = competencyData;
       const totalOccupational = units.length;
-      const totalSkills = units.reduce((sum, u) => sum + (u.skills?.length || 0), 0);
+      const totalSkills = units.reduce(
+        (sum, u) => sum + (u.skills?.length || 0),
+        0
+      );
       const totalKnowledge = units.reduce(
         (sum, u) => sum + (u.knowledge?.length || 0),
         0
@@ -79,8 +82,16 @@ const StatsCard: React.FC<StatsCardProps> = ({ source, competencyData }) => {
     if (source !== "sfia") return null;
     return (
       <>
-        <StatRow label="Levels" value={totals.totalLevels} colorClass="text-blue-600" />
-        <StatRow label="Subskills" value={totals.totalSubskills} colorClass="text-blue-600" />
+        <StatRow
+          label="Levels"
+          value={totals.totalLevels}
+          colorClass="text-blue-600"
+        />
+        <StatRow
+          label="Subskills"
+          value={totals.totalSubskills}
+          colorClass="text-blue-600"
+        />
       </>
     );
   };
@@ -90,9 +101,21 @@ const StatsCard: React.FC<StatsCardProps> = ({ source, competencyData }) => {
     if (source !== "tpqi") return null;
     return (
       <>
-        <StatRow label="Skills" value={totals.totalSkills} colorClass="text-green-600" />
-        <StatRow label="Knowledge" value={totals.totalKnowledge} colorClass="text-green-600" />
-        <StatRow label="Occupational" value={totals.totalOccupational} colorClass="text-green-600" />
+        <StatRow
+          label="Skills"
+          value={totals.totalSkills}
+          colorClass="text-green-600"
+        />
+        <StatRow
+          label="Knowledge"
+          value={totals.totalKnowledge}
+          colorClass="text-green-600"
+        />
+        <StatRow
+          label="Occupational"
+          value={totals.totalOccupational}
+          colorClass="text-green-600"
+        />
       </>
     );
   };
@@ -105,8 +128,8 @@ const StatsCard: React.FC<StatsCardProps> = ({ source, competencyData }) => {
         {renderSfiaStats()}
         {renderTpqiStats()}
 
-  {/* Show a friendly message when no data is available */}
-  {!renderSfiaStats() && !renderTpqiStats() && (
+        {/* Show a friendly message when no data is available */}
+        {!renderSfiaStats() && !renderTpqiStats() && (
           <div className="text-gray-500 text-center py-4">
             <span className="text-2xl">🔍</span>
             <p className="mt-2">No statistics available</p>

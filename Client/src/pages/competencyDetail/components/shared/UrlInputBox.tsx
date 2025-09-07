@@ -154,8 +154,8 @@ const UrlInputBox: React.FC<UrlInputBoxProps> = ({
         colorClass || ""
       } ${isRemoving ? "opacity-75 transform scale-95" : ""}`}
     >
-      <div className="flex gap-2">
-        <div className="relative flex-1">
+      <div className="flex flex-wrap gap-2 items-center">
+        <div className="relative flex-1 w-full sm:w-auto">
           <input
             type="url"
             className={getInputClassName()}
@@ -191,7 +191,7 @@ const UrlInputBox: React.FC<UrlInputBoxProps> = ({
         </div>
 
         {/* Action buttons */}
-        <div>
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           {url &&
             (readonly ? (
               <button

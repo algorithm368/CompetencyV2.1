@@ -2,16 +2,15 @@ import { useEffect, useMemo, useState } from "react";
 import { FiPlus, FiSearch, FiSettings } from "react-icons/fi";
 import { AdminLayout } from "@Layouts/AdminLayout";
 import { RowActions, Button, Input, Toast, DataTable } from "@Components/Common/ExportComponent";
-import { useCLKnowledgeManager } from "@Hooks/admin/tpqi/useCLKnowledgeHooks";
+import { useCLKnowledgeManager } from "@Hooks/admin/tpqi/useClKnowledgeHooks";
 import {
-  ClKnowledge,
   ClKnowledgeView,
   CreateClKnowledgeDto,
   UpdateClKnowledgeDto,
 } from "@Types/tpqi/clKnowledgeTypes";
 import {
-  AddEditCareerKnowledgeModal,
-  DeleteCareerKnowledgeModal,
+  AddEditClKnowledgeModal,
+  DeleteClKnowledgeModal,
 } from "./CLKnowledgeModals";
 
 export default function CareerKnowledgePage() {
@@ -115,14 +114,22 @@ export default function CareerKnowledgePage() {
     () => [
       { accessorKey: "id", header: "ID" },
       {
-        accessorKey: "careerLevelId",
-        header: "Career Level ID",
+        id: "careerName",
+        header: "Career Name",
+        cell: ({ row }: { row: { original: ClKnowledgeView } }) =>
+          row.original?.careerLevel?.career?.name ?? "-",
       },
       {
         accessorKey: "knowledge.name",
         header: "Knowledge Name",
-        cell: ({ row }: { row: { original: ClKnowledgeView } }) => 
+        cell: ({ row }: { row: { original: ClKnowledgeView } }) =>
           row.original?.knowledge?.name ?? "-",
+      },
+      {
+        id: "levelName",
+        header: "Level Name",
+        cell: ({ row }: { row: { original: ClKnowledgeView } }) =>
+          row.original?.careerLevel?.level?.name ?? "-",
       },
       {
         id: "actions",
@@ -133,9 +140,9 @@ export default function CareerKnowledgePage() {
         ),
         cell: ({ row }: { row: { original: ClKnowledgeView } }) => (
           <div className="text-right">
-            <RowActions 
-              onEdit={() => openEdit(row.original)} 
-              onDelete={() => openDelete(row.original)} 
+            <RowActions
+              onEdit={() => openEdit(row.original)}
+              onDelete={() => openDelete(row.original)}
             />
           </div>
         ),
@@ -143,6 +150,7 @@ export default function CareerKnowledgePage() {
     ],
     []
   );
+
 
   return (
     <AdminLayout>
@@ -174,7 +182,44 @@ export default function CareerKnowledgePage() {
         initialPageSize={perPage}
         onPageChange={(newPageIndex) => setPage(newPageIndex + 1)}
       />
-      
+      {/* Add */}
+      {modalType === "add" && (
+        <AddEditClKnowledgeModal
+          isOpen
+          mode="add"
+          initialCareerLevelId={null}
+          initialKnowledgeId={null}
+          onClose={closeModal}
+          onConfirm={confirmAdd} // (payload: { careerLevelId; knowledgeId })
+          isLoading={createClKnowledge.isPending}
+        />
+      )}
+
+      {/* Edit */}
+      {modalType === "edit" && selected && (
+        <AddEditClKnowledgeModal
+          isOpen
+          mode="edit"
+          initialCareerLevelId={selected.careerLevelId ?? null}
+          initialKnowledgeId={selected.knowledgeId ?? null}
+          onClose={closeModal}
+          onConfirm={confirmEdit} // (payload: { careerLevelId; knowledgeId })
+          isLoading={updateClKnowledge.isPending}
+        />
+      )}
+
+      {/* Delete */}
+      {modalType === "delete" && selected && (
+        <DeleteClKnowledgeModal
+          isOpen
+          label={`${selected.knowledge?.name ?? "Unknown knowledge"} — ${selected.careerLevel?.career?.name ?? "Unknown career"} / Level ${selected.careerLevel?.level?.name ?? "-"}`}
+          onClose={closeModal}
+          onConfirm={confirmDelete}
+          isLoading={deleteClKnowledge.isPending}
+        />
+      )}
+
+
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </AdminLayout>
   );

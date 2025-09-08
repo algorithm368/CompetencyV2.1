@@ -6,10 +6,11 @@ export class ClKnowledgeService extends BaseService<CareerLevelKnowledge, keyof 
   constructor() {
     super(
       new CareerLevelKnowledgeRepo(),
-      ["knowledge.name"],
+      ["knowledge.name", "careerLevel.career.name", "careerLevel.level.name"],
       "id",
       {
-        knowledge: true
+        knowledge: true,
+        careerLevel: true
       }
     );
   }
@@ -25,6 +26,24 @@ export class ClKnowledgeService extends BaseService<CareerLevelKnowledge, keyof 
               contains: search.trim()
             }
           }
+        },
+        {
+          careerLevel: {
+            career: {
+              name: {
+                contains: search.trim()
+              }
+            }
+          }
+        },
+        {
+          careerLevel: {
+            level: {
+              name: {
+                contains: search.trim()
+              }
+            }
+          }
         }
       ];
     }
@@ -36,6 +55,22 @@ export class ClKnowledgeService extends BaseService<CareerLevelKnowledge, keyof 
           select: {
             id: true,
             name: true
+          }
+        },
+        careerLevel: {
+          include: {
+            career: {
+              select: {
+                id: true,
+                name: true
+              }
+            },
+            level: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
           }
         }
       }
@@ -59,16 +94,4 @@ export class ClKnowledgeService extends BaseService<CareerLevelKnowledge, keyof 
     return { data, total };
   }
 
-  async getById(id: number): Promise<CareerLevelKnowledge | null> {
-    return this.repo.findById(id, {
-      include: {
-        knowledge: {
-          select: {
-            id: true,
-            name: true
-          }
-        }
-      }
-    });
-  }
 }

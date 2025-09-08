@@ -19,6 +19,7 @@ export const adminRoutes = (
     <Route path="/tpqi/unitcode" element={<ExportPages.UnitCodePage />} />
     <Route path="/tpqi/career" element={<ExportPages.CareerPage />} />
     <Route path="/tpqi/level" element={<ExportPages.TPQILevelPage />} />
-    <Route path="/tpqi/clknowledge" element={<ExportPages.CLKnowledgePage />} />
+    <Route path="/tpqi/clknowledge" element={<ExportPages.ClKnowledgePage />} />
+    <Route path="/tpqi/cldetail" element={<ExportPages.ClDetailPage />} />
   </>
 );

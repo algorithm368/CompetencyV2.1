@@ -1,43 +1,43 @@
 import React from "react";
 import { Modal, Button, Input, LoadingButton } from "@Components/Common/ExportComponent";
 
-interface AddEditClKnowledgeModalProps {
+interface AddEditClDetailModalProps {
   isOpen: boolean;
   mode: "add" | "edit";
   initialCareerLevelId: number | null;
-  initialKnowledgeId: number | null;
+  initialDescription: string;
   onClose: () => void;
-  onConfirm: (payload: { careerLevelId: number; knowledgeId: number }) => void;
+  onConfirm: (payload: { careerLevelId: number; description: string }) => void;
   isLoading?: boolean;
 }
 
-export const AddEditClKnowledgeModal: React.FC<AddEditClKnowledgeModalProps> = ({
+export const AddEditClDetailModal: React.FC<AddEditClDetailModalProps> = ({
   isOpen,
   mode,
   initialCareerLevelId,
-  initialKnowledgeId,
+  initialDescription,
   onClose,
   onConfirm,
   isLoading = false,
 }) => {
   const [careerLevelId, setCareerLevelId] = React.useState<number | "">(initialCareerLevelId ?? "");
-  const [knowledgeId, setKnowledgeId] = React.useState<number | "">(initialKnowledgeId ?? "");
+  const [description, setDescription] = React.useState<string>(initialDescription ?? "");
 
   React.useEffect(() => {
     setCareerLevelId(initialCareerLevelId ?? "");
-    setKnowledgeId(initialKnowledgeId ?? "");
-  }, [initialCareerLevelId, initialKnowledgeId]);
+    setDescription(initialDescription ?? "");
+  }, [initialCareerLevelId, initialDescription]);
 
   const handleSubmit = () => {
-    if (careerLevelId === "" || knowledgeId === "") return;
+    if (careerLevelId === "" || !description.trim()) return;
     onConfirm({
       careerLevelId: Number(careerLevelId),
-      knowledgeId: Number(knowledgeId),
+      description: description.trim(),
     });
   };
 
-  const title = mode === "add" ? "Add Career–Knowledge" : "Edit Career–Knowledge";
-  const isValid = careerLevelId !== "" && knowledgeId !== "";
+  const title = mode === "add" ? "Add Detail" : "Edit Detail";
+  const isValid = careerLevelId !== "" && !!description.trim();
 
   return (
     <Modal
@@ -77,13 +77,13 @@ export const AddEditClKnowledgeModal: React.FC<AddEditClKnowledgeModalProps> = (
 
         <div className="flex flex-col">
           <label className="block text-sm mb-1 ml-0.5">
-            Knowledge ID <span className="text-red-500">*</span>
+            Description <span className="text-red-500">*</span>
           </label>
-          <Input
-            type="number"
-            value={knowledgeId}
-            onChange={(e) => setKnowledgeId(e.target.value === "" ? "" : Number(e.target.value))}
-            placeholder="Enter knowledge ID"
+          <textarea
+            className="w-full min-h-[120px] rounded-md border border-gray-300 p-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Enter detail description"
             required
           />
         </div>
@@ -92,7 +92,7 @@ export const AddEditClKnowledgeModal: React.FC<AddEditClKnowledgeModalProps> = (
   );
 };
 
-interface DeleteClKnowledgeModalProps {
+interface DeleteClDetailModalProps {
   isOpen: boolean;
   label?: string;
   onClose: () => void;
@@ -100,7 +100,7 @@ interface DeleteClKnowledgeModalProps {
   isLoading?: boolean;
 }
 
-export const DeleteClKnowledgeModal: React.FC<DeleteClKnowledgeModalProps> = ({
+export const DeleteClDetailModal: React.FC<DeleteClDetailModalProps> = ({
   isOpen,
   label,
   onClose,
@@ -112,7 +112,7 @@ export const DeleteClKnowledgeModal: React.FC<DeleteClKnowledgeModalProps> = ({
       className="z-50"
       isOpen={isOpen}
       onClose={onClose}
-      title="Delete Career–Knowledge"
+      title="Delete Detail"
       actions={
         <>
           <Button className="!bg-black !text-white hover:!bg-gray-800" onClick={onClose} disabled={isLoading}>
@@ -125,9 +125,7 @@ export const DeleteClKnowledgeModal: React.FC<DeleteClKnowledgeModalProps> = ({
       }
     >
       <div className="space-y-3">
-        <p>
-          Are you sure you want to delete {label ? <b>{label}</b> : "this item"}?
-        </p>
+        <p>Are you sure you want to delete {label ? <b>{label}</b> : "this item"}?</p>
       </div>
     </Modal>
   );

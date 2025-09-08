@@ -29,6 +29,7 @@ const frameworks = [
       { label: "Career", path: "/admin/tpqi/career" },
       { label: "Level", path: "/admin/tpqi/level" },
       { label: "Career Knowledge", path: "/admin/tpqi/clknowledge" },
+      { label: "Career Detail", path: "/admin/tpqi/cldetail" },
     ],
   },
   {

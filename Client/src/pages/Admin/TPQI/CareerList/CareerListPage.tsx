@@ -1,0 +1,178 @@
+import { useEffect, useMemo, useState } from "react";
+import { FiPlus, FiSearch, FiSettings } from "react-icons/fi";
+import { AdminLayout } from "@Layouts/AdminLayout";
+import { RowActions, Button, Input, Toast, DataTable } from "@Components/Common/ExportComponent";
+import { useCareerManager } from "@Hooks/admin/tpqi/useCareerHooks";
+import { CareerView, CreateCareerLevelDto, UpdateCareerLevelDto } from "@Types/tpqi/careerTypes";
+import { AddEditCareerListModal, DeleteCareerListModal } from "./CareerListModals";
+
+export default function CareerLevelPage() {
+    const [searchText, setSearchText] = useState<string>("");
+    const [debouncedSearchText, setDebouncedSearchText] = useState<string>("");
+    const [modalType, setModalType] = useState<"add" | "edit" | "delete" | null>(null);
+    const [selected, setSelected] = useState<CareerView | null>(null);
+    const [page, setPage] = useState(1);
+    const perPage = 10;
+    const [toast, setToast] =
+        useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
+
+    useEffect(() => {
+        const t = setTimeout(() => setDebouncedSearchText(searchText), 500);
+        return () => clearTimeout(t);
+    }, [searchText]);
+
+    useEffect(() => setPage(1), [debouncedSearchText]);
+
+    const handleToast = (message: string, type: "success" | "error" | "info" = "info") =>
+        setToast({ message, type });
+
+    const {
+        fetchPage,
+        carrerQuery,
+        createCareer,
+        updateCareer,
+        deleteCareer,
+    } = useCareerManager({ search: debouncedSearchText, page, perPage }, handleToast);
+
+    // Modals
+    const openAdd = () => {
+        setSelected(null);
+        setModalType("add");
+    };
+    const openEdit = (row: any) => {
+        setSelected(row);
+        setModalType("edit");
+    };
+    const openDelete = (row: any) => {
+        setSelected(row);
+        setModalType("delete");
+    };
+    const closeModal = () => {
+        setModalType(null);
+        setSelected(null);
+    };
+
+    // Updated to match modal's expected signature
+    const confirmAdd = (payload: { careerId: number; levelId: number }) => {
+        const dto: CreateCareerLevelDto = { 
+            name: null,
+            careerId: payload.careerId, 
+            levelId: payload.levelId 
+        } as any;
+        createCareer.mutate(dto, {
+            onSuccess: () => { handleToast("Created successfully", "success"); closeModal(); carrerQuery.refetch(); },
+            onError: (err: any) => handleToast("Failed to create: " + (err?.message || ""), "error"),
+        });
+    }
+
+    const confirmEdit = (payload: { careerId: number; levelId: number }) => {
+        if (!selected) return;
+        const dto: UpdateCareerLevelDto = { 
+            name: null,
+            careerId: payload.careerId, 
+            levelId: payload.levelId 
+        } as any;
+        updateCareer.mutate(
+            { id: selected.id, data: dto },
+            {
+                onSuccess: () => { handleToast("Updated successfully", "success"); closeModal(); carrerQuery.refetch(); },
+                onError: (err: any) => handleToast("Failed to update: " + (err?.message || ""), "error"),
+            }
+        );
+    };
+
+    const confirmDelete = () => {
+        if (!selected) return;
+        deleteCareer.mutate(selected.id, {
+            onSuccess: () => { handleToast("Deleted successfully", "success"); closeModal(); carrerQuery.refetch(); },
+            onError: (err: any) => handleToast("Failed to delete: " + (err?.message || ""), "error"),
+        });
+    };
+
+    const columns = useMemo(
+        () => [
+            { accessorKey: "id", header: "ID" },
+            {
+                accessorKey: "career.name",
+                header: "Career",
+                cell: ({ row }: { row: { original: any } }) => row.original?.career?.name ?? "-",
+            },
+            {
+                accessorKey: "level.name",
+                header: "Level",
+                cell: ({ row }: { row: { original: any } }) => row.original?.level?.name ?? "-",
+            },
+            {
+                id: "actions",
+                header: () => (
+                    <span style={{ float: "right" }}>
+                        <FiSettings />
+                    </span>
+                ),
+                cell: ({ row }: { row: { original: any } }) => (
+                    <div className="text-right">
+                        <RowActions onEdit={() => openEdit(row.original)} onDelete={() => openDelete(row.original)} />
+                    </div>
+                ),
+            },
+        ],
+        []
+    );
+
+    return (
+        <AdminLayout>
+            <div className="z-10 flex flex-col mb-3 sm:flex-row sm:justify-between sm:items-start">
+                <h1 className="mb-2 text-3xl font-Poppins sm:mb-0">Career List</h1>
+                <div className="flex flex-col items-end space-y-2">
+                    <Button size="md" onClick={openAdd} className="flex items-center">
+                        <FiPlus className="mr-2" /> Add Career Level
+                    </Button>
+                    <div className="relative">
+                        <Input
+                            type="text"
+                            placeholder="Search by career or level name..."
+                            className="py-1 pl-3 text-sm pr-30"
+                            value={searchText}
+                            onChange={(e) => setSearchText(e.target.value)}
+                        />
+                        <FiSearch className="absolute text-gray-400 -translate-y-1/2 right-2 top-1/2" />
+                    </div>
+                </div>
+            </div>
+
+            <DataTable<any>
+                key={debouncedSearchText}
+                resetTrigger={debouncedSearchText}
+                fetchPage={fetchPage}
+                columns={columns}
+                pageSizes={[5, 10, 20]}
+                initialPageSize={perPage}
+                onPageChange={(newPageIndex) => setPage(newPageIndex + 1)}
+            />
+
+            <AddEditCareerListModal
+                isOpen={modalType === "add" || modalType === "edit"}
+                mode={modalType === "edit" ? "edit" : "add"}
+                initialCareerId={selected?.career?.id ?? null}
+                initialLevelId={selected?.level?.id ?? null}
+                onClose={closeModal}
+                onConfirm={modalType === "edit" ? confirmEdit : confirmAdd}
+                isLoading={createCareer.status === "pending" || updateCareer.status === "pending"}
+            />
+
+            <DeleteCareerListModal
+                isOpen={modalType === "delete"}
+                label={
+                    selected
+                        ? `${selected.career?.name ?? "Unknown career"} / Level ${selected.level?.name ?? "-"}`
+                        : undefined
+                }
+                onClose={closeModal}
+                onConfirm={confirmDelete}
+                isLoading={deleteCareer.status === "pending"}
+            />
+
+            {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+        </AdminLayout>
+    );
+}

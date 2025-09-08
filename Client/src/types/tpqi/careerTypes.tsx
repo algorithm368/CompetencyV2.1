@@ -1,12 +1,21 @@
 export interface Career {
   id: number;
-  name?: string | null;
+  careerId: number;
+  levelId: number;
+}
+
+export interface CareerView {
+  id: number;
+  career: { id: number; name: string | null } | null;
+  level:  { id: number; name: string | null } | null;
 }
 
 export interface CareerPageResult {
-  data: Career[];
+  data: CareerView[];
   total?: number;
 }
 
-export type CreateCareerDto = Omit<Career, "id">;
-export type UpdateCareerDto = Partial<Omit<CreateCareerDto, "id">>;
+
+export type CreateCareerLevelDto = Omit<Career, "id">;
+export type UpdateCareerLevelDto = Partial<CreateCareerLevelDto>;
+

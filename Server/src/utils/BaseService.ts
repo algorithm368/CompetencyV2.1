@@ -1,5 +1,10 @@
 export class BaseService<T extends Record<string, any>, K extends keyof T> {
-  constructor(protected readonly repo: any, protected readonly searchFields: string[], private readonly pkField: keyof T, protected readonly includes?: Record<string, boolean>) {}
+  constructor(
+    protected readonly repo: any, 
+    protected readonly searchFields: string[], 
+    private readonly pkField: keyof T, 
+    protected readonly includes?: Record<string, boolean>
+  ) {}
 
   async getAll(search?: string, page?: number, perPage?: number): Promise<{ data: T[]; total: number }> {
     const where: any = {};
@@ -38,8 +43,9 @@ export class BaseService<T extends Record<string, any>, K extends keyof T> {
     return { data, total };
   }
 
-  getById(id: T[typeof this.pkField]): Promise<T | null> {
-    return this.repo.findById(id);
+  getById(id: T[typeof this.pkField], options?: { include?: any }): Promise<T | null> {
+    const queryOptions = options || (this.includes ? { include: this.includes } : {});
+    return this.repo.findById(id, queryOptions);
   }
 
   create(data: Omit<T, typeof this.pkField>, actor: string): Promise<T> {

@@ -22,11 +22,13 @@ const frameworks = [
     key: "tpqi",
     items: [
       { label: "Sector", path: "/admin/tpqi/sector" },
-      { label: "Career", path: "/admin/tpqi/career" },
       { label: "Skill", path: "/admin/tpqi/skill" },
       { label: "Occupational", path: "/admin/tpqi/occupational" },
       { label: "Knowledge", path: "/admin/tpqi/knowledge" },
-      { label: "Unit Code", path: "/admin/tpqi/unitcode" }
+      { label: "Unit Code", path: "/admin/tpqi/unitcode" },
+      { label: "Career List", path: "/admin/tpqi/career-list" },
+      { label: "Level", path: "/admin/tpqi/level" },
+      { label: "Career Level", path: "/admin/tpqi/career-level" }
     ],
   },
   {
@@ -61,23 +63,23 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, mobileOpen, onTo
     md:translate-x-0
     ${collapsed ? "-translate-x-full md:translate-x-0" : ""}`}
       >
-        <div className="h-full flex flex-col">
+        <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="px-5 py-2 flex items-center justify-between ">
+          <div className="flex items-center justify-between px-5 py-2 ">
             <Link to="/" className="flex items-center space-x-3">
-              <img src="/src/assets/competency-logo.png" alt="Logo" className="h-10 w-10 rounded-full object-cover" />
-              <span className="text-lg font-semibold text-gray-900 tracking-wide">Competency</span>
+              <img src="/src/assets/competency-logo.png" alt="Logo" className="object-cover w-10 h-10 rounded-full" />
+              <span className="text-lg font-semibold tracking-wide text-gray-900">Competency</span>
             </Link>
-            <button className="md:hidden text-gray-500 hover:text-gray-800" onClick={onToggle}>
+            <button className="text-gray-500 md:hidden hover:text-gray-800" onClick={onToggle}>
               <FiChevronLeft size={22} />
             </button>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto mt-4 px-1">
+          <nav className="flex-1 px-1 mt-4 overflow-y-auto">
             {/* Main */}
             <div className="mb-6">
-              <p className="px-5 text-xs font-semibold uppercase text-gray-400 mb-2 tracking-wider">Main</p>
+              <p className="px-5 mb-2 text-xs font-semibold tracking-wider text-gray-400 uppercase">Main</p>
               <ul className="space-y-1">
                 {mainMenu.map((item) => (
                   <li key={item.path}>
@@ -99,18 +101,18 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, mobileOpen, onTo
 
             {/* Frameworks */}
             <div>
-              <p className="px-5 text-xs font-semibold uppercase text-gray-400 mb-2 tracking-wider">Framework</p>
+              <p className="px-5 mb-2 text-xs font-semibold tracking-wider text-gray-400 uppercase">Framework</p>
               <ul className="space-y-1">
                 {frameworks.map(({ title, icon, key, items }) => (
                   <li key={key}>
-                    <button type="button" onClick={() => toggleSection(key)} className="w-full flex items-center gap-3 px-5 py-3 text-sm text-gray-700 hover:bg-gray-100 transition rounded-lg">
+                    <button type="button" onClick={() => toggleSection(key)} className="flex items-center w-full gap-3 px-5 py-3 text-sm text-gray-700 transition rounded-lg hover:bg-gray-100">
                       <span className="text-lg text-indigo-500">{icon}</span>
-                      <span className="flex-1 text-left font-medium">{title}</span>
+                      <span className="flex-1 font-medium text-left">{title}</span>
                       {openSections[key] ? <FiChevronDown className="text-gray-500" /> : <FiChevronRight className="text-gray-500" />}
                     </button>
 
                     {openSections[key] && (
-                      <ul className="pl-10 space-y-1 mt-1">
+                      <ul className="pl-10 mt-1 space-y-1">
                         {items.map((link) => (
                           <li key={link.path}>
                             <NavLink

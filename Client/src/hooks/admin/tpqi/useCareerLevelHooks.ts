@@ -1,6 +1,7 @@
 import { useQuery, useQueries, useMutation, useQueryClient } from "@tanstack/react-query";
 import { CareerLevelService } from "@Services/admin/tpqi/careerLevelServices";
 import {
+  CareerLevelView,
   CareerLevel,
   CreateCareerLevelDto,
   UpdateCareerLevelDto,
@@ -26,7 +27,7 @@ export function useCareerLevelManager(
   const fetchPage = async (
     pageIndex: number,
     pageSize: number
-  ): Promise<{ data: CareerLevel[] | any[]; total: number }> => {
+  ): Promise<{ data: CareerLevelView[] | any[]; total: number }> => {
     const pageNumber = pageIndex + 1;
     const result = await CareerLevelService.getAll(search, pageNumber, pageSize);
 

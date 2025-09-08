@@ -3,14 +3,14 @@ import { FiPlus, FiSearch, FiSettings } from "react-icons/fi";
 import { AdminLayout } from "@Layouts/AdminLayout";
 import { RowActions, Button, Input, Toast, DataTable } from "@Components/Common/ExportComponent";
 import { useCareerManager } from "@Hooks/admin/tpqi/useCareerHooks";
-import { CareerView, CreateCareerLevelDto, UpdateCareerLevelDto } from "@Types/tpqi/careerTypes";
-import { AddEditCareerListModal, DeleteCareerListModal } from "./CareerListModals";
+import { Career, CreateCareerDto, UpdateCareerDto } from "@Types/tpqi/careerTypes";
+import { AddEditCareerListModal, DeleteCareerListModal } from "./CareerModals";
 
-export default function CareerLevelPage() {
+export default function CareerPage() {
     const [searchText, setSearchText] = useState<string>("");
     const [debouncedSearchText, setDebouncedSearchText] = useState<string>("");
     const [modalType, setModalType] = useState<"add" | "edit" | "delete" | null>(null);
-    const [selected, setSelected] = useState<CareerView | null>(null);
+    const [selected, setSelected] = useState<Career | null>(null);
     const [page, setPage] = useState(1);
     const perPage = 10;
     const [toast, setToast] =
@@ -53,11 +53,10 @@ export default function CareerLevelPage() {
     };
 
     // Updated to match modal's expected signature
-    const confirmAdd = (payload: { careerId: number; levelId: number }) => {
-        const dto: CreateCareerLevelDto = { 
-            name: null,
-            careerId: payload.careerId, 
-            levelId: payload.levelId 
+    const confirmAdd = (payload: { careerId: number; name: string }) => {
+        const dto: CreateCareerDto = {
+            careerId: payload.careerId,
+            name: payload.name,
         } as any;
         createCareer.mutate(dto, {
             onSuccess: () => { handleToast("Created successfully", "success"); closeModal(); carrerQuery.refetch(); },
@@ -65,12 +64,11 @@ export default function CareerLevelPage() {
         });
     }
 
-    const confirmEdit = (payload: { careerId: number; levelId: number }) => {
+    const confirmEdit = (payload: { careerId: number; name: string }) => {
         if (!selected) return;
-        const dto: UpdateCareerLevelDto = { 
-            name: null,
-            careerId: payload.careerId, 
-            levelId: payload.levelId 
+        const dto: UpdateCareerDto = {
+            careerId: payload.careerId,
+            name: payload.name,
         } as any;
         updateCareer.mutate(
             { id: selected.id, data: dto },
@@ -93,14 +91,9 @@ export default function CareerLevelPage() {
         () => [
             { accessorKey: "id", header: "ID" },
             {
-                accessorKey: "career.name",
-                header: "Career",
-                cell: ({ row }: { row: { original: any } }) => row.original?.career?.name ?? "-",
-            },
-            {
-                accessorKey: "level.name",
-                header: "Level",
-                cell: ({ row }: { row: { original: any } }) => row.original?.level?.name ?? "-",
+                accessorKey: "name",
+                header: "Career Name",
+                cell: ({ row }: { row: { original: any } }) => row.original?.name ?? "-",
             },
             {
                 id: "actions",
@@ -125,12 +118,12 @@ export default function CareerLevelPage() {
                 <h1 className="mb-2 text-3xl font-Poppins sm:mb-0">Career List</h1>
                 <div className="flex flex-col items-end space-y-2">
                     <Button size="md" onClick={openAdd} className="flex items-center">
-                        <FiPlus className="mr-2" /> Add Career Level
+                        <FiPlus className="mr-2" /> Add Career
                     </Button>
                     <div className="relative">
                         <Input
                             type="text"
-                            placeholder="Search by career or level name..."
+                            placeholder="Search by career name..."
                             className="py-1 pl-3 text-sm pr-30"
                             value={searchText}
                             onChange={(e) => setSearchText(e.target.value)}
@@ -153,8 +146,8 @@ export default function CareerLevelPage() {
             <AddEditCareerListModal
                 isOpen={modalType === "add" || modalType === "edit"}
                 mode={modalType === "edit" ? "edit" : "add"}
-                initialCareerId={selected?.career?.id ?? null}
-                initialLevelId={selected?.level?.id ?? null}
+                initialCareerId={selected?.id ?? null}
+                initialName={selected?.name ?? null}
                 onClose={closeModal}
                 onConfirm={modalType === "edit" ? confirmEdit : confirmAdd}
                 isLoading={createCareer.status === "pending" || updateCareer.status === "pending"}
@@ -162,11 +155,7 @@ export default function CareerLevelPage() {
 
             <DeleteCareerListModal
                 isOpen={modalType === "delete"}
-                label={
-                    selected
-                        ? `${selected.career?.name ?? "Unknown career"} / Level ${selected.level?.name ?? "-"}`
-                        : undefined
-                }
+                label={selected ? selected.name ?? "Unknown career" : undefined}
                 onClose={closeModal}
                 onConfirm={confirmDelete}
                 isLoading={deleteCareer.status === "pending"}

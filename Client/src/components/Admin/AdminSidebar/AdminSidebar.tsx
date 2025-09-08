@@ -26,8 +26,9 @@ const frameworks = [
       { label: "Occupational", path: "/admin/tpqi/occupational" },
       { label: "Knowledge", path: "/admin/tpqi/knowledge" },
       { label: "Unit Code", path: "/admin/tpqi/unitcode" },
-      { label: "Career List", path: "/admin/tpqi/career-list" },
+      { label: "Career", path: "/admin/tpqi/career" },
       { label: "Level", path: "/admin/tpqi/level" },
+      { label: "Career Knowledge", path: "/admin/tpqi/clknowledge" },
     ],
   },
   {

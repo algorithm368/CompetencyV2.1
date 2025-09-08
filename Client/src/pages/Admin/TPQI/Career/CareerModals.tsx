@@ -5,9 +5,9 @@ interface AddEditCareerLevelModalProps {
   isOpen: boolean;
   mode: "add" | "edit";
   initialCareerId: number | null;
-  initialLevelId: number | null;
+  initialName: string | null;
   onClose: () => void;
-  onConfirm: (payload: { careerId: number; levelId: number }) => void;
+  onConfirm: (payload: { careerId: number; name: string }) => void;
   isLoading?: boolean;
 }
 
@@ -15,33 +15,33 @@ export const AddEditCareerListModal: React.FC<AddEditCareerLevelModalProps> = ({
   isOpen,
   mode,
   initialCareerId,
-  initialLevelId,
+  initialName,
   onClose,
   onConfirm,
   isLoading = false,
 }) => {
   const [careerId, setCareerId] = React.useState<number | "">(initialCareerId ?? "");
-  const [levelId, setLevelId] = React.useState<number | "">(initialLevelId ?? "");
+  const [name, setName] = React.useState<string>(initialName ?? "");
 
   React.useEffect(() => {
     setCareerId(initialCareerId ?? "");
-    setLevelId(initialLevelId ?? "");
-  }, [initialCareerId, initialLevelId]);
+    setName(initialName ?? "");
+  }, [initialCareerId, initialName]);
 
   const handleSubmit = () => {
-    if (careerId === "" || levelId === "") {
-      console.error("Both Career ID and Level ID are required");
+    if (careerId === "" || name.trim() === "") {
+      console.error("Career ID and Name are required");
       return;
     }
 
     onConfirm({
       careerId: Number(careerId),
-      levelId: Number(levelId),
+      name: name.trim(),
     });
   };
 
   const title = mode === "add" ? "Add Career Level" : "Edit Career Level";
-  const isValid = careerId !== "" && levelId !== "";
+  const isValid = careerId !== "" && name.trim() !== "";
 
   return (
     <Modal
@@ -58,7 +58,7 @@ export const AddEditCareerListModal: React.FC<AddEditCareerLevelModalProps> = ({
             onClick={handleSubmit} 
             isLoading={isLoading} 
             loadingText={mode === "add" ? "Creating..." : "Saving..."}
-            disabled={!isValid} // Disable if fields are empty
+            disabled={!isValid}
           >
             {mode === "add" ? "Create" : "Save"}
           </LoadingButton>
@@ -78,12 +78,12 @@ export const AddEditCareerListModal: React.FC<AddEditCareerLevelModalProps> = ({
         </div>
 
         <div className="flex flex-col">
-          <label className="block text-sm mb-1 ml-0.5">Level ID <span className="text-red-500">*</span></label>
+          <label className="block text-sm mb-1 ml-0.5">Name <span className="text-red-500">*</span></label>
           <Input
-            type="number"
-            value={levelId}
-            onChange={(e) => setLevelId(e.target.value === "" ? "" : Number(e.target.value))}
-            placeholder="Enter level ID"
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Enter name"
             required
           />
         </div>

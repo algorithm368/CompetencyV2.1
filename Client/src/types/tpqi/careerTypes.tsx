@@ -1,17 +1,10 @@
 export interface Career {
   id: number;
-  careerId: number;
-  levelId: number;
-}
-
-export interface CareerView {
-  id: number;
-  career: { id: number; name: string | null } | null;
-  level:  { id: number; name: string | null } | null;
+  name?: string | null;
 }
 
 export interface CareerPageResult {
-  data: CareerView[];
+  data: Career[];
   total?: number;
 }
 

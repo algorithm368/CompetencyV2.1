@@ -5,28 +5,35 @@ import { BaseService } from "@Utils/BaseService";
 export class CareerLevelService extends BaseService<CareerLevel, keyof CareerLevel> {
   constructor() {
     super(
-      new CareerLevelRepo(),
-      ["career.name", "level.name", "careerLevelDetails.description"],
+      new CareerLevelRepo(), 
+      ["career.name", "level.name"],
       "id",
-      { 
-        career: true, 
-        level: true,
-        careerLevelDetails: true
+      {
+        career: true,
+        level: true 
       }
     );
   }
 
-  async getAll(search?: string, page?: number, perPage?: number): Promise<{
-    data: CareerLevel[];
-    total: number;
-  }> {
+  async getAll(search?: string, page?: number, perPage?: number): Promise<{ data: CareerLevel[]; total: number }> {
     const where: any = {};
 
     if (search && search.trim()) {
       where.OR = [
-        { career: { name: { contains: search.trim() } } },
-        { level: { name: { contains: search.trim() } } },
-        { careerLevelDetails: { some: { description: { contains: search.trim() } } } }
+        {
+          career: {
+            name: {
+              contains: search.trim()
+            }
+          }
+        },
+        {
+          level: {
+            name: {
+              contains: search.trim()
+            }
+          }
+        }
       ];
     }
 
@@ -43,13 +50,6 @@ export class CareerLevelService extends BaseService<CareerLevel, keyof CareerLev
           select: {
             id: true,
             name: true
-          }
-        },
-        careerLevelDetails: {
-          select: {
-            id: true,
-            description: true,
-            careerLevelId: true
           }
         }
       }
@@ -86,13 +86,6 @@ export class CareerLevelService extends BaseService<CareerLevel, keyof CareerLev
           select: {
             id: true,
             name: true
-          }
-        },
-        careerLevelDetails: {
-          select: {
-            id: true,
-            description: true,
-            careerLevelId: true
           }
         }
       }

@@ -28,7 +28,6 @@ const frameworks = [
       { label: "Unit Code", path: "/admin/tpqi/unitcode" },
       { label: "Career List", path: "/admin/tpqi/career-list" },
       { label: "Level", path: "/admin/tpqi/level" },
-      { label: "Career Level", path: "/admin/tpqi/career-level" }
     ],
   },
   {

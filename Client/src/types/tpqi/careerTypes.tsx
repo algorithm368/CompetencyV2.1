@@ -16,6 +16,6 @@ export interface CareerPageResult {
 }
 
 
-export type CreateCareerLevelDto = Omit<Career, "id">;
-export type UpdateCareerLevelDto = Partial<CreateCareerLevelDto>;
+export type CreateCareerDto = Omit<Career, "id">;
+export type UpdateCareerDto = Partial<CreateCareerDto>;
 

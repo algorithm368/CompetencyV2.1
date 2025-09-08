@@ -4,12 +4,6 @@ export interface CareerLevel {
   levelId: number;
 }
 
-export interface CareerLevelDetail {
-  id: number;
-  description: string;
-  careerLevelId: number;
-}
-
 export interface CareerLevelView {
   id: number;
   careerId: number;
@@ -22,7 +16,6 @@ export interface CareerLevelView {
     id: number; 
     name: string | null;
   } | null;
-  careerLevelDetails: CareerLevelDetail[];
 }
 
 export interface CareerLevelPageResult {

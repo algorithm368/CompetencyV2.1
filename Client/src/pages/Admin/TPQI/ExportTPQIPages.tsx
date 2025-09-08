@@ -5,4 +5,3 @@ export { default as KnowledgePage } from "./Knowledge/KnowledgePage";
 export { default as UnitCodePage } from "./UnitCode/UnitCodePage";
 export { default as CareerListPage } from "./CareerList/CareerListPage";
 export { default as TPQILevelPage } from "./Level/LevelPage";
-export { default as CareerLevelPage } from "./CareerLevel/CareerLevelPage";

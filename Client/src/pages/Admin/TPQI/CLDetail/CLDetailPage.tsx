@@ -1,11 +1,10 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FiPlus, FiSearch, FiSettings } from "react-icons/fi";
 import { AdminLayout } from "@Layouts/AdminLayout";
 import { RowActions, Button, Input, Toast, DataTable } from "@Components/Common/ExportComponent";
 import { useClDetailManager } from "@Hooks/admin/tpqi/useClDetailHooks";
 import {
     ClDetail,
-    ClDetailPageResult,
     CreateClDetailDto,
     UpdateClDetailDto,
 } from "@Types/tpqi/clDetailTypes";
@@ -120,6 +119,12 @@ export default function ClDetailPage() {
         () => [
             { accessorKey: "id", header: "ID", size: 60 },
             {
+                id: "careerName",
+                header: "Career Name",
+                cell: ({ row }: { row: { original: ClDetail } }) =>
+                    row.original?.careerLevel?.career?.name ?? "-",
+            },
+            {
                 accessorKey: "description",
                 header: "Description",
                 cell: ({ row }: { row: { original: ClDetail } }) => (
@@ -155,7 +160,7 @@ export default function ClDetailPage() {
         <AdminLayout>
             {/* Header */}
             <div className="z-10 flex flex-col mb-3 sm:flex-row sm:justify-between sm:items-start">
-                <h1 className="mb-2 text-3xl font-Poppins sm:mb-0">Career Level Details</h1>
+                <h1 className="mb-2 text-3xl font-Poppins sm:mb-0">Career Details</h1>
                 <div className="flex flex-col items-end space-y-2">
                     <Button size="md" onClick={openAdd} className="flex items-center">
                         <FiPlus className="mr-2" /> Add Detail

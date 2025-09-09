@@ -182,42 +182,24 @@ export default function CareerKnowledgePage() {
         initialPageSize={perPage}
         onPageChange={(newPageIndex) => setPage(newPageIndex + 1)}
       />
-      {/* Add */}
-      {modalType === "add" && (
-        <AddEditClKnowledgeModal
-          isOpen
-          mode="add"
-          initialCareerLevelId={null}
-          initialKnowledgeId={null}
-          onClose={closeModal}
-          onConfirm={confirmAdd} // (payload: { careerLevelId; knowledgeId })
-          isLoading={createClKnowledge.isPending}
-        />
-      )}
+      
+      <AddEditClKnowledgeModal
+        isOpen={modalType === "add" || modalType === "edit"}
+        mode={modalType === "edit" ? "edit" : "add"}
+        initialCareerLevelId={selected?.careerLevelId ?? null}
+        initialKnowledgeId={selected?.knowledgeId ?? null}
+        onClose={closeModal}
+        onConfirm={confirmEdit}
+        isLoading={updateClKnowledge.isPending}
+      />
 
-      {/* Edit */}
-      {modalType === "edit" && selected && (
-        <AddEditClKnowledgeModal
-          isOpen
-          mode="edit"
-          initialCareerLevelId={selected.careerLevelId ?? null}
-          initialKnowledgeId={selected.knowledgeId ?? null}
-          onClose={closeModal}
-          onConfirm={confirmEdit} // (payload: { careerLevelId; knowledgeId })
-          isLoading={updateClKnowledge.isPending}
-        />
-      )}
-
-      {/* Delete */}
-      {modalType === "delete" && selected && (
-        <DeleteClKnowledgeModal
-          isOpen
-          label={`${selected.knowledge?.name ?? "Unknown knowledge"} — ${selected.careerLevel?.career?.name ?? "Unknown career"} / Level ${selected.careerLevel?.level?.name ?? "-"}`}
-          onClose={closeModal}
-          onConfirm={confirmDelete}
-          isLoading={deleteClKnowledge.isPending}
-        />
-      )}
+      <DeleteClKnowledgeModal
+        isOpen={modalType === "delete"}
+        label={`${selected?.knowledge?.name ?? "Unknown knowledge"} — ${selected?.careerLevel?.career?.name ?? "Unknown career"} / Level ${selected?.careerLevel?.level?.name ?? "-"}`}
+        onClose={closeModal}
+        onConfirm={confirmDelete}
+        isLoading={deleteClKnowledge.isPending}
+      />
 
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}

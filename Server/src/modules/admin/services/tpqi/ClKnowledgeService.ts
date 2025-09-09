@@ -36,15 +36,6 @@ export class ClKnowledgeService extends BaseService<CareerLevelKnowledge, keyof 
             }
           }
         },
-        {
-          careerLevel: {
-            level: {
-              name: {
-                contains: search.trim()
-              }
-            }
-          }
-        }
       ];
     }
 

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { NavLink, Link } from "react-router-dom";
 import { FiHome, FiUsers, FiLock, FiChevronDown, FiChevronRight, FiCopy, FiBarChart2, FiChevronLeft } from "react-icons/fi";
+import { label } from "framer-motion/client";
 
 interface AdminSidebarProps {
   collapsed: boolean;
@@ -28,8 +29,11 @@ const frameworks = [
       { label: "Unit Code", path: "/admin/tpqi/unitcode" },
       { label: "Career", path: "/admin/tpqi/career" },
       { label: "Level", path: "/admin/tpqi/level" },
+      { label: "Career Level", path: "/admin/tpqi/careerlevel" },
       { label: "Career Knowledge", path: "/admin/tpqi/clknowledge" },
       { label: "Career Detail", path: "/admin/tpqi/cldetail" },
+      { label: "Career Skill", path: "/admin/tpqi/clskill" },
+      { label: "Career Unit Code", path: "/admin/tpqi/clunitcode" },
     ],
   },
   {

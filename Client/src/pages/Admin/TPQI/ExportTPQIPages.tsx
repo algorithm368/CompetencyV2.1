@@ -10,3 +10,5 @@ export { default as ClKnowledgePage } from "./CLKnowledge/CLKnowledgePage";
 export { default as ClDetailPage } from "./CLDetail/CLDetailPage";
 export { default as ClSkillPage } from "./CLSkill/CLSkillPage";
 export { default as ClUnitCodePage } from "./CLUnitCode/CLUnitCodePage";
+export { default as UnitOccupationalPage } from "./UnitOccupational/UnitOccupationalPage";
+export { default as UnitSectorPage } from "./UnitSector/UnitSectorPage"

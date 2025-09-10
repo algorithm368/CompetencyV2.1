@@ -6,13 +6,17 @@ const service = new USkillService();
 export class USkillController {
   static async getAll(req: Request, res: Response, next: NextFunction) {
     try {
-      const items = await service.getAll();
+      const search = typeof req.query.search === "string" ? req.query.search : undefined;
+      const pageRaw = req.query.page;
+      const perPageRaw = req.query.perPage;
+      const page = pageRaw && !isNaN(+pageRaw) ? parseInt(pageRaw as string, 10) : undefined;
+      const perPage = perPageRaw && !isNaN(+perPageRaw) ? parseInt(perPageRaw as string, 10) : undefined;
+      const items = await service.getAll(search, page, perPage);
       res.json(items);
     } catch (err) {
       next(err);
     }
   }
-
   static async getById(req: Request, res: Response, next: NextFunction) {
     try {
       const id = Number(req.params.id);

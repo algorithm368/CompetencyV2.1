@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { FiPlus, FiSearch, FiSettings } from "react-icons/fi";
 import { AdminLayout } from "@Layouts/AdminLayout";
 import { RowActions, Button, Input, Toast, DataTable } from "@Components/Common/ExportComponent";
-import { useCLKnowledgeManager } from "@Hooks/admin/tpqi/useClKnowledgeHooks";
+import { useCLKnowledgeManager } from "@Hooks/admin/tpqi/useCLKnowledgeHooks";
 import {
   ClKnowledgeView,
   CreateClKnowledgeDto,

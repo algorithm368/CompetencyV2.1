@@ -34,6 +34,8 @@ const frameworks = [
       { label: "Career Detail", path: "/admin/tpqi/cldetail" },
       { label: "Career Skill", path: "/admin/tpqi/clskill" },
       { label: "Career Unit Code", path: "/admin/tpqi/clunitcode" },
+      { label: "Unit Occupational", path: "/admin/tpqi/unitoccupational" },
+      { label: "Unit Sector", path:"/admin/tpqi/unitsector"}
     ],
   },
   {

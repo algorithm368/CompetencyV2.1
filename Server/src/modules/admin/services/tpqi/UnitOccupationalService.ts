@@ -6,7 +6,7 @@ export class UnitOccupationalService extends BaseService<UnitOccupational, keyof
   constructor() {
     super(
       new UnitOccupationalRepo(),
-      ["occupational.name", "unitcode.name"], // Added .name to unitcode for consistency
+      ["occupational.name", "unitcode.name"], 
       "id",
       {
         occupational: true,

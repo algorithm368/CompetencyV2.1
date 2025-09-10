@@ -12,3 +12,5 @@ export { default as ClSkillPage } from "./CLSkill/CLSkillPage";
 export { default as ClUnitCodePage } from "./CLUnitCode/CLUnitCodePage";
 export { default as UnitOccupationalPage } from "./UnitOccupational/UnitOccupationalPage";
 export { default as UnitSectorPage } from "./UnitSector/UnitSectorPage"
+export { default as UserSkillPage } from "./UserSkill/UserSkillPage"
+export { default as UserKnowledge } from "./UserKnowledge/UserKnowledgePage"

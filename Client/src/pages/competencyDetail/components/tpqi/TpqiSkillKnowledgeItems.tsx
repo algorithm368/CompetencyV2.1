@@ -91,7 +91,7 @@ const TpqiSkillKnowledgeItems: React.FC<TpqiSkillKnowledgeItemsProps> = memo(
           void handleDelete(evidence);
         },
       }),
-      [handleUrlChange, handleRemove, handleSubmit, handleDelete]
+      [handleUrlChange, handleRemove, handleSubmit, handleDelete],
     );
 
     if (filteredUnits.length === 0) {
@@ -115,7 +115,7 @@ const TpqiSkillKnowledgeItems: React.FC<TpqiSkillKnowledgeItemsProps> = memo(
         </ErrorBoundary>
       </section>
     );
-  }
+  },
 );
 
 TpqiSkillKnowledgeItems.displayName = "TpqiSkillKnowledgeItems";
@@ -220,18 +220,18 @@ const UnitsList: React.FC<UnitsListProps> = memo(
         />
       ))}
     </ul>
-  )
+  ),
 );
 UnitsList.displayName = "UnitsList";
 
 const Unit: React.FC<UnitProps> = memo(({ unit, evidenceState, handlers }) => {
   const filteredSkills = useMemo(
     () => filterValidSkills(unit.skills),
-    [unit.skills]
+    [unit.skills],
   );
   const filteredKnowledge = useMemo(
     () => filterValidKnowledge(unit.knowledge),
-    [unit.knowledge]
+    [unit.knowledge],
   );
 
   if (filteredSkills.length === 0 && filteredKnowledge.length === 0)
@@ -268,22 +268,22 @@ const SkillsList: React.FC<SkillsListProps> = memo(
     const handleUrlChange = useCallback(
       (skillId: number) => (value: string) =>
         handlers.onUrlChange({ type: "skill", id: skillId }, value),
-      [handlers]
+      [handlers],
     );
     const handleRemove = useCallback(
       (skillId: number) => () =>
         handlers.onRemove({ type: "skill", id: skillId }),
-      [handlers]
+      [handlers],
     );
     const handleSubmit = useCallback(
       (skillId: number) => () =>
         handlers.onSubmit({ type: "skill", id: skillId }),
-      [handlers]
+      [handlers],
     );
     const handleDelete = useCallback(
       (skillId: number) => () =>
         handlers.onDelete({ type: "skill", id: skillId }),
-      [handlers]
+      [handlers],
     );
 
     return (
@@ -326,7 +326,7 @@ const SkillsList: React.FC<SkillsListProps> = memo(
         </ul>
       </div>
     );
-  }
+  },
 );
 SkillsList.displayName = "SkillsList";
 
@@ -335,22 +335,22 @@ const KnowledgeList: React.FC<KnowledgeListProps> = memo(
     const handleUrlChange = useCallback(
       (knowledgeId: number) => (value: string) =>
         handlers.onUrlChange({ type: "knowledge", id: knowledgeId }, value),
-      [handlers]
+      [handlers],
     );
     const handleRemove = useCallback(
       (knowledgeId: number) => () =>
         handlers.onRemove({ type: "knowledge", id: knowledgeId }),
-      [handlers]
+      [handlers],
     );
     const handleSubmit = useCallback(
       (knowledgeId: number) => () =>
         handlers.onSubmit({ type: "knowledge", id: knowledgeId }),
-      [handlers]
+      [handlers],
     );
     const handleDelete = useCallback(
       (knowledgeId: number) => () =>
         handlers.onDelete({ type: "knowledge", id: knowledgeId }),
-      [handlers]
+      [handlers],
     );
 
     return (
@@ -393,7 +393,7 @@ const KnowledgeList: React.FC<KnowledgeListProps> = memo(
         </ul>
       </div>
     );
-  }
+  },
 );
 KnowledgeList.displayName = "KnowledgeList";
 

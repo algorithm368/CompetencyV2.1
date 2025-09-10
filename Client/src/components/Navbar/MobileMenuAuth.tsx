@@ -20,7 +20,7 @@ const MobileMenuAuth: React.FC<MobileMenuAuthProps> = ({
 }) => {
   return (
     <div
-      className={`pt-3 mt-6 border-t border-gray-200 transform transition-all duration-300 ${
+      className={`flex flex-col pt-3 mt-6 mx-5 border-t border-gray-200 transform transition-all duration-300 ${
         menuOpen ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
       }`}
       style={{

@@ -1,7 +1,10 @@
 import { useState, useMemo, useCallback } from "react";
 import { TpqiEvidenceService } from "../../services/postTpqiEvidenceAPI";
 import { DeleteTpqiEvidenceService } from "../../services/deleteTpqiEvidenceAPI";
-import { SubmitTpqiEvidenceRequest, TpqiApiResponse as ApiResponse } from "../../types/tpqi";
+import {
+  SubmitTpqiEvidenceRequest,
+  TpqiApiResponse as ApiResponse,
+} from "../../types/tpqi";
 /**
  * Interface for TPQI evidence state management
  */
@@ -121,12 +124,14 @@ export const useTpqiEvidenceSender = () => {
 
         // Initialize knowledge
         if (evidenceData.knowledge) {
-          Object.entries(evidenceData.knowledge).forEach(([knowledgeId, data]) => {
-            const key = `knowledge-${knowledgeId}`;
-            newUrls[key] = data.evidenceUrl || "";
-            newSubmitted[key] = !!data.evidenceUrl;
-            newApprovalStatus[key] = data.approvalStatus || "NOT_APPROVED";
-          });
+          Object.entries(evidenceData.knowledge).forEach(
+            ([knowledgeId, data]) => {
+              const key = `knowledge-${knowledgeId}`;
+              newUrls[key] = data.evidenceUrl || "";
+              newSubmitted[key] = !!data.evidenceUrl;
+              newApprovalStatus[key] = data.approvalStatus || "NOT_APPROVED";
+            },
+          );
         }
 
         return {
@@ -137,7 +142,7 @@ export const useTpqiEvidenceSender = () => {
         };
       });
     },
-    []
+    [],
   );
 
   /**
@@ -210,26 +215,28 @@ export const useTpqiEvidenceSender = () => {
   const handleSubmit = async (evidence: EvidenceType) => {
     const key = getEvidenceKey(evidence);
 
-    // Clear old status for this evidence before starting submission
+    // Read the latest URL safely
+    const evidenceUrl = evidenceState.urls[key] || "";
+
+    // Step 0: Clear previous error and set loading
     setEvidenceState((prev) => ({
       ...prev,
+      loading: { ...prev.loading, [key]: true },
       errors: { ...prev.errors, [key]: "" },
       submitted: { ...prev.submitted, [key]: false },
-      loading: { ...prev.loading, [key]: false },
     }));
 
-    const evidenceUrl = evidenceState.urls[key];
-
-    // Step 1: Validate evidence input
-    if (!evidenceUrl || evidenceUrl.trim() === "") {
+    // Step 1: Validate input
+    if (!evidenceUrl.trim()) {
       setEvidenceState((prev) => ({
         ...prev,
         errors: { ...prev.errors, [key]: "Evidence URL cannot be empty." },
+        loading: { ...prev.loading, [key]: false },
       }));
       return;
     }
 
-    // Basic URL validation
+    // Step 2: Validate URL format
     const urlValidation = evidenceService.validateEvidenceUrl(evidenceUrl);
     if (!urlValidation.isValid) {
       setEvidenceState((prev) => ({
@@ -238,67 +245,52 @@ export const useTpqiEvidenceSender = () => {
           ...prev.errors,
           [key]: urlValidation.error || "Invalid URL format.",
         },
+        loading: { ...prev.loading, [key]: false },
       }));
       return;
     }
 
-    // Step 3: Set loading state and clear errors
-    setEvidenceState((prev) => ({
-      ...prev,
-      loading: { ...prev.loading, [key]: true },
-      errors: { ...prev.errors, [key]: "" },
-    }));
-
     try {
-      // Step 4: Prepare API request
       const evidenceRequest: SubmitTpqiEvidenceRequest = {
         evidenceUrl: evidenceUrl.trim(),
+        ...(evidence.type === "skill"
+          ? { skillId: evidence.id }
+          : { knowledgeId: evidence.id }),
       };
 
-      // Add skillId or knowledgeId based on evidence type
-      if (evidence.type === "skill") {
-        evidenceRequest.skillId = evidence.id;
-      } else {
-        evidenceRequest.knowledgeId = evidence.id;
-      }
+      const response: ApiResponse =
+        await evidenceService.submitEvidence(evidenceRequest);
 
-      // Step 5: Submit to API
-      const response: ApiResponse = await evidenceService.submitEvidence(evidenceRequest);
-
-      if (response.success) {
-        // Success: Mark as submitted
-        setEvidenceState((prev) => ({
-          ...prev,
-          submitted: { ...prev.submitted, [key]: true },
-          approvalStatus: {
-            ...prev.approvalStatus,
-            [key]: response.data?.approvalStatus || "NOT_APPROVED",
-          },
-        }));
-      } else {
-        // API returned error
-        setEvidenceState((prev) => ({
-          ...prev,
-          errors: {
-            ...prev.errors,
-            [key]: response.message || "Failed to submit evidence.",
-          },
-        }));
-      }
+      setEvidenceState((prev) => {
+        if (response.success) {
+          return {
+            ...prev,
+            submitted: { ...prev.submitted, [key]: true },
+            approvalStatus: {
+              ...prev.approvalStatus,
+              [key]: response.data?.approvalStatus || "NOT_APPROVED",
+            },
+          };
+        } else {
+          return {
+            ...prev,
+            errors: {
+              ...prev.errors,
+              [key]: response.message || "Failed to submit evidence.",
+            },
+          };
+        }
+      });
     } catch (error: unknown) {
-      // Network or other errors
-      console.error("Error submitting TPQI evidence:", error);
-      const errorMessage = error instanceof Error ? error.message : "Failed to submit evidence. Please try again.";
-
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to submit evidence. Please try again.";
       setEvidenceState((prev) => ({
         ...prev,
-        errors: {
-          ...prev.errors,
-          [key]: errorMessage,
-        },
+        errors: { ...prev.errors, [key]: errorMessage },
       }));
     } finally {
-      // Step 6: Always clear loading state
       setEvidenceState((prev) => ({
         ...prev,
         loading: { ...prev.loading, [key]: false },
@@ -341,7 +333,10 @@ export const useTpqiEvidenceSender = () => {
     const key = getEvidenceKey(evidence);
 
     // Validate evidence
-    if (!evidence.type || (evidence.type !== "knowledge" && evidence.type !== "skill")) {
+    if (
+      !evidence.type ||
+      (evidence.type !== "knowledge" && evidence.type !== "skill")
+    ) {
       setEvidenceState((prev) => ({
         ...prev,
         errors: { ...prev.errors, [key]: "Invalid evidence type" },
@@ -365,7 +360,9 @@ export const useTpqiEvidenceSender = () => {
         errors: { ...prev.errors, [key]: "" },
       }));
 
-      console.log(`🔥 Deleting ${evidence.type} evidence for ID: ${evidence.id}`);
+      console.log(
+        `🔥 Deleting ${evidence.type} evidence for ID: ${evidence.id}`,
+      );
 
       // Make API call
       const result = await deleteService.deleteEvidence({
@@ -374,7 +371,10 @@ export const useTpqiEvidenceSender = () => {
       });
 
       if (result.success) {
-        console.log(`✅ ${evidence.type} evidence deleted successfully:`, result.data);
+        console.log(
+          `✅ ${evidence.type} evidence deleted successfully:`,
+          result.data,
+        );
 
         // Clear evidence from state after successful deletion
         setEvidenceState((prev) => ({
@@ -387,8 +387,12 @@ export const useTpqiEvidenceSender = () => {
 
         return true;
       } else {
-        const errorMessage = result.message || `Failed to delete ${evidence.type} evidence`;
-        console.error(`❌ ${evidence.type} evidence deletion failed:`, errorMessage);
+        const errorMessage =
+          result.message || `Failed to delete ${evidence.type} evidence`;
+        console.error(
+          `❌ ${evidence.type} evidence deletion failed:`,
+          errorMessage,
+        );
         setEvidenceState((prev) => ({
           ...prev,
           errors: { ...prev.errors, [key]: errorMessage },
@@ -396,7 +400,8 @@ export const useTpqiEvidenceSender = () => {
         return false;
       }
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+      const errorMessage =
+        error instanceof Error ? error.message : "An unexpected error occurred";
       console.error(`❌ Error deleting ${evidence.type} evidence:`, error);
       setEvidenceState((prev) => ({
         ...prev,

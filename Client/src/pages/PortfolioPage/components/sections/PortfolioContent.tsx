@@ -16,9 +16,9 @@ const PortfolioContent: React.FC<PortfolioContentProps> = ({
   portfolioData,
 }) => {
   return (
-    <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 py-6">
+    <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
       {activeTab === "overview" && (
-        <div className="space-y-8">
+        <div className="space-y-6 sm:space-y-8">
           <PortfolioStats stats={portfolioData.overallStats} />
           <ProgressChart portfolioData={portfolioData} />
           <ExportActions portfolioData={portfolioData} />

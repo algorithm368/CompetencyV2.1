@@ -23,30 +23,25 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
   onLogin,
   onLogout,
 }) => {
-  if (!menuOpen) return null;
-
   return (
     <>
       {/* Backdrop */}
-      <button
-        className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden transition-all duration-500 ease-in-out border-0 p-0 m-0 cursor-default ${
-          menuOpen ? "opacity-100" : "opacity-0"
+      <div
+        className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-[9998] md:hidden transition-all duration-500 ease-in-out ${
+          menuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
         onClick={onClose}
-        onKeyDown={(e) => {
-          if (e.key === "Escape") onClose();
-        }}
         aria-label="Close menu overlay"
       />
-      
-      {/* Menu Dialog */}
-      <dialog
-        open={menuOpen}
-        className={`fixed inset-auto top-0 right-0 m-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl z-50 md:hidden transform transition-all duration-500 ease-out ${
+
+      {/* Menu Container */}
+      <div
+        className={`mobile-menu fixed inset-auto top-0 right-0 m-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl z-[9999] md:hidden transform transition-all duration-500 ease-out ${
           menuOpen
-            ? "translate-x-0 opacity-100 scale-100"
-            : "translate-x-full opacity-0 scale-95"
+            ? "translate-x-0 opacity-100 scale-100 pointer-events-auto"
+            : "translate-x-full opacity-0 scale-95 pointer-events-none"
         }`}
+        role="dialog"
         aria-modal="true"
       >
         <MobileMenuHeader menuOpen={menuOpen} onClose={onClose} />
@@ -64,7 +59,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
           onLogout={onLogout}
           onClose={onClose}
         />
-      </dialog>
+      </div>
     </>
   );
 };

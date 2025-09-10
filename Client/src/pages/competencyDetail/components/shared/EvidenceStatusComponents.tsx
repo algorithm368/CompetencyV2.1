@@ -186,6 +186,7 @@ export const StatusMessages: React.FC<StatusMessagesProps> = ({
         >
           <FaExclamationTriangle className="w-3 h-3" />
           <span>{error}</span>
+          {/*<span>Sorry, an error occurred.</span>*/}
         </div>
       )}
 

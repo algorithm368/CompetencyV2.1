@@ -31,9 +31,7 @@ const MobileMenuItems: React.FC<MobileMenuItemsProps> = ({
               ? "text-teal-600 bg-teal-50 border-l-4 border-l-teal-600"
               : "text-gray-700 hover:text-teal-600 hover:bg-teal-50"
           } ${
-            menuOpen
-              ? "translate-x-0 opacity-100"
-              : "translate-x-8 opacity-0"
+            menuOpen ? "translate-x-0 opacity-100" : "translate-x-8 opacity-0"
           }`}
           style={{
             transitionDelay: menuOpen

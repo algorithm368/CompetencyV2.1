@@ -22,7 +22,7 @@ export interface TpqiEvidenceResponse {
  * At least one of skillId or knowledgeId must be provided.
  */
 export async function createTpqiEvidence(
-  data: CreateTpqiEvidenceRequest
+  data: CreateTpqiEvidenceRequest,
 ): Promise<TpqiEvidenceResponse> {
   if (!data.skillId && !data.knowledgeId) {
     throw new Error("Either skillId or knowledgeId must be provided.");
@@ -47,7 +47,7 @@ export async function createTpqiEvidence(
     });
     if (!skill)
       throw new Error(`Skill with ID ${data.skillId} does not exist.`);
-    
+
     const created = await prismaTpqi.userSkill.create({
       data: {
         userId: data.userId,

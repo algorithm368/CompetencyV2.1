@@ -65,8 +65,10 @@ export async function getUnitCodeDetailsByCode(
             },
           },
         },
-        unitSkillLinks: true,
-        unitKnowledgeLinks: true,
+        // 🔹 เปลี่ยนจาก unitSkillLinks → UnitSkill
+        UnitSkill: true,
+        // 🔹 เปลี่ยนจาก unitKnowledgeLinks → UnitKnowledge
+        UnitKnowledge: true,
       },
     });
 
@@ -75,7 +77,7 @@ export async function getUnitCodeDetailsByCode(
     }
 
     // Get skills data
-    const skillIds = UnitCodeData.unitSkillLinks.map(link => link.skillId);
+    const skillIds = UnitCodeData.UnitSkill.map(link => link.skillId);
     const skills = await prismaTpqi.skill.findMany({
       where: {
         id: {
@@ -89,7 +91,7 @@ export async function getUnitCodeDetailsByCode(
     });
 
     // Get knowledge data  
-    const knowledgeIds = UnitCodeData.unitKnowledgeLinks.map(link => link.knowledgeId);
+    const knowledgeIds = UnitCodeData.UnitKnowledge.map(link => link.knowledgeId);
     const knowledge = await prismaTpqi.knowledge.findMany({
       where: {
         id: {
@@ -101,10 +103,6 @@ export async function getUnitCodeDetailsByCode(
         name: true
       }
     });
-
-    if (!UnitCodeData) {
-      return null;
-    }
 
     const transformedUnitCode: UnitCodeDetail = {
       competency_id: UnitCodeData.code,
@@ -129,8 +127,8 @@ export async function getUnitCodeDetailsByCode(
       })),
     };
 
-    const totalSkills = UnitCodeData.unitSkillLinks.length;
-    const totalKnowledge = UnitCodeData.unitKnowledgeLinks.length;
+    const totalSkills = UnitCodeData.UnitSkill.length;
+    const totalKnowledge = UnitCodeData.UnitKnowledge.length;
     const totalOccupational = UnitCodeData.unitOccupationalLinks.length;
     const totalSector = UnitCodeData.unitSectorLinks.length;
 

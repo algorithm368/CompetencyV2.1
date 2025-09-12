@@ -33,7 +33,7 @@ export class USkillController {
   static async create(req: Request, res: Response, next: NextFunction) {
     try {
       const actor = req.headers["x-actor-id"] as string;
-      const data = req.body as Omit<import("@prisma/client_tpqi").UserUnitSkill, "id">;
+      const data = req.body as Omit<import("@prisma/client_tpqi").UnitSkill, "id">;
       const newItem = await service.create(data, actor);
       res.status(201).json(newItem);
     } catch (err) {
@@ -45,7 +45,7 @@ export class USkillController {
     try {
       const actor = req.headers["x-actor-id"] as string;
       const id = Number(req.params.id);
-      const updates = req.body as Partial<Omit<import("@prisma/client_tpqi").UserUnitSkill, "id">>;
+      const updates = req.body as Partial<Omit<import("@prisma/client_tpqi").UnitSkill, "id">>;
       const updated = await service.update(id, updates, actor);
       res.json(updated);
     } catch (err: any) {

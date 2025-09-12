@@ -1,9 +1,9 @@
-import type { UserUnitKnowledge } from "@prisma/client_tpqi";
-import { UserUnitKnowledgeRepo } from "@Admin/repositories/tpqi/TPQIRepositories";
+import type { UnitKnowledge } from "@prisma/client_tpqi";
+import { UnitKnowledgeRepo } from "@Admin/repositories/tpqi/TPQIRepositories";
 import { BaseService } from "@Utils/BaseService";
 
-export class UKnowledgeService extends BaseService<UserUnitKnowledge, keyof UserUnitKnowledge> {
+export class UKnowledgeService extends BaseService<UnitKnowledge, keyof UnitKnowledge> {
   constructor() {
-    super(new UserUnitKnowledgeRepo(), ["unitCodeId"], "id");
+    super(new UnitKnowledgeRepo(), ["unitCodeId"], "id");
   }
 }

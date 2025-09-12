@@ -12,6 +12,7 @@ export const adminRoutes: RouteItem[] = [
   { path: "/logs", element: <ExportPages.LogPage />, resource: "Log" },
   { path: "/session", element: <ExportPages.SessionPage />, resource: "Session" },
 
+<<<<<<< HEAD
   // SFIA
   { path: "/sfia/category", element: <ExportPages.CategoryPage />, resource: "Category" },
   { path: "/sfia/level", element: <ExportPages.LevelPage />, resource: "Level" },
@@ -37,3 +38,23 @@ export const adminRoutes: RouteItem[] = [
   { path: "/tpqi/knowledge", element: <ExportPages.KnowledgePage />, resource: "Knowledge" },
   { path: "/tpqi/unitcode", element: <ExportPages.UnitCodePage />, resource: "UnitCode" },
 ];
+=======
+    <Route path="/tpqi/skill" element={<ExportPages.SkillPage />} />
+    <Route path="/tpqi/sector" element={<ExportPages.SectorPage />} />
+    <Route path="/tpqi/occupational" element={<ExportPages.OccupationalPage />} />
+    <Route path="/tpqi/knowledge" element={<ExportPages.KnowledgePage />} />
+    <Route path="/tpqi/unitcode" element={<ExportPages.UnitCodePage />} />
+    <Route path="/tpqi/career" element={<ExportPages.CareerPage />} />
+    <Route path="/tpqi/level" element={<ExportPages.TPQILevelPage />} />
+    <Route path="/tpqi/clknowledge" element={<ExportPages.ClKnowledgePage />} />
+    <Route path="/tpqi/cldetail" element={<ExportPages.ClDetailPage />} />
+    <Route path="/tpqi/careerlevel" element={<ExportPages.CareerLevelPage />} />
+    <Route path="/tpqi/clskill" element={<ExportPages.ClSkillPage />} />
+    <Route path="/tpqi/clunitcode" element={<ExportPages.ClUnitCodePage />} />
+    <Route path="/tpqi/unitoccupational" element={<ExportPages.UnitOccupationalPage />} />
+    <Route path="/tpqi/unitsector" element={<ExportPages.UnitSectorPage />} />
+    <Route path="/tpqi/userskill" element={<ExportPages.UserSkillPage />} />
+    <Route path="/tpqi/userknowledge" element={<ExportPages.UserKnowledge />} />
+  </>
+);
+>>>>>>> crud-admin-tpqi

@@ -1,5 +1,10 @@
 export class BaseService<T extends Record<string, any>, K extends keyof T> {
-  constructor(protected readonly repo: any, protected readonly searchFields: string[], private readonly pkField: keyof T, protected readonly includes?: Record<string, boolean>) {}
+  constructor(
+    protected readonly repo: any, 
+    protected readonly searchFields: string[], 
+    private readonly pkField: keyof T, 
+    protected readonly includes?: Record<string, boolean>
+  ) {}
 
   /**
    * Get all records with optional search and pagination.
@@ -46,11 +51,18 @@ export class BaseService<T extends Record<string, any>, K extends keyof T> {
 
     return { data, total };
   }
+<<<<<<< HEAD
   /**
    * Get record by primary key.
    */
   getById(id: T[typeof this.pkField], txClient?: any): Promise<T | null> {
     return this.repo.findById(id, txClient);
+=======
+
+  getById(id: T[typeof this.pkField], options?: { include?: any }): Promise<T | null> {
+    const queryOptions = options || (this.includes ? { include: this.includes } : {});
+    return this.repo.findById(id, queryOptions);
+>>>>>>> crud-admin-tpqi
   }
 
   /**

@@ -13,8 +13,8 @@ import type {
   UnitCode,
   UserKnowledge,
   UserSkill,
-  UserUnitKnowledge,
-  UserUnitSkill,
+  UnitKnowledge,
+  UnitSkill,
   TpqiSummary,
   Occupational,
   UnitOccupational,
@@ -108,14 +108,14 @@ export class UserSkillRepo extends BaseRepository<UserSkill, "id"> {
 }
 
 // UserUnitKnowledge Repository
-export class UserUnitKnowledgeRepo extends BaseRepository<UserUnitKnowledge, "id"> {
+export class UnitKnowledgeRepo extends BaseRepository<UnitKnowledge, "id"> {
   constructor(manager: DatabaseManagement<any> = TPQI.userUnitKnowledge, pkField: "id" = "id") {
     super(manager, pkField);
   }
 }
 
 // UserUnitSkill Repository
-export class UserUnitSkillRepo extends BaseRepository<UserUnitSkill, "id"> {
+export class UnitSkillRepo extends BaseRepository<UnitSkill, "id"> {
   constructor(manager: DatabaseManagement<any> = TPQI.userUnitSkill, pkField: "id" = "id") {
     super(manager, pkField);
   }

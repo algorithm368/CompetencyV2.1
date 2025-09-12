@@ -91,12 +91,12 @@ export async function getEvidenceByUnitCodeAndUser(
         id: true,
         code: true,
         name: true,
-        unitSkillLinks: {
+        UnitSkill: {
           select: {
             skillId: true,
           },
         },
-        unitKnowledgeLinks: {
+        UnitKnowledge: {
           select: {
             knowledgeId: true,
           },
@@ -110,9 +110,9 @@ export async function getEvidenceByUnitCodeAndUser(
     }
 
     // Extract skill and knowledge IDs
-    const skillIds = unitCodeData.unitSkillLinks.map((link) => link.skillId);
-    const knowledgeIds = unitCodeData.unitKnowledgeLinks.map(
-      (link) => link.knowledgeId
+    const skillIds = unitCodeData.UnitSkill.map((link: { skillId: number }) => link.skillId);
+    const knowledgeIds = unitCodeData.UnitKnowledge.map(
+      (link: { knowledgeId: number }) => link.knowledgeId
     );
 
     // If no skills or knowledge found, return empty collection
@@ -131,54 +131,54 @@ export async function getEvidenceByUnitCodeAndUser(
     const userSkillEvidences =
       skillIds.length > 0
         ? await Promise.all(
-            skillIds.map(async (skillId) => {
-              const latestEvidence = await prismaTpqi.userSkill.findFirst({
-                where: {
-                  userId: userId,
-                  skillId: skillId,
-                },
-                orderBy: {
-                  id: "desc", // Get the latest evidence
-                },
-                select: {
-                  skillId: true,
-                  evidenceUrl: true,
-                  approvalStatus: true,
-                },
-              });
-              return latestEvidence;
-            })
-          )
+          skillIds.map(async (skillId: number) => {
+            const latestEvidence = await prismaTpqi.userSkill.findFirst({
+              where: {
+                userId: userId,
+                skillId: skillId,
+              },
+              orderBy: {
+                id: "desc", // Get the latest evidence
+              },
+              select: {
+                skillId: true,
+                evidenceUrl: true,
+                approvalStatus: true,
+              },
+            });
+            return latestEvidence;
+          })
+        )
         : [];
 
     // Fetch user's knowledge evidences for this unit code (latest per knowledgeId)
     const userKnowledgeEvidences =
       knowledgeIds.length > 0
         ? await Promise.all(
-            knowledgeIds.map(async (knowledgeId) => {
-              const latestEvidence = await prismaTpqi.userKnowledge.findFirst({
-                where: {
-                  userId: userId,
-                  knowledgeId: knowledgeId,
-                },
-                orderBy: {
-                  id: "desc", // Get the latest evidence
-                },
-                select: {
-                  knowledgeId: true,
-                  evidenceUrl: true,
-                  approvalStatus: true,
-                },
-              });
-              return latestEvidence;
-            })
-          )
+          knowledgeIds.map(async (knowledgeId: number) => {
+            const latestEvidence = await prismaTpqi.userKnowledge.findFirst({
+              where: {
+                userId: userId,
+                knowledgeId: knowledgeId,
+              },
+              orderBy: {
+                id: "desc", // Get the latest evidence
+              },
+              select: {
+                knowledgeId: true,
+                evidenceUrl: true,
+                approvalStatus: true,
+              },
+            });
+            return latestEvidence;
+          })
+        )
         : [];
 
     // Transform skill evidences (filter out null results)
     const skillEvidences: EvidenceInfo[] = userSkillEvidences
-      .filter((evidence) => evidence !== null)
-      .map((evidence) => ({
+      .filter((evidence: any) => evidence !== null)
+      .map((evidence: any) => ({
         id: evidence!.skillId,
         evidenceUrl: evidence!.evidenceUrl,
         approvalStatus: evidence!.approvalStatus,
@@ -187,8 +187,8 @@ export async function getEvidenceByUnitCodeAndUser(
 
     // Transform knowledge evidences (filter out null results)
     const knowledgeEvidences: EvidenceInfo[] = userKnowledgeEvidences
-      .filter((evidence) => evidence !== null)
-      .map((evidence) => ({
+      .filter((evidence: any) => evidence !== null)
+      .map((evidence: any) => ({
         id: evidence!.knowledgeId,
         evidenceUrl: evidence!.evidenceUrl,
         approvalStatus: evidence!.approvalStatus,

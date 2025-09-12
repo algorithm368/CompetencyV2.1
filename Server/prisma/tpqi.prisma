@@ -102,10 +102,10 @@ model UnitCode {
   name                  String                @db.VarChar(255)
   description           String                @db.VarChar(255)
   careerLevelUnits      CareerLevelUnitCode[]
+  UnitKnowledge         UnitKnowledge[]
   unitOccupationalLinks UnitOccupational[]
   unitSectorLinks       UnitSector[]
-  unitKnowledgeLinks    UserUnitKnowledge[]
-  unitSkillLinks        UserUnitSkill[]
+  UnitSkill             UnitSkill[]
 }
 
 model UserKnowledge {
@@ -130,24 +130,6 @@ model UserSkill {
 
   @@index([skillId], map: "UserSkill_skillId_fkey")
   @@index([userId])
-}
-
-model UserUnitKnowledge {
-  id          Int      @id @default(autoincrement())
-  unitCodeId  Int
-  knowledgeId Int
-  unitCode    UnitCode @relation(fields: [unitCodeId], references: [id])
-
-  @@index([unitCodeId], map: "UserUnitKnowledge_unitCodeId_fkey")
-}
-
-model UserUnitSkill {
-  id         Int      @id @default(autoincrement())
-  unitCodeId Int
-  skillId    Int
-  unitCode   UnitCode @relation(fields: [unitCodeId], references: [id])
-
-  @@index([unitCodeId], map: "UserUnitSkill_unitCodeId_fkey")
 }
 
 model Occupational {
@@ -201,6 +183,24 @@ model TpqiSummary {
   @@index([careerLevelId], map: "TpqiSummary_careerLevelId_fkey")
   @@index([levelId], map: "TpqiSummary_levelId_fkey")
   @@index([userEmail])
+}
+
+model UnitKnowledge {
+  id          Int      @id @default(autoincrement())
+  unitCodeId  Int
+  knowledgeId Int
+  UnitCode    UnitCode @relation(fields: [unitCodeId], references: [id], map: "UserUnitKnowledge_unitCodeId_fkey")
+
+  @@index([unitCodeId], map: "UserUnitKnowledge_unitCodeId_fkey")
+}
+
+model UnitSkill {
+  id         Int      @id @default(autoincrement())
+  unitCodeId Int
+  skillId    Int
+  UnitCode   UnitCode @relation(fields: [unitCodeId], references: [id], map: "UserUnitSkill_unitCodeId_fkey")
+
+  @@index([unitCodeId], map: "UserUnitSkill_unitCodeId_fkey")
 }
 
 enum ApprovalStatus {

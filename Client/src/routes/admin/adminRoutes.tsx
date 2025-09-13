@@ -17,6 +17,8 @@ export const adminRoutes: RouteItem[] = [
   { path: "/sfia/level", element: <ExportPages.LevelPage />, resource: "Level" },
   { path: "/sfia/subcategory", element: <ExportPages.SubcategoryPage />, resource: "Subcategory" },
   { path: "/sfia/description", element: <ExportPages.DescriptionPage />, resource: "Description" },
+  { path: "/sfia/skill", element: <ExportPages.SFIASkillPage />, resource: "Skill" },
+
 
   // TPQI
   { path: "/tpqi/career", element: <ExportPages.CareerPage />, resource: "Career" },
@@ -50,10 +52,4 @@ export const adminRoutes: RouteItem[] = [
   { path: "/assets", element: <ExportPages.AssetPage />, resource: "Asset" },
   { path: "/asset-instances", element: <ExportPages.AssetInstancePage />, resource: "AssetInstance" },
   { path: "/user-asset-instances", element: <ExportPages.UserAssetInstanceAssignmentPage />, resource: "UserAssetInstance" },
-
-  { path: "/tpqi/skill", element: <ExportPages.SkillPage />, resource: "Skill" },
-  { path: "/tpqi/sector", element: <ExportPages.SectorPage />, resource: "Sector" },
-  { path: "/tpqi/occupational", element: <ExportPages.OccupationalPage />, resource: "Occupational" },
-  { path: "/tpqi/knowledge", element: <ExportPages.KnowledgePage />, resource: "Knowledge" },
-  { path: "/tpqi/unitcode", element: <ExportPages.UnitCodePage />, resource: "UnitCode" },
 ];

@@ -28,27 +28,35 @@ export const useSfiaEvidenceSender = () => {
    * input shape: { [subSkillId]: { url: string, approvalStatus: string | null } }
    */
 
-  const initializeEvidenceUrls = useCallback((data: { [subSkillId: number]: { url: string; approvalStatus: string | null } }) => {
-    setEvidenceState((prev) => {
-      const nextUrls = { ...prev.urls };
-      const nextSubmitted = { ...prev.submitted };
-      const nextApproval = { ...prev.approvalStatus };
+  const initializeEvidenceUrls = useCallback(
+    (data: {
+      [subSkillId: number]: { url: string; approvalStatus: string | null };
+    }) => {
+      setEvidenceState((prev) => {
+        const nextUrls = { ...prev.urls };
+        const nextSubmitted = { ...prev.submitted };
+        const nextApproval = { ...prev.approvalStatus };
 
-      Object.entries(data).forEach(([k, v]) => {
-        const id = k.toString();
-        nextUrls[id] = { evidenceUrl: v.url ?? "", approvalStatus: v.approvalStatus ?? null };
-        nextSubmitted[id] = !!v.url;
-        nextApproval[id] = v.approvalStatus ?? null;
+        Object.entries(data).forEach(([k, v]) => {
+          const id = k.toString();
+          nextUrls[id] = {
+            evidenceUrl: v.url ?? "",
+            approvalStatus: v.approvalStatus ?? null,
+          };
+          nextSubmitted[id] = !!v.url;
+          nextApproval[id] = v.approvalStatus ?? null;
+        });
+
+        return {
+          ...prev,
+          urls: nextUrls,
+          submitted: nextSubmitted,
+          approvalStatus: nextApproval,
+        };
       });
-
-      return {
-        ...prev,
-        urls: nextUrls,
-        submitted: nextSubmitted,
-        approvalStatus: nextApproval,
-      };
-    });
-  }, []);
+    },
+    []
+  );
 
   const handleUrlChange = useCallback((id: number, value: string) => {
     const idStr = id.toString();
@@ -69,7 +77,10 @@ export const useSfiaEvidenceSender = () => {
     const idStr = id.toString();
     setEvidenceState((prev) => ({
       ...prev,
-      urls: { ...prev.urls, [idStr]: { evidenceUrl: "", approvalStatus: null } },
+      urls: {
+        ...prev.urls,
+        [idStr]: { evidenceUrl: "", approvalStatus: null },
+      },
       submitted: { ...prev.submitted, [idStr]: false },
       errors: { ...prev.errors, [idStr]: "" },
       approvalStatus: { ...prev.approvalStatus, [idStr]: null },
@@ -80,68 +91,94 @@ export const useSfiaEvidenceSender = () => {
     async (id: number): Promise<void> => {
       const idStr = id.toString();
 
-      // read current value from state (functional read to avoid stale)
-      let currentValue = "";
-      setEvidenceState((prev) => {
-        currentValue = prev.urls[idStr]?.evidenceUrl?.trim() ?? "";
-        return prev;
-      });
+      // Read the latest URL safely from current state
+      const evidenceUrl = evidenceState.urls[idStr]?.evidenceUrl || "";
 
-      if (!currentValue) {
-        setEvidenceState((prev) => ({
-          ...prev,
-          errors: { ...prev.errors, [idStr]: "Evidence URL or description cannot be empty." },
-        }));
-        return;
-      }
-
-      // start loading
+      // Step 0: Clear previous error and set loading
       setEvidenceState((prev) => ({
         ...prev,
         loading: { ...prev.loading, [idStr]: true },
         errors: { ...prev.errors, [idStr]: "" },
+        submitted: { ...prev.submitted, [idStr]: false },
       }));
 
+      // Step 1: Validate input
+      if (!evidenceUrl.trim()) {
+        setEvidenceState((prev) => ({
+          ...prev,
+          errors: {
+            ...prev.errors,
+            [idStr]: "Evidence URL or description cannot be empty.",
+          },
+          loading: { ...prev.loading, [idStr]: false },
+        }));
+        return;
+      }
+
+      // Step 2: Validate URL format (if needed)
+      const urlValidation = evidenceService.validateEvidenceUrl(evidenceUrl);
+      if (!urlValidation.isValid) {
+        setEvidenceState((prev) => ({
+          ...prev,
+          errors: {
+            ...prev.errors,
+            [idStr]: urlValidation.error || "Invalid URL format.",
+          },
+          loading: { ...prev.loading, [idStr]: false },
+        }));
+        return;
+      }
+
       try {
-        const isUrl = evidenceService.isValidUrl(currentValue);
+        const isUrl = evidenceService.isValidUrl(evidenceUrl.trim());
         const request: SubmitEvidenceRequest = {
           subSkillId: id,
-          evidenceText: currentValue,
-          ...(isUrl ? { evidenceUrl: currentValue } : {}),
+          evidenceText: evidenceUrl.trim(),
+          ...(isUrl ? { evidenceUrl: evidenceUrl.trim() } : {}),
         } as SubmitEvidenceRequest;
 
         const response = await evidenceService.submitEvidence(request);
 
-        if (response.success) {
-          setEvidenceState((prev) => ({
-            ...prev,
-            submitted: { ...prev.submitted, [idStr]: true },
-            approvalStatus: { ...prev.approvalStatus, [idStr]: "NOT_APPROVED" },
-            urls: {
-              ...prev.urls,
-              [idStr]: { evidenceUrl: currentValue, approvalStatus: "NOT_APPROVED" },
-            },
-            errors: { ...prev.errors, [idStr]: "" },
-          }));
-        } else {
-          setEvidenceState((prev) => ({
-            ...prev,
-            errors: { ...prev.errors, [idStr]: response.message || "Failed to submit evidence." },
-          }));
-        }
-      } catch (err: unknown) {
-        let msg = "Failed to submit evidence. Please try again.";
-        if (err instanceof Error) msg = err.message;
-        else if ((err as AxiosError).isAxiosError) {
-          const a = err as AxiosError;
-          msg = (a.response?.data as any)?.message ?? a.message ?? msg;
-        }
+        setEvidenceState((prev) => {
+          if (response.success) {
+            return {
+              ...prev,
+              submitted: { ...prev.submitted, [idStr]: true },
+              approvalStatus: {
+                ...prev.approvalStatus,
+                [idStr]: "NOT_APPROVED",
+              },
+              urls: {
+                ...prev.urls,
+                [idStr]: {
+                  evidenceUrl: evidenceUrl.trim(),
+                  approvalStatus: "NOT_APPROVED",
+                },
+              },
+              errors: { ...prev.errors, [idStr]: "" },
+            };
+          } else {
+            return {
+              ...prev,
+              errors: {
+                ...prev.errors,
+                [idStr]: response.message || "Failed to submit evidence.",
+              },
+            };
+          }
+        });
+      } catch (error: unknown) {
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "Failed to submit evidence. Please try again.";
 
         setEvidenceState((prev) => ({
           ...prev,
-          errors: { ...prev.errors, [idStr]: msg },
+          errors: { ...prev.errors, [idStr]: errorMessage },
         }));
-        console.error(`[SfiaEvidence] submit error subSkill=${id} :`, err);
+
+        console.error(`[SfiaEvidence] submit error subSkill=${id}:`, error);
       } finally {
         setEvidenceState((prev) => ({
           ...prev,
@@ -149,7 +186,7 @@ export const useSfiaEvidenceSender = () => {
         }));
       }
     },
-    [evidenceService]
+    [evidenceService, evidenceState.urls] // Add evidenceState.urls to dependencies
   );
 
   const handleDelete = useCallback(
@@ -167,7 +204,10 @@ export const useSfiaEvidenceSender = () => {
         if (result.success) {
           setEvidenceState((prev) => ({
             ...prev,
-            urls: { ...prev.urls, [idStr]: { evidenceUrl: "", approvalStatus: null } },
+            urls: {
+              ...prev.urls,
+              [idStr]: { evidenceUrl: "", approvalStatus: null },
+            },
             submitted: { ...prev.submitted, [idStr]: false },
             approvalStatus: { ...prev.approvalStatus, [idStr]: null },
             errors: { ...prev.errors, [idStr]: "" },
@@ -186,7 +226,10 @@ export const useSfiaEvidenceSender = () => {
         if (err instanceof Error) msg = err.message;
         else if ((err as AxiosError).isAxiosError) {
           const a = err as AxiosError;
-          msg = (a.response?.data as any)?.message ?? a.message ?? msg;
+          msg =
+            (a.response?.data as { message?: string })?.message ??
+            a.message ??
+            msg;
         }
 
         setEvidenceState((prev) => ({

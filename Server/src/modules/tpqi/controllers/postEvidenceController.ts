@@ -160,7 +160,7 @@ function validateEvidenceUrl(evidenceUrl: any): {
   if (!validateUrlFormatOnly(trimmedUrl)) {
     return {
       error:
-        "evidenceUrl must be a valid, publicly accessible HTTP or HTTPS URL.",
+        "Evidence URL must be a valid, publicly accessible HTTP or HTTPS URL.",
     };
   }
 

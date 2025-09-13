@@ -4,9 +4,9 @@ import { MenuItemBase, Group } from "./AdminSidebarType";
 // Main menu
 export const mainMenu: MenuItemBase[] = [
   { label: "Dashboard", path: "/admin/dashboard", icon: <FiHome /> },
-  { label: "Users", path: "/admin/users", icon: <FiUsers /> },
-  { label: "Session Management", path: "/admin/session", icon: <FiLock /> },
   { label: "Logs", path: "/admin/logs", icon: <FiBarChart2 /> },
+  { label: "Session Management", path: "/admin/session", icon: <FiLock /> },
+  { label: "Users", path: "/admin/users", icon: <FiUsers /> },
 ];
 
 // RBAC groups
@@ -16,20 +16,32 @@ export const rbacGroups: Group[] = [
     icon: <FiKey />,
     key: "rbac",
     items: [
-      { label: "Roles", path: "/admin/roles", resource: "Role" },
-      { label: "Role Permissions", path: "/admin/role-permissions", resource: "RolePermission" },
-      { label: "Permissions", path: "/admin/permissions", resource: "Permission" },
-      { label: "Operations", path: "/admin/operations", resource: "Operation" },
       { label: "Assets", path: "/admin/assets", resource: "Asset" },
       { label: "Asset Instances", path: "/admin/asset-instances", resource: "AssetInstance" },
-      { label: "User Roles", path: "/admin/user-roles", resource: "UserRole" },
+      { label: "Operations", path: "/admin/operations", resource: "Operation" },
+      { label: "Permissions", path: "/admin/permissions", resource: "Permission" },
+      { label: "Role Permissions", path: "/admin/role-permissions", resource: "RolePermission" },
+      { label: "Roles", path: "/admin/roles", resource: "Role" },
       { label: "User Asset Instances", path: "/admin/user-asset-instances", resource: "UserAssetInstance" },
+      { label: "User Roles", path: "/admin/user-roles", resource: "UserRole" },
     ],
   },
 ];
 
 // Frameworks groups
 export const frameworks: Group[] = [
+  {
+    title: "SFIA",
+    icon: <FiBarChart2 />,
+    key: "sfia",
+    items: [
+      { label: "Categories", path: "/admin/sfia/category", resource: "Category" },
+      { label: "Descriptions", path: "/admin/sfia/description", resource: "Description" },
+      { label: "Levels", path: "/admin/sfia/level", resource: "Level" },
+      { label: "Skills", path: "/admin/sfia/skill", resource: "Skill" },
+      { label: "SubCategories", path: "/admin/sfia/subcategory", resource: "Subcategory" },
+    ],
+  },
   {
     title: "TPQI",
     icon: <FiCopy />,
@@ -46,24 +58,14 @@ export const frameworks: Group[] = [
       { label: "Occupational", path: "/admin/tpqi/occupational", resource: "Occupational" },
       { label: "Sector", path: "/admin/tpqi/sector", resource: "Sector" },
       { label: "Skill", path: "/admin/tpqi/skill", resource: "Skill" },
+      { label: "TPQI Summary", path: "/admin/tpqi/tpqisummary", resource: "TPQISummary" },
       { label: "Unit Code", path: "/admin/tpqi/unitcode", resource: "UnitCode" },
+      { label: "Unit Knowledge", path: "/admin/tpqi/unitknowledge", resource: "UnitKnowledge" },
       { label: "Unit Occupational", path: "/admin/tpqi/unitoccupational", resource: "UnitOccupational" },
       { label: "Unit Sector", path: "/admin/tpqi/unitsector", resource: "UnitSector" },
+      { label: "Unit Skill", path: "/admin/tpqi/unitskill", resource: "UnitSkill" },
       { label: "User Knowledge", path: "/admin/tpqi/userknowledge", resource: "UserKnowledge" },
       { label: "User Skill", path: "/admin/tpqi/userskill", resource: "UserSkill" },
-      { label: "TPQI Summary", path: "/admin/tpqi/tpqisummary", resource: "TPQISummary" }
-    ],
-  },
-  {
-    title: "SFIA",
-    icon: <FiBarChart2 />,
-    key: "sfia",
-    items: [
-      { label: "Skills", path: "/admin/sfia/skill", resource: "Skill" },
-      { label: "Levels", path: "/admin/sfia/level", resource: "Level" },
-      { label: "Categories", path: "/admin/sfia/category", resource: "Category" },
-      { label: "SubCategories", path: "/admin/sfia/subcategory", resource: "Subcategory" },
-      { label: "Descriptions", path: "/admin/sfia/description", resource: "Description" },
     ],
   },
 ];

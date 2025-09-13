@@ -40,8 +40,11 @@ export const adminRoutes: RouteItem[] = [
   { path: "/tpqi/unitoccupational", element: <ExportPages.UnitOccupationalPage />, resource: "UnitOccupational" },
   { path: "/tpqi/unitsector", element: <ExportPages.UnitSectorPage />, resource: "UnitSector" },
   { path: "/tpqi/userskill", element: <ExportPages.UserSkillPage />, resource: "UserSkill" },
-  { path: "/tpqi/userknowledge", element: <ExportPages.UserKnowledge />, resource: "UserKnowledge" },
+  { path: "/tpqi/userknowledge", element: <ExportPages.UserKnowledgePage />, resource: "UserKnowledge" },
   { path: "/tpqi/tpqisummary", element: <ExportPages.TpqiSummaryPage />, resource: "TPQISummary" },
+  { path: "/tpqi/unitskill", element: <ExportPages.UnitSkillPage />, resource: "UnitSkill" },
+  { path: "/tpqi/unitknowledge", element: <ExportPages.UnitKnowledgePage />, resource: "UnitKnowledge" },
+
 
   // Assets
   { path: "/assets", element: <ExportPages.AssetPage />, resource: "Asset" },

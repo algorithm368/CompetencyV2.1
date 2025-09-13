@@ -2,35 +2,28 @@ import { useEffect, useMemo, useState } from "react";
 import { FiPlus, FiSearch, FiSettings } from "react-icons/fi";
 import { AdminLayout } from "@Layouts/AdminLayout";
 import { RowActions, Button, Input, Toast, DataTable } from "@Components/Common/ExportComponent";
-
-import { useUnitOccupationalManager } from "@Hooks/admin/tpqi/useUnitOccupationalHooks";
+import { useUnitSkillManager } from "@Hooks/admin/tpqi/useUnitSkillHooks";
 import {
-    UnitOccupationalView,
-    CreateucOccupationalDto,
-    UpdateucOccupationalDto,
-} from "@Types/tpqi/unitOccupationalTypes";
-import {
-    AddEditUnitOccupationalModal,
-    DeleteUnitOccupationalModal,
-} from "./UnitOccupationalModals";
+    UnitSkillView,
+    CreateUnitSkillDto,
+    UpdateUnitSkillDto,
+} from "@Types/tpqi/unitSkillTypes";
+import { AddEditUnitSkillModal, DeleteUnitSkillModal } from "./UnitSkillModals";
 
-export default function UnitOccupationalPage() {
-
+export default function UnitSkillPage() {
     const [searchText, setSearchText] = useState<string>("");
     const [debouncedSearchText, setDebouncedSearchText] = useState<string>("");
     const [modalType, setModalType] = useState<"add" | "edit" | "delete" | null>(null);
-    const [selectedRow, setSelectedRow] = useState<UnitOccupationalView | null>(null);
+    const [selectedRow, setSelectedRow] = useState<UnitSkillView | null>(null);
     const [page, setPage] = useState(1);
     const perPage = 10;
     const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
 
-    // debounce search
     useEffect(() => {
         const t = setTimeout(() => setDebouncedSearchText(searchText), 500);
         return () => clearTimeout(t);
     }, [searchText]);
 
-    // reset page on search change
     useEffect(() => setPage(1), [debouncedSearchText]);
 
     const handleToast = (message: string, type: "success" | "error" | "info" = "info") =>
@@ -38,40 +31,38 @@ export default function UnitOccupationalPage() {
 
     const {
         fetchPage,
-        unitOccupationalsQuery,
-        createUnitOccupational,
-        updateUnitOccupational,
-        deleteUnitOccupational,
-    } = useUnitOccupationalManager({ search: debouncedSearchText, page, perPage }, handleToast);
+        unitSkillsQuery,
+        createUnitSkill,
+        updateUnitSkill,
+        deleteUnitSkill,
+    } = useUnitSkillManager({ search: debouncedSearchText, page, perPage }, handleToast);
 
-    // modal controls
     const openAdd = () => { setSelectedRow(null); setModalType("add"); };
-    const openEdit = (row: UnitOccupationalView) => { setSelectedRow(row); setModalType("edit"); };
-    const openDelete = (row: UnitOccupationalView) => { setSelectedRow(row); setModalType("delete"); };
+    const openEdit = (row: UnitSkillView) => { setSelectedRow(row); setModalType("edit"); };
+    const openDelete = (row: UnitSkillView) => { setSelectedRow(row); setModalType("delete"); };
     const closeModal = () => { setModalType(null); setSelectedRow(null); };
 
-    // confirms
-    const confirmAdd = (unitCodeId: number | null, occupationalId: number | null) => {
-        const dto: CreateucOccupationalDto = {
+    const confirmAdd = (unitCodeId: number | null, skillId: number | null) => {
+        const dto: CreateUnitSkillDto = {
             unitCodeId: unitCodeId!,
-            occupationalId: occupationalId!,
+            skillId: skillId!,
         };
 
-        createUnitOccupational.mutate(dto, {
-            onSuccess: () => { handleToast("Created successfully", "success"); closeModal(); unitOccupationalsQuery.refetch(); },
+        createUnitSkill.mutate(dto, {
+            onSuccess: () => { handleToast("Created successfully", "success"); closeModal(); unitSkillsQuery.refetch(); },
             onError: (err: any) => handleToast(`Failed to create: ${err?.message || ""}`, "error"),
         });
     };
 
-    const confirmEdit = (unitCode: number | null, occupationalId: number | null) => {
+    const confirmEdit = (unitCodeId: number | null, skillId: number | null) => {
         if (!selectedRow) return;
-        const dto: UpdateucOccupationalDto = {
-            unitCodeId: unitCode!,
-            occupationalId: occupationalId!,
+        const dto: UpdateUnitSkillDto = {
+            unitCodeId: unitCodeId!,
+            skillId: skillId!,
         };
 
-        updateUnitOccupational.mutate({ id: selectedRow.id, data: dto }, {
-            onSuccess: () => { handleToast("Updated successfully", "success"); closeModal(); unitOccupationalsQuery.refetch(); },
+        updateUnitSkill.mutate({ id: selectedRow.id, data: dto }, {
+            onSuccess: () => { handleToast("Updated successfully", "success"); closeModal(); unitSkillsQuery.refetch(); },
             onError: (err: any) => handleToast(`Failed to update: ${err?.message || ""}`, "error"),
         });
     };
@@ -79,41 +70,40 @@ export default function UnitOccupationalPage() {
     const confirmDelete = () => {
         if (!selectedRow) return;
 
-        deleteUnitOccupational.mutate(selectedRow.id, {
-            onSuccess: () => { handleToast("Deleted successfully", "success"); closeModal(); unitOccupationalsQuery.refetch(); },
+        deleteUnitSkill.mutate(selectedRow.id, {
+            onSuccess: () => { handleToast("Deleted successfully", "success"); closeModal(); unitSkillsQuery.refetch(); },
             onError: (err: any) => handleToast(`Failed to delete: ${err?.message || ""}`, "error"),
         });
     };
 
-    // columns — use your exact nested keys: unitcode (lowercase), occupational
     const columns = useMemo(
         () => [
             {
                 accessorKey: "id",
                 header: "ID",
-                cell: ({ row }: { row: { original: UnitOccupationalView } }) => (
+                cell: ({ row }: { row: { original: UnitSkillView } }) => (
                     <span className="font-mono text-sm">{row.original.id}</span>
                 ),
             },
             {
                 accessorKey: "unitCode.code",
                 header: "Unit Code",
-                cell: ({ row }: { row: { original: UnitOccupationalView } }) =>
-                    row.original.unitCode?.code ?? "—",
+                cell: ({ row }: { row: { original: UnitSkillView } }) =>
+                    row.original.UnitCode?.code ?? "—",
             },
             {
                 accessorKey: "unitCode.name",
                 header: "Unit Name",
-                cell: ({ row }: { row: { original: UnitOccupationalView } }) =>
-                    row.original.unitCode?.name ?? "—",
+                cell: ({ row }: { row: { original: UnitSkillView } }) =>
+                    row.original.UnitCode?.name ?? "—",
             },
             {
-                accessorKey: "occupational.name",
-                header: "Occupational",
-                cell: ({ row }: { row: { original: UnitOccupationalView } }) => (
+                accessorKey: "skill.name",
+                header: "Skill",
+                cell: ({ row }: { row: { original: UnitSkillView } }) => (
                     <div className="max-w-xs">
-                        <span className="text-sm" title={row.original.occupational?.name || "—"}>
-                            {row.original.occupational?.name ?? "—"}
+                        <span className="text-sm" title={row.original.Skill?.name || "—"}>
+                            {row.original.Skill?.name ?? "—"}
                         </span>
                     </div>
                 ),
@@ -125,7 +115,7 @@ export default function UnitOccupationalPage() {
                         <FiSettings className="w-4 h-4" />
                     </span>
                 ),
-                cell: ({ row }: { row: { original: UnitOccupationalView } }) => (
+                cell: ({ row }: { row: { original: UnitSkillView } }) => (
                     <div className="flex justify-end">
                         <RowActions onEdit={() => openEdit(row.original)} onDelete={() => openDelete(row.original)} />
                     </div>
@@ -140,8 +130,8 @@ export default function UnitOccupationalPage() {
             <div className="flex flex-col gap-4 mb-6">
                 <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-start">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900 font-Poppins">Unit & Occupational</h1>
-                        <p className="mt-1 text-sm text-gray-600">Map unit codes to occupational roles</p>
+                        <h1 className="text-3xl font-bold text-gray-900 font-Poppins">Unit & Skill</h1>
+                        <p className="mt-1 text-sm text-gray-600">Map unit codes to skills</p>
                     </div>
                     <div className="flex flex-col gap-3 sm:items-end">
                         <Button
@@ -150,12 +140,12 @@ export default function UnitOccupationalPage() {
                             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
                         >
                             <FiPlus className="w-4 h-4" />
-                            Add Unit–Occupational
+                            Add Unit–Skill
                         </Button>
                         <div className="relative w-full sm:w-80">
                             <Input
                                 type="text"
-                                placeholder="Search by unit code/name or occupational..."
+                                placeholder="Search by unit code/name or skill..."
                                 className="w-full py-2 pl-10 pr-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 value={searchText}
                                 onChange={(e) => setSearchText(e.target.value)}
@@ -166,7 +156,7 @@ export default function UnitOccupationalPage() {
                 </div>
             </div>
 
-            <DataTable<UnitOccupationalView>
+            <DataTable<UnitSkillView>
                 key={debouncedSearchText}
                 resetTrigger={debouncedSearchText}
                 fetchPage={fetchPage}
@@ -176,29 +166,28 @@ export default function UnitOccupationalPage() {
                 onPageChange={(newPageIndex) => setPage(newPageIndex + 1)}
             />
 
-
-            <AddEditUnitOccupationalModal
+            <AddEditUnitSkillModal
                 isOpen={modalType === "add" || modalType === "edit"}
                 mode={modalType === "edit" ? "edit" : "add"}
                 initialUnitCode={selectedRow?.unitCodeId ?? null}
-                initialOccupationalId={selectedRow?.occupationalId ?? null}
+                initialSkillId={selectedRow?.skillId ?? null}
                 onClose={closeModal}
-                onConfirm={(unitCode, occupationalId) =>
-                    modalType === "add" ? confirmAdd(unitCode, occupationalId) : confirmEdit(unitCode, occupationalId)
+                onConfirm={(unitCode, skillId) =>
+                    modalType === "add" ? confirmAdd(unitCode, skillId) : confirmEdit(unitCode, skillId)
                 }
-                isLoading={createUnitOccupational.status === "pending" || updateUnitOccupational.status === "pending"}
+                isLoading={createUnitSkill.status === "pending" || updateUnitSkill.status === "pending"}
             />
 
-            <DeleteUnitOccupationalModal
+            <DeleteUnitSkillModal
                 isOpen={modalType === "delete"}
                 label={
                     selectedRow
-                        ? `${selectedRow.unitCode?.code ?? ""} ${selectedRow.unitCode?.name ?? ""} ↔ ${selectedRow.occupational?.name ?? "Unknown"}`
+                        ? `${selectedRow.UnitCode?.code ?? ""} ${selectedRow.UnitCode?.name ?? ""} ↔ ${selectedRow.Skill?.name ?? "Unknown"}`
                         : undefined
                 }
                 onClose={closeModal}
                 onConfirm={confirmDelete}
-                isLoading={deleteUnitOccupational.status === "pending"}
+                isLoading={deleteUnitSkill.status === "pending"}
             />
 
             {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}

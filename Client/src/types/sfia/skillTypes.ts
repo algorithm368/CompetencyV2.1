@@ -1,5 +1,5 @@
 export interface Skill {
-  code: string;               // ACIN, DESN, etc.
+  code: string;
   name: string | null;
   overview: string | null;
   note: string | null;
@@ -24,11 +24,6 @@ export interface SkillPageResult {
   total?: number;
 }
 
-export type CreateSkillDto = Omit<Skill, "subSkills"> & {
-  // For create: no id on subskills
-  subSkills?: Omit<SubSkill, "id">[];
-};
+export type CreateSkillDto = Omit<Skill, "code">;
 
-export type UpdateSkillDto = Partial<Omit<Skill, "subSkills">> & {
-  subSkills?: (Omit<SubSkill, "id"> | SubSkill)[];
-};
+export type UpdateSkillDto = Partial<Skill>;

@@ -1,20 +1,20 @@
 version: "3.9"
 
 services:
-  db:
-    image: mysql:8.1
-    container_name: competency_mysql_db
-    restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: root123
-      MYSQL_USER: admin
-      MYSQL_PASSWORD: admin123
-      MYSQL_DATABASE: competency
-    ports:
-      - "3306:3306"
-    volumes:
-      - db_data:/var/lib/mysql
-      - ./init-db:/docker-entrypoint-initdb.d
+  # db:
+  #   image: mysql:8.1
+  #   container_name: competency_mysql_db
+  #   restart: unless-stopped
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: root123
+  #     MYSQL_USER: admin
+  #     MYSQL_PASSWORD: admin123
+  #     MYSQL_DATABASE: competency
+  #   ports:
+  #     - "3306:3306"
+  #   volumes:
+  #     - db_data:/var/lib/mysql
+  #     - ./init-db:/docker-entrypoint-initdb.d
 
   server:
     build:

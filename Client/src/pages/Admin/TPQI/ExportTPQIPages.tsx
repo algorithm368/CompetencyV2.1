@@ -1,6 +1,16 @@
-export { default as CareerPage } from "./Career/CareerPage";
 export { default as SkillPage } from "./Skill/SkillPage";
 export { default as SectorPage } from "./Sector/SectorPage";
 export { default as OccupationalPage } from "./Occupational/OccupationalPage";
 export { default as KnowledgePage } from "./Knowledge/KnowledgePage";
 export { default as UnitCodePage } from "./UnitCode/UnitCodePage";
+export { default as CareerPage } from "./Career/CareerPage";
+export { default as CareerLevelPage } from "./CareerLevel/CareerLevelPage";
+export { default as TPQILevelPage } from "./Level/LevelPage";
+export { default as ClKnowledgePage } from "./CLKnowledge/CLKnowledgePage";
+export { default as ClDetailPage } from "./CLDetail/CLDetailPage";
+export { default as ClSkillPage } from "./CLSkill/CLSkillPage";
+export { default as ClUnitCodePage } from "./CLUnitCode/CLUnitCodePage";
+export { default as UnitOccupationalPage } from "./UnitOccupational/UnitOccupationalPage";
+export { default as UnitSectorPage } from "./UnitSector/UnitSectorPage"
+export { default as UserSkillPage } from "./UserSkill/UserSkillPage"
+export { default as UserKnowledge } from "./UserKnowledge/UserKnowledgePage"

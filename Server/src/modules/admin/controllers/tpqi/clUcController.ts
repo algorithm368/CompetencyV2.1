@@ -6,8 +6,12 @@ const service = new ClUcService();
 export class ClUcController {
   static async getAll(req: Request, res: Response, next: NextFunction) {
     try {
-      const items = await service.getAll();
-      res.json(items);
+      const search = typeof req.query.search === "string" ? req.query.search : undefined;
+      const page = req.query.page ? parseInt(String(req.query.page), 10) : 1;
+      const perPage = req.query.perPage ? parseInt(String(req.query.perPage), 10) : 10;
+
+      const result = await service.getAll(search, page, perPage);
+      res.json(result);
     } catch (err) {
       next(err);
     }

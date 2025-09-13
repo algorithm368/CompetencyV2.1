@@ -8,5 +8,7 @@ export interface CareerPageResult {
   total?: number;
 }
 
+
 export type CreateCareerDto = Omit<Career, "id">;
-export type UpdateCareerDto = Partial<Omit<CreateCareerDto, "id">>;
+export type UpdateCareerDto = Partial<CreateCareerDto>;
+

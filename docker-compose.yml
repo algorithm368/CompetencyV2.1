@@ -1,20 +1,20 @@
 version: "3.9"
 
 services:
-  db:
-    image: mysql:8.1
-    container_name: competency_mysql_db
-    restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: root123
-      MYSQL_USER: admin
-      MYSQL_PASSWORD: admin123
-      MYSQL_DATABASE: competency
-    ports:
-      - "3306:3306"
-    volumes:
-      - db_data:/var/lib/mysql
-      - ./init-db:/docker-entrypoint-initdb.d
+  # db:
+  #   image: mysql:8.1
+  #   container_name: competency_mysql_db
+  #   restart: unless-stopped
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: root123
+  #     MYSQL_USER: admin
+  #     MYSQL_PASSWORD: admin123
+  #     MYSQL_DATABASE: competency
+  #   ports:
+  #     - "3306:3306"
+  #   volumes:
+  #     - db_data:/var/lib/mysql
+  #     - ./init-db:/docker-entrypoint-initdb.d
 
   server:
     build:
@@ -24,12 +24,10 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
-    depends_on:
-      - db
     environment:
-      DATABASE_URL_COMPETENCY: "mysql://admin:admin123@db:3306/competency"
-      DATABASE_URL_SFIA: "mysql://admin:admin123@db:3306/sfia"
-      DATABASE_URL_TPQI: "mysql://admin:admin123@db:3306/TPQI_DB"
+      DATABASE_URL_COMPETENCY: "mysql://admin:aeefdb69fb2151f82a2a7b5b5e3b3e39@competency.cbmywc2myutn.ap-southeast-1.rds.amazonaws.com:3306/competency"
+      DATABASE_URL_SFIA: "mysql://admin:aeefdb69fb2151f82a2a7b5b5e3b3e39@competency.cbmywc2myutn.ap-southeast-1.rds.amazonaws.com:3306/sfia"
+      DATABASE_URL_TPQI: "mysql://admin:aeefdb69fb2151f82a2a7b5b5e3b3e39@competency.cbmywc2myutn.ap-southeast-1.rds.amazonaws.com:3306/TPQI_DB"
       PORT: 3000
       GOOGLE_CLIENT_ID: "170385751378-bbtp2rf09iorhsustgqors4r1tc7hf6n.apps.googleusercontent.com"
       JWT_ACCESS_SECRET_KEY: "b+fFxP/O/eR5P8ASLRATbTCA5cEfl/iabv04pZKlAKnN0crh0sLmDm2W4O93xJx2a+zflBenaHIx1bLv1tchSA=="

@@ -86,6 +86,7 @@ model Knowledge {
   id                   Int                    @id @default(autoincrement())
   name                 String                 @db.VarChar(255)
   careerLevelKnowledge CareerLevelKnowledge[]
+  UnitKnowledge        UnitKnowledge[]
   userKnowledge        UserKnowledge[]
 }
 
@@ -93,6 +94,7 @@ model Skill {
   id                Int                @id @default(autoincrement())
   name              String             @db.VarChar(255)
   careerLevelSkills CareerLevelSkill[]
+  UnitSkill         UnitSkill[]
   userSkills        UserSkill[]
 }
 
@@ -186,21 +188,25 @@ model TpqiSummary {
 }
 
 model UnitKnowledge {
-  id          Int      @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   unitCodeId  Int
   knowledgeId Int
-  UnitCode    UnitCode @relation(fields: [unitCodeId], references: [id], map: "UserUnitKnowledge_unitCodeId_fkey")
+  Knowledge   Knowledge @relation(fields: [knowledgeId], references: [id], onDelete: Cascade, map: "FK_UserUnitKnowledge_Knowledge")
+  UnitCode    UnitCode  @relation(fields: [unitCodeId], references: [id], map: "UserUnitKnowledge_unitCodeId_fkey")
 
   @@index([unitCodeId], map: "UserUnitKnowledge_unitCodeId_fkey")
+  @@index([knowledgeId], map: "FK_UserUnitKnowledge_Knowledge")
 }
 
 model UnitSkill {
   id         Int      @id @default(autoincrement())
   unitCodeId Int
   skillId    Int
+  Skill      Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade, map: "FK_UserUnitSkill_Skill")
   UnitCode   UnitCode @relation(fields: [unitCodeId], references: [id], map: "UserUnitSkill_unitCodeId_fkey")
 
   @@index([unitCodeId], map: "UserUnitSkill_unitCodeId_fkey")
+  @@index([skillId], map: "FK_UserUnitSkill_Skill")
 }
 
 enum ApprovalStatus {

@@ -107,16 +107,16 @@ export class UserSkillRepo extends BaseRepository<UserSkill, "id"> {
   }
 }
 
-// UserUnitKnowledge Repository
+// UnitKnowledge Repository
 export class UnitKnowledgeRepo extends BaseRepository<UnitKnowledge, "id"> {
-  constructor(manager: DatabaseManagement<any> = TPQI.userUnitKnowledge, pkField: "id" = "id") {
+  constructor(manager: DatabaseManagement<any> = TPQI.unitKnowledge, pkField: "id" = "id") {
     super(manager, pkField);
   }
 }
 
-// UserUnitSkill Repository
+// UnitSkill Repository
 export class UnitSkillRepo extends BaseRepository<UnitSkill, "id"> {
-  constructor(manager: DatabaseManagement<any> = TPQI.userUnitSkill, pkField: "id" = "id") {
+  constructor(manager: DatabaseManagement<any> = TPQI.unitSkill, pkField: "id" = "id") {
     super(manager, pkField);
   }
 }

@@ -14,3 +14,4 @@ export { default as UnitOccupationalPage } from "./UnitOccupational/UnitOccupati
 export { default as UnitSectorPage } from "./UnitSector/UnitSectorPage"
 export { default as UserSkillPage } from "./UserSkill/UserSkillPage"
 export { default as UserKnowledge } from "./UserKnowledge/UserKnowledgePage"
+export { default as TpqiSummaryPage } from "./TPQISummary/TpqiSummaryPage" 

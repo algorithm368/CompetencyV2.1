@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { FiSearch } from "react-icons/fi";
 import { AdminLayout } from "@Layouts/AdminLayout";
 import { Input, DataTable, Toast } from "@Components/Common/ExportComponent";
-import { useTPQISummaryManager } from "@Hooks/admin/tpqi/useTpqiSummaryHooks";
+import { useTPQISummaryManager } from "@Hooks/admin/tpqi/useTPQISummaryHooks";
 import { TPQISummary } from "@Types/tpqi/tpqiSummaryTypes";
 
 export default function TpqiSummaryPage() {

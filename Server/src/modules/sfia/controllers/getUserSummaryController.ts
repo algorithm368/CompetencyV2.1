@@ -7,11 +7,7 @@ import { AuthenticatedRequest } from "../../../middlewares/authMiddleware";
  * Returns all skill summaries with statistical information.
  *
  */
-export const getUserSummaryController = async (
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
-) => {
+export const getUserSummaryController = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
     // Validate user authentication
     if (!req.user?.userId) {
@@ -24,6 +20,7 @@ export const getUserSummaryController = async (
 
     // Use the authenticated user's ID
     const summaryData = await getUserSummaryByUserId(req.user.userId);
+    console.log(summaryData);
 
     if (!summaryData) {
       res.status(404).json({

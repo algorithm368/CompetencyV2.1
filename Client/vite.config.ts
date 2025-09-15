@@ -46,7 +46,10 @@ export default defineConfig({
     },
   },
   server: {
-    allowedHosts: ["client_app"],
+    allowedHosts: [
+      "client_app",
+      "ec2-47-130-154-67.ap-southeast-1.compute.amazonaws.com",
+    ],
     host: "0.0.0.0",
     port: 5173,
   },
@@ -57,11 +60,10 @@ export default defineConfig({
       "127.0.0.1",
       "nginx",
       "172.19.0.4",
+      "ec2-47-130-154-67.ap-southeast-1.compute.amazonaws.com",
     ],
   },
-  define: {
-    "process.env": {},
-  },
+
   test: {
     globals: true,
     environment: "jsdom",

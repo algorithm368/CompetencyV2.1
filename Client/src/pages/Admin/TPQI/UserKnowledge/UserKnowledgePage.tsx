@@ -3,10 +3,8 @@ import { FiSearch, FiSettings } from "react-icons/fi";
 import { AdminLayout } from "@Layouts/AdminLayout";
 import { RowActions, Input, Toast, DataTable } from "@Components/Common/ExportComponent";
 import { useUserKnowledgeManager } from "@Hooks/admin/tpqi/useUserKnowledgeHooks";
-import { UserKnowledge, UpdateUserKnowledgeDto } from "@Types/tpqi/userKnowledgeTypes";
+import { KnowledgeApprovalStatus, UserKnowledge, UpdateUserKnowledgeDto } from "@Types/tpqi/userKnowledgeTypes";
 import { EditUserKnowledgeStatusModal } from "./UserKnowledgeModals";
-
-type Approval = "APPROVED" | "NOT_APPROVED";
 
 export default function UserKnowledgePage() {
     const [searchText, setSearchText] = useState<string>("");
@@ -45,8 +43,9 @@ export default function UserKnowledgePage() {
         setSelectedRow(null);
     };
 
-    const confirmUpdateStatus = async (status: Approval | null) => {
+    const confirmUpdateStatus = async (status: KnowledgeApprovalStatus | null) => {
         if (!selectedRow) return;
+
         const dto: UpdateUserKnowledgeDto = { approvalStatus: status ?? undefined } as UpdateUserKnowledgeDto;
 
         try {
@@ -74,17 +73,35 @@ export default function UserKnowledgePage() {
                 cell: ({ row }: { row: { original: UserKnowledge } }) => row.original.userId ?? "—",
             },
             {
-                accessorKey: "evidenceUrl", header: "Evidence URL",
-                cell: ({ row }: { row: { original: UserKnowledge } }) => row.original.evidenceUrl ?? "—",
+                accessorKey: "evidenceUrl",
+                header: "Evidence",
+                cell: ({ row }: { row: { original: UserKnowledge } }) => {
+                    const url = row.original.evidenceUrl;
+                    if (!url) return "—";
+                    return (
+                        <a
+                            href={url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-blue-600 hover:underline max-w-[260px] block truncate"
+                            title={url}
+                        >
+                            {url}
+                        </a>
+                    );
+                },
             },
             {
-                accessorKey: "approvalStatus", header: "Status",
+                accessorKey: "approvalStatus",
+                header: "Status",
                 cell: ({ row }: { row: { original: UserKnowledge } }) => {
-                    const status = (row.original.approvalStatus ?? "—") as Approval | "—";
+                    const status = row.original.approvalStatus ?? "—";
                     const base = "inline-flex items-center px-2 py-1 text-xs font-medium rounded-full";
                     const color =
-                        status === "APPROVED" ? " bg-green-100 text-green-800"
-                            : status === "NOT_APPROVED" ? " bg-red-100 text-red-800"
+                        status === KnowledgeApprovalStatus.APPROVED
+                            ? " bg-green-100 text-green-800"
+                            : status === KnowledgeApprovalStatus.NOT_APPROVED
+                                ? " bg-red-100 text-red-800"
                                 : " bg-gray-100 text-gray-800";
                     return <span className={base + color}>{status}</span>;
                 },

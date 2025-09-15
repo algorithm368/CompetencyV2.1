@@ -1,9 +1,14 @@
+export enum KnowledgeApprovalStatus {
+  APPROVED = "APPROVED",
+  NOT_APPROVED = "NOT_APPROVED",
+}
+
 export interface UserKnowledge {
     id: number;
     knowledgeId: number;
     userId: number;
     evidenceUrl: string | null;
-    approvalStatus: string | null
+    approvalStatus: KnowledgeApprovalStatus
 }
 
 export interface UserKnowledgePageResult {

@@ -13,7 +13,9 @@ model Category {
   name          String?      @db.Text
   subcategoryId Int?
   subcategory   Subcategory? @relation(fields: [subcategoryId], references: [id])
-  skills        Skill[]     
+  skills        Skill[]
+
+  @@index([subcategoryId], map: "Category_subcategoryId_fkey")
 }
 
 model Subcategory {
@@ -21,73 +23,98 @@ model Subcategory {
   name       String?    @db.Text
   categories Category[]
 }
-model Skill { 
-  code        String      @id @db.VarChar(255)
-  name        String?     @db.VarChar(255)
-  overview    String?     @db.Text
-  note        String?     @db.Text
-  levelId     Int?
-  categoryId  Int?
-  category    Category?   @relation(fields: [categoryId], references: [id])
-  levels      Level[]
-  summaries   SfiaSummary[]
-  subSkills   SubSkill[] 
+
+model Skill {
+  code       String        @id @db.VarChar(255)
+  name       String?       @db.VarChar(255)
+  overview   String?       @db.Text
+  note       String?       @db.Text
+  levelId    Int?
+  categoryId Int?
+  levels     Level[]
+  summaries  SfiaSummary[]
+  category   Category?     @relation(fields: [categoryId], references: [id])
+  subSkills  SubSkill[]
+
+  @@index([categoryId], map: "Skill_categoryId_fkey")
 }
 
 model Level {
-  id          Int          @id @default(autoincrement())
-  name        String?      @db.VarChar(255)
-  skillCode   String?
-  skill       Skill?       @relation(fields: [skillCode], references: [code])
+  id           Int           @id @default(autoincrement())
+  name         String?       @db.VarChar(255)
+  skillCode    String?
   descriptions Description[]
-  summaries   SfiaSummary[]
+  skill        Skill?        @relation(fields: [skillCode], references: [code])
+  summaries    SfiaSummary[]
+
+  @@index([skillCode], map: "Level_skillCode_fkey")
 }
 
 model Description {
-  id          Int          @id @default(autoincrement())
-  text        String?      @db.Text
-  levelId     Int?
-  level       Level?       @relation(fields: [levelId], references: [id])
-  subSkills   SubSkill[]
+  id        Int        @id @default(autoincrement())
+  text      String?    @db.Text
+  levelId   Int?
+  level     Level?     @relation(fields: [levelId], references: [id])
+  subSkills SubSkill[]
+
+  @@index([levelId], map: "Description_levelId_fkey")
 }
 
-model SubSkill {  
+model SubSkill {
   id            Int           @id @default(autoincrement())
-  skillCode     String        @db.VarChar(255)
+  skillCode     String
   descriptionId Int
   text          String?       @db.Text
-  skill         Skill         @relation(fields: [skillCode], references: [code])
-  description   Description   @relation(fields: [descriptionId], references: [id])
   informations  Information[]
+  description   Description   @relation(fields: [descriptionId], references: [id])
+  skill         Skill         @relation(fields: [skillCode], references: [code])
+
+  @@index([descriptionId], map: "SubSkill_descriptionId_fkey")
+  @@index([skillCode], map: "SubSkill_skillCode_fkey")
 }
 
 model Information {
-  id              Int                      @id @default(autoincrement())
-  text            String?                  @db.VarChar(255)
-  subSkillId      Int?
+  id               Int                       @id @default(autoincrement())
+  text             String?                   @db.VarChar(255)
+  subSkillId       Int?
   dataCollectionId Int?
-  createdAt       DateTime                 @default(now())
-  approvalStatus  InformationApprovalStatus @default(NOT_APPROVED)
-  evidenceUrl     String?                  @db.VarChar(1000)
+  createdAt        DateTime                  @default(now())
+  approvalStatus   InformationApprovalStatus @default(NOT_APPROVED)
+  evidenceUrl      String?                   @db.VarChar(1000)
+  dataCollection   DataCollection?           @relation(fields: [dataCollectionId], references: [id])
+  subSkill         SubSkill?                 @relation(fields: [subSkillId], references: [id])
 
-  subSkill        SubSkill?                 @relation(fields: [subSkillId], references: [id])
-  dataCollection  DataCollection?           @relation(fields: [dataCollectionId], references: [id])
+  @@index([dataCollectionId], map: "Information_dataCollectionId_fkey")
+  @@index([subSkillId], map: "Information_subSkillId_fkey")
 }
 
 model DataCollection {
-  id           Int          @id @default(autoincrement())
-  userId       String?      @db.Char(36)
+  id           Int           @id @default(autoincrement())
+  userId       String?       @db.Char(36)
   informations Information[]
 }
 
 model SfiaSummary {
-  id           Int       @id @default(autoincrement())
-  userEmail    String?   @db.VarChar(255)
+  id           Int      @id @default(autoincrement())
+  userId       String?  @db.VarChar(255)
   skillCode    String?
   levelId      Int?
-  skillPercent Decimal?  @db.Decimal(5,2)
-  skill        Skill?    @relation(fields: [skillCode], references: [code])
-  level        Level?    @relation(fields: [levelId], references: [id])
+  skillPercent Decimal? @db.Decimal(5, 2)
+  level        Level?   @relation(fields: [levelId], references: [id])
+  skill        Skill?   @relation(fields: [skillCode], references: [code])
+
+  @@index([levelId], map: "SfiaSummary_levelId_fkey")
+  @@index([skillCode], map: "SfiaSummary_skillCode_fkey")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model SubSkill_backup {
+  id            Int     @default(0)
+  skillCode     String
+  descriptionId Int
+  text          String? @db.Text
+
+  @@ignore
 }
 
 enum InformationApprovalStatus {

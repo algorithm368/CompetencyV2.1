@@ -71,29 +71,17 @@ export interface UserSummaryCollection {
  *   console.log('No skill summaries found for this user');
  * }
  */
-export async function getUserSummaryByUserId(
-  userId: string
-): Promise<UserSummaryCollection | null> {
+export async function getUserSummaryByUserId(userId: string): Promise<UserSummaryCollection | null> {
   try {
     // Validate input parameters
     if (!userId) {
       throw new Error("User ID is required parameter");
     }
 
-    // First, get the user's email from the competency database
-    const user = await prismaCompetency.user.findUnique({
-      where: { id: userId },
-      select: { email: true },
-    });
-
-    if (!user?.email) {
-      throw new Error(`User not found or email missing for userId: ${userId}`);
-    }
-
     // Query user summaries with all related information using the email
     const summaryData = await prismaSfia.sfiaSummary.findMany({
       where: {
-        userEmail: user.email, // Use the email from competency database
+        userId: userId,
       },
       include: {
         skill: {
@@ -123,22 +111,11 @@ export async function getUserSummaryByUserId(
     }));
 
     // Calculate statistics
-    const validPercentages = skillSummaries
-      .map((skill) => skill.skillPercent)
-      .filter((percent): percent is number => percent !== null);
+    const validPercentages = skillSummaries.map((skill) => skill.skillPercent).filter((percent): percent is number => percent !== null);
 
     const totalSkills = skillSummaries.length;
-    const averagePercent =
-      validPercentages.length > 0
-        ? Math.round(
-            (validPercentages.reduce((sum, percent) => sum + percent, 0) /
-              validPercentages.length) *
-              100
-          ) / 100
-        : 0;
-    const completedSkills = skillSummaries.filter(
-      (skill) => skill.skillPercent === 100
-    ).length;
+    const averagePercent = validPercentages.length > 0 ? Math.round((validPercentages.reduce((sum, percent) => sum + percent, 0) / validPercentages.length) * 100) / 100 : 0;
+    const completedSkills = skillSummaries.filter((skill) => skill.skillPercent === 100).length;
 
     return {
       skillSummaries,

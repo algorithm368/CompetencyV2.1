@@ -2,10 +2,7 @@ import { Response, NextFunction } from "express";
 import axios from "axios";
 import { URL } from "url";
 import { isIP } from "net";
-import {
-  createSubSkillEvidence,
-  CreateEvidenceRequest,
-} from "../services/postEvidenceServices";
+import { createSubSkillEvidence, CreateEvidenceRequest } from "../services/postEvidenceServices";
 import { AuthenticatedRequest } from "../../../middlewares/authMiddleware";
 
 /**
@@ -75,14 +72,7 @@ const isValidAndSafeUrl = (url: string): boolean => {
     }
 
     // Block common internal domain patterns
-    const internalPatterns = [
-      /\.local$/,
-      /\.internal$/,
-      /\.corp$/,
-      /\.lan$/,
-      /\.intranet$/,
-      /\.private$/,
-    ];
+    const internalPatterns = [/\.local$/, /\.internal$/, /\.corp$/, /\.lan$/, /\.intranet$/, /\.private$/];
 
     if (internalPatterns.some((pattern) => pattern.test(hostname))) {
       return false;
@@ -93,10 +83,7 @@ const isValidAndSafeUrl = (url: string): boolean => {
     if (port) {
       const portNum = parseInt(port, 10);
       // Block common internal service ports
-      const blockedPorts = [
-        22, 23, 25, 53, 135, 139, 445, 993, 995, 1433, 1521, 3306, 3389, 5432,
-        5984, 6379, 8080, 8443, 9200, 9300, 11211, 27017, 50070,
-      ];
+      const blockedPorts = [22, 23, 25, 53, 135, 139, 445, 993, 995, 1433, 1521, 3306, 3389, 5432, 5984, 6379, 8080, 8443, 9200, 9300, 11211, 27017, 50070];
       if (blockedPorts.includes(portNum)) {
         return false;
       }
@@ -163,11 +150,7 @@ const validateUrlFormatOnly = (url: string): boolean => {
   return isValidAndSafeUrl(url);
 };
 
-export const postEvidenceController = async (
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const postEvidenceController = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     // Validate user authentication
     if (!req.user?.userId) {

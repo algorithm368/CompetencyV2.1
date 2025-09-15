@@ -13,4 +13,7 @@ export { default as ClUnitCodePage } from "./CLUnitCode/CLUnitCodePage";
 export { default as UnitOccupationalPage } from "./UnitOccupational/UnitOccupationalPage";
 export { default as UnitSectorPage } from "./UnitSector/UnitSectorPage"
 export { default as UserSkillPage } from "./UserSkill/UserSkillPage"
-export { default as UserKnowledge } from "./UserKnowledge/UserKnowledgePage"
+export { default as UserKnowledgePage } from "./UserKnowledge/UserKnowledgePage"
+export { default as TpqiSummaryPage } from "./TPQISummary/TPQISummaryPage"
+export { default as UnitKnowledgePage } from "./UnitKnowledge/UnitKnowledgePage"
+export { default as UnitSkillPage } from "./UnitSkill/UnitSkillPage"

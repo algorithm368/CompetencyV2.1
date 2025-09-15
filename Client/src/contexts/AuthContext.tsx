@@ -1,6 +1,7 @@
 import React, { createContext, useState, ReactNode, useContext, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { GoogleLoginResponse, loginWithGoogle, logout as logoutService, getCurrentUser as fetchCurrentUserService, refreshAccessToken } from "@Services/competency/authService";
+import Modal from "@Components/Common/Modal/Modal";
 
 export interface AuthContextType {
   user: GoogleLoginResponse["user"] | null;
@@ -30,9 +31,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [tokenExpiresInText, setTokenExpiresInText] = useState<string>("");
   const expiresAtRef = useRef<number | null>(null);
   const [sessionExpired, setSessionExpired] = useState(false);
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
   const alreadyLoggedOutRef = useRef(false);
   const inactivityTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const INACTIVITY_LIMIT = 15 * 60 * 1000; // 15 นาที
+  const INACTIVITY_LIMIT = 15 * 60 * 1000;
+
+  // เพิ่ม state สำหรับจัดการ Modal
+  const [modal, setModal] = useState({
+    isOpen: false,
+    message: "",
+  });
 
   // Idle timeout
   const resetInactivityTimer = () => {
@@ -79,9 +87,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Auto logout on session expired
   useEffect(() => {
-    if (sessionExpired && !alreadyLoggedOutRef.current) {
+    if (sessionExpired && initialLoadDone && !alreadyLoggedOutRef.current) {
       alreadyLoggedOutRef.current = true;
-      alert("Session Expired. Please log in again.");
+      setModal({
+        isOpen: true,
+        message: "เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง",
+      });
       logout();
     }
   }, [sessionExpired]);
@@ -137,9 +148,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       resetInactivityTimer();
     } catch {
       setUser(null);
-      await logout();
     } finally {
       setLoading(false);
+      setInitialLoadDone(true);
     }
   };
 
@@ -185,7 +196,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       expiresAtRef.current = null;
       setSessionExpired(false);
 
-      if (fromInactivity) alert("You have been inactive. Automatically logged out.");
+      if (fromInactivity) {
+        setModal({
+          isOpen: true,
+          message: "คุณไม่มีการใช้งานเป็นเวลานาน ระบบได้ทำการออกจากระบบโดยอัตโนมัติ",
+        });
+      }
 
       navigate("/home", { replace: true });
     }
@@ -196,7 +212,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     [user, loading, csrfToken, tokenExpiresIn, tokenExpiresInText, sessionExpired]
   );
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+      {modal.isOpen && (
+        <Modal onClose={() => setModal({ isOpen: false, message: "" })} title="การแจ้งเตือน">
+          <p>{modal.message}</p>
+        </Modal>
+      )}
+    </AuthContext.Provider>
+  );
 };
 
 export default AuthContext;

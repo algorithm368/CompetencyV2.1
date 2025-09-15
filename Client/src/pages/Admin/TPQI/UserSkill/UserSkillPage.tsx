@@ -55,7 +55,7 @@ export default function UserSkillPage() {
       closeModal();
 
       await userSkillsQuery.refetch();
-      setRefreshTick((t) => t + 1); 
+      setRefreshTick((t) => t + 1);
     } catch (err: any) {
       handleToast(`Failed to update status: ${err?.message || ""}`, "error");
     }
@@ -63,29 +63,49 @@ export default function UserSkillPage() {
 
   const columns = useMemo(
     () => [
-      { accessorKey: "id", header: "ID",
+      {
+        accessorKey: "id", header: "ID",
         cell: ({ row }: { row: { original: UserSkill } }) => (
           <span className="font-mono text-sm">{row.original.id}</span>
         ),
       },
-      { accessorKey: "user.email", header: "User",
+      {
+        accessorKey: "user.email", header: "User",
         cell: ({ row }: { row: { original: UserSkill } }) => row.original.userId ?? "—",
       },
-      { accessorKey: "evidenceUrl", header: "evidence url",
-        cell: ({ row }: { row: { original: UserSkill } }) => row.original.evidenceUrl ?? "—",
+      {
+        accessorKey: "evidenceUrl",
+        header: "Evidence",
+        cell: ({ row }: { row: { original: UserSkill } }) => {
+          const url = row.original.evidenceUrl;
+          if (!url) return "—";
+          return (
+            <a
+              href={url}
+              target="_blank"
+              rel="noreferrer"
+              className="text-blue-600 hover:underline max-w-[260px] block truncate"
+              title={url}
+            >
+              {url}
+            </a>
+          );
+        },
       },
-      { accessorKey: "approvalStatus", header: "Status",
+      {
+        accessorKey: "approvalStatus", header: "Status",
         cell: ({ row }: { row: { original: UserSkill } }) => {
           const status = (row.original.approvalStatus ?? "—") as Approval | "—";
           const base = "inline-flex items-center px-2 py-1 text-xs font-medium rounded-full";
           const color =
             status === "APPROVED" ? " bg-green-100 text-green-800"
-            : status === "NOT_APPROVED" ? " bg-red-100 text-red-800"
-            : " bg-gray-100 text-gray-800";
+              : status === "NOT_APPROVED" ? " bg-red-100 text-red-800"
+                : " bg-gray-100 text-gray-800";
           return <span className={base + color}>{status}</span>;
         },
       },
-      { id: "actions", header: () => (
+      {
+        id: "actions", header: () => (
           <span className="flex justify-end"><FiSettings className="w-4 h-4" /></span>
         ),
         cell: ({ row }: { row: { original: UserSkill } }) => (
@@ -124,7 +144,7 @@ export default function UserSkillPage() {
       <div className="bg-white rounded-lg shadow">
         <DataTable<UserSkill>
           key={`${debouncedSearchText}-${refreshTick}`}
-          resetTrigger={`${debouncedSearchText}-${refreshTick}`} 
+          resetTrigger={`${debouncedSearchText}-${refreshTick}`}
           fetchPage={fetchPage}
           columns={columns}
           pageSizes={[5, 10, 20, 50]}

@@ -115,7 +115,10 @@ export default function CareerPage() {
     return (
         <AdminLayout>
             <div className="z-10 flex flex-col mb-3 sm:flex-row sm:justify-between sm:items-start">
-                <h1 className="mb-2 text-3xl font-Poppins sm:mb-0">Career List</h1>
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-900 font-Poppins">Career List</h1>
+                    <p className="mt-1 text-sm text-gray-600">Manage career</p>
+                </div>
                 <div className="flex flex-col items-end space-y-2">
                     <Button size="md" onClick={openAdd} className="flex items-center">
                         <FiPlus className="mr-2" /> Add Career

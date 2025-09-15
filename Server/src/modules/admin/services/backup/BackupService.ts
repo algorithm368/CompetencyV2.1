@@ -11,12 +11,19 @@ export class BackupService {
   private dbUser: string;
   private dbPass: string;
   private backupDir: string;
+  private mysqldumpPath: string;
 
   constructor(dbHost: string, dbUser: string, dbPass: string) {
     this.dbHost = dbHost;
     this.dbUser = dbUser;
     this.dbPass = dbPass;
-    this.backupDir = "/var/backups/competency";
+
+    // Dynamically resolve the backup directory
+    // This goes up 4 levels from `src/modules/admin/services/backup`
+    this.backupDir = path.join(__dirname, "..", "..", "..", "..", "backups");
+
+    // Dynamically check for mysqldump path on the system
+    this.mysqldumpPath = "mysqldump";
 
     if (!fs.existsSync(this.backupDir)) {
       fs.mkdirSync(this.backupDir, { recursive: true });
@@ -27,13 +34,8 @@ export class BackupService {
     const timestamp = new Date().toISOString().replace(/:/g, "-");
     const filename = `${dbName}_${timestamp}.sql`;
     const filepath = path.join(this.backupDir, filename);
-    const MYSQLDUMP_PATH = "/usr/bin/mysqldump";
 
-    console.log(`__dirname is: ${__dirname}`);
-    console.log(`Resolved backupDir is: ${this.backupDir}`);
-    console.log(`Final filepath is: ${filepath}`);
-
-    const command = `${MYSQLDUMP_PATH} --opt -h${this.dbHost} -u${this.dbUser} -p"${this.dbPass}" ${dbName} > "${filepath}"`;
+    const command = `${this.mysqldumpPath} --opt -h${this.dbHost} -u${this.dbUser} -p"${this.dbPass}" ${dbName} > "${filepath}"`;
 
     try {
       const { stderr } = await execPromise(command);
@@ -43,25 +45,25 @@ export class BackupService {
       console.log(`Successfully backed up ${dbName} to ${filepath}`);
       return filepath;
     } catch (error) {
-      console.error(`Error backing up ${dbName}: ${error}`);
+      console.error(`Error backing up ${dbName}:`, error);
       throw new Error(`Failed to back up database ${dbName}`);
     }
   }
+
   /**
    * Backs up a list of specified databases.
    * @param databases An array of database names to back up.
    * @returns A Promise that resolves with an array of filepaths for the backups.
    */
-
   public async backupSelectedDatabases(databases: string[]): Promise<string[]> {
     const backupPromises = databases.map((dbName) => this.backupDatabase(dbName));
     return Promise.all(backupPromises);
   }
+
   /**
    * Deletes a specific backup file.
    * @param filename The name of the file to delete.
    */
-
   public async deleteBackupFile(filename: string): Promise<void> {
     const filePath = path.join(this.backupDir, filename);
     try {

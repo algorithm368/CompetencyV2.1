@@ -178,13 +178,13 @@ export const postEvidenceController = async (
       return;
     }
 
-    const { subSkillId, evidenceText, evidenceUrl } = req.body;
+    const { subSkillId, evidenceUrl } = req.body;
 
-    // Validate required fields
-    if (!subSkillId || !evidenceText) {
+    // Validate required fields - ONLY subSkillId and evidenceUrl
+    if (!subSkillId || !evidenceUrl) {
       res.status(400).json({
         success: false,
-        message: "SubSkillId and evidenceText are required.",
+        message: "SubSkillId and evidenceUrl are required.",
       });
       return;
     }
@@ -199,85 +199,69 @@ export const postEvidenceController = async (
       return;
     }
 
-    // Validate evidenceText is not empty
-    if (typeof evidenceText !== "string" || evidenceText.trim() === "") {
+    // Validate evidenceUrl
+    if (typeof evidenceUrl !== "string") {
       res.status(400).json({
         success: false,
-        message: "Evidence text cannot be empty.",
+        message: "Evidence URL must be a string.",
       });
       return;
     }
 
-    // Validate evidenceText length
-    const trimmedEvidenceText = evidenceText.trim();
-    if (trimmedEvidenceText.length > 5000) {
+    const trimmedUrl = evidenceUrl.trim();
+    if (trimmedUrl === "") {
       res.status(400).json({
         success: false,
-        message: "Evidence text cannot exceed 5000 characters.",
+        message: "Evidence URL cannot be empty.",
       });
       return;
     }
 
-    // Validate evidenceUrl if provided
-    let validatedEvidenceUrl: string | undefined;
-    if (evidenceUrl) {
-      if (typeof evidenceUrl !== "string") {
-        res.status(400).json({
-          success: false,
-          message: "Evidence URL must be a string.",
-        });
-        return;
-      }
-
-      const trimmedUrl = evidenceUrl.trim();
-      if (trimmedUrl === "") {
-        res.status(400).json({
-          success: false,
-          message: "Evidence URL cannot be empty if provided.",
-        });
-        return;
-      }
-
-      // OPTION 1: Secure URL validation with accessibility check
-      if (!isValidAndSafeUrl(trimmedUrl)) {
-        res.status(400).json({
-          success: false,
-          message:
-            "Evidence URL must be a valid, publicly accessible HTTP or HTTPS URL.",
-        });
-        return;
-      }
-
-      const isAccessible = await isUrlAccessible(trimmedUrl);
-      if (!isAccessible) {
-        res.status(400).json({
-          success: false,
-          message:
-            "Evidence URL is not accessible. Please provide a valid, accessible URL.",
-        });
-        return;
-      }
-
-      // OPTION 2: Most secure - format validation only (RECOMMENDED)
-      /*
-      if (!validateUrlFormatOnly(trimmedUrl)) {
-        res.status(400).json({
-          success: false,
-          message: "Evidence URL format is invalid or not allowed.",
-        });
-        return;
-      }
-      */
-
-      validatedEvidenceUrl = trimmedUrl;
+    // Validate URL length
+    if (trimmedUrl.length > 2000) {
+      res.status(400).json({
+        success: false,
+        message: "Evidence URL cannot exceed 2000 characters.",
+      });
+      return;
     }
 
-    // Create evidence request object
+    // OPTION 1: Secure URL validation with accessibility check
+    if (!isValidAndSafeUrl(trimmedUrl)) {
+      res.status(400).json({
+        success: false,
+        message:
+          "Evidence URL must be a valid, publicly accessible HTTP or HTTPS URL.",
+      });
+      return;
+    }
+
+    const isAccessible = await isUrlAccessible(trimmedUrl);
+    if (!isAccessible) {
+      res.status(400).json({
+        success: false,
+        message:
+          "Evidence URL is not accessible. Please provide a valid, accessible URL.",
+      });
+      return;
+    }
+
+    // OPTION 2: Most secure - format validation only (RECOMMENDED)
+    /*
+    if (!validateUrlFormatOnly(trimmedUrl)) {
+      res.status(400).json({
+        success: false,
+        message: "Evidence URL format is invalid or not allowed.",
+      });
+      return;
+    }
+    */
+
+    // Create evidence request object - ONLY evidenceUrl
     const evidenceRequest: CreateEvidenceRequest = {
       userId: req.user.userId,
       subSkillId: parsedSubSkillId,
-      evidenceText: trimmedEvidenceText,
-      evidenceUrl: validatedEvidenceUrl,
+      evidenceUrl: trimmedUrl,
     };
 
     // Call service to create evidence
@@ -302,6 +286,14 @@ export const postEvidenceController = async (
     }
 
     if (error.message?.includes("SubSkill")) {
+      res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+      return;
+    }
+
+    if (error.message?.includes("Evidence URL is required")) {
       res.status(400).json({
         success: false,
         message: error.message,

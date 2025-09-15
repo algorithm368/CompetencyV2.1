@@ -27,7 +27,6 @@ export const useSfiaEvidenceSender = () => {
    * Initialize urls from external data
    * input shape: { [subSkillId]: { url: string, approvalStatus: string | null } }
    */
-
   const initializeEvidenceUrls = useCallback(
     (data: {
       [subSkillId: number]: { url: string; approvalStatus: string | null };
@@ -108,14 +107,14 @@ export const useSfiaEvidenceSender = () => {
           ...prev,
           errors: {
             ...prev.errors,
-            [idStr]: "Evidence URL or description cannot be empty.",
+            [idStr]: "Evidence URL cannot be empty.",
           },
           loading: { ...prev.loading, [idStr]: false },
         }));
         return;
       }
 
-      // Step 2: Validate URL format (if needed)
+      // Step 2: Validate URL format
       const urlValidation = evidenceService.validateEvidenceUrl(evidenceUrl);
       if (!urlValidation.isValid) {
         setEvidenceState((prev) => ({
@@ -130,12 +129,12 @@ export const useSfiaEvidenceSender = () => {
       }
 
       try {
-        const isUrl = evidenceService.isValidUrl(evidenceUrl.trim());
+        // Create request with only evidenceUrl
         const request: SubmitEvidenceRequest = {
           subSkillId: id,
-          evidenceText: evidenceUrl.trim(),
-          ...(isUrl ? { evidenceUrl: evidenceUrl.trim() } : {}),
-        } as SubmitEvidenceRequest;
+          evidenceText: "Default evidence text", // Replace with appropriate value
+          evidenceUrl: evidenceUrl.trim(),
+        };
 
         const response = await evidenceService.submitEvidence(request);
 
@@ -186,7 +185,7 @@ export const useSfiaEvidenceSender = () => {
         }));
       }
     },
-    [evidenceService, evidenceState.urls] // Add evidenceState.urls to dependencies
+    [evidenceService, evidenceState.urls]
   );
 
   const handleDelete = useCallback(
@@ -248,6 +247,37 @@ export const useSfiaEvidenceSender = () => {
     [deleteService]
   );
 
+  /**
+   * Check if evidence can be submitted (has URL and not currently loading)
+   */
+  const canSubmitEvidence = useCallback(
+    (id: number): boolean => {
+      const idStr = id.toString();
+      const url = evidenceState.urls[idStr]?.evidenceUrl;
+      const loading = evidenceState.loading[idStr];
+
+      return !!(url?.trim() && !loading);
+    },
+    [evidenceState.urls, evidenceState.loading]
+  );
+
+  /**
+   * Get evidence state for a specific subskill
+   */
+  const getEvidenceState = useCallback(
+    (id: number) => {
+      const idStr = id.toString();
+      return {
+        url: evidenceState.urls[idStr]?.evidenceUrl || "",
+        submitted: evidenceState.submitted[idStr] || false,
+        loading: evidenceState.loading[idStr] || false,
+        error: evidenceState.errors[idStr] || "",
+        approvalStatus: evidenceState.approvalStatus[idStr] || null,
+      };
+    },
+    [evidenceState]
+  );
+
   return {
     evidenceState,
     initializeEvidenceUrls,
@@ -255,5 +285,7 @@ export const useSfiaEvidenceSender = () => {
     handleRemove,
     handleSubmit,
     handleDelete,
+    canSubmitEvidence,
+    getEvidenceState,
   };
 };

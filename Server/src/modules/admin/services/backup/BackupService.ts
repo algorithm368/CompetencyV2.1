@@ -28,6 +28,11 @@ export class BackupService {
     const filename = `${dbName}_${timestamp}.sql`;
     const filepath = path.join(this.backupDir, filename);
     const MYSQLDUMP_PATH = "/usr/bin/mysqldump";
+
+    console.log(`__dirname is: ${__dirname}`);
+    console.log(`Resolved backupDir is: ${this.backupDir}`);
+    console.log(`Final filepath is: ${filepath}`);
+
     const command = `${MYSQLDUMP_PATH} --opt -h${this.dbHost} -u${this.dbUser} -p"${this.dbPass}" ${dbName} > "${filepath}"`;
 
     try {

@@ -11,16 +11,16 @@ export const adminRoutes: RouteItem[] = [
   { path: "/users", element: <ExportPages.UserPage />, resource: "User" },
   { path: "/logs", element: <ExportPages.LogPage />, resource: "Log" },
   { path: "/session", element: <ExportPages.SessionPage />, resource: "Session" },
+  { path: "/backup", element: <ExportPages.BackupPage />, resource: "Backup" },
 
   // SFIA
   { path: "/sfia/category", element: <ExportPages.CategoryPage />, resource: "Category" },
   { path: "/sfia/level", element: <ExportPages.LevelPage />, resource: "Level" },
   { path: "/sfia/subcategory", element: <ExportPages.SubcategoryPage />, resource: "Subcategory" },
   { path: "/sfia/description", element: <ExportPages.DescriptionPage />, resource: "Description" },
-  { path: "/sfia/sfiasummary", element:<ExportPages.SFIASummaryPage />, resource: "SFIASummary"},
+  { path: "/sfia/sfiasummary", element: <ExportPages.SFIASummaryPage />, resource: "SFIASummary" },
   { path: "/sfia/skill", element: <ExportPages.SFIASkillPage />, resource: "Skill" },
-  { path: "/sfia/information", element: <ExportPages.InformationPage />, resource: "Information"},
-
+  { path: "/sfia/information", element: <ExportPages.InformationPage />, resource: "Information" },
 
   // TPQI
   { path: "/tpqi/career", element: <ExportPages.CareerPage />, resource: "Career" },
@@ -48,7 +48,6 @@ export const adminRoutes: RouteItem[] = [
   { path: "/tpqi/tpqisummary", element: <ExportPages.TpqiSummaryPage />, resource: "TPQISummary" },
   { path: "/tpqi/unitskill", element: <ExportPages.UnitSkillPage />, resource: "UnitSkill" },
   { path: "/tpqi/unitknowledge", element: <ExportPages.UnitKnowledgePage />, resource: "UnitKnowledge" },
-
 
   // Assets
   { path: "/assets", element: <ExportPages.AssetPage />, resource: "Asset" },

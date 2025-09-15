@@ -7,6 +7,7 @@ export const mainMenu: MenuItemBase[] = [
   { label: "Logs", path: "/admin/logs", icon: <FiBarChart2 /> },
   { label: "Session Management", path: "/admin/session", icon: <FiLock /> },
   { label: "Users", path: "/admin/users", icon: <FiUsers /> },
+  { label: "Database Backup", path: "/admin/backup", icon: <FiCopy /> },
 ];
 
 // RBAC groups
@@ -41,7 +42,7 @@ export const frameworks: Group[] = [
       { label: "Skills", path: "/admin/sfia/skill", resource: "Skill" },
       { label: "SubCategories", path: "/admin/sfia/subcategory", resource: "Subcategory" },
       { label: "SFIA Summary", path: "/admin/sfia/sfiasummary", resource: "SFIAsummary" },
-      { label: "Information", path: "/admin/sfia/information", resource: "Information"}
+      { label: "Information", path: "/admin/sfia/information", resource: "Information" },
     ],
   },
   {

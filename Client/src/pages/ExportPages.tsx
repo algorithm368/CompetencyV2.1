@@ -8,6 +8,7 @@ export { default as UserPage } from "@Pages/Admin/Users/UserPages";
 export { default as DashboardPage } from "@Pages/Admin/Dashboard/DashboardPage";
 export { default as LogPage } from "@Pages/Admin/Log/LogPage";
 export { default as SessionPage } from "@Pages/Admin/Session/SessionPage";
+export { default as BackupPage } from "@Pages/Admin/Backup/BackupPage";
 
 export * from "./Admin/SFIA/ExportSFIAPages";
 export * from "./Admin/TPQI/ExportTPQIPages";

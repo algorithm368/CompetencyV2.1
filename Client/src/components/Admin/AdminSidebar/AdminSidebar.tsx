@@ -56,16 +56,12 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, mobileOpen, onTo
     const baseClasses = `flex items-center gap-3 w-full text-left transition rounded-md
       ${isActive ? "bg-indigo-50 text-indigo-600 font-medium" : "text-gray-700 hover:bg-gray-100"}
       ${loadingPaths[item.path] ? "opacity-50 cursor-wait" : ""}`;
-    
+
     const paddingClasses = isNested ? "px-4 py-2" : "px-5 py-3";
 
     return (
       <li key={item.path}>
-        <button
-          onClick={() => handleNavigation(item)}
-          className={`${baseClasses} ${paddingClasses}`}
-          disabled={loadingPaths[item.path]}
-        >
+        <button onClick={() => handleNavigation(item)} className={`${baseClasses} ${paddingClasses}`} disabled={loadingPaths[item.path]}>
           {item.icon && <span className="text-lg">{item.icon}</span>}
           <span className={isNested ? "text-sm" : ""}>{item.label}</span>
           {loadingPaths[item.path] && (
@@ -90,20 +86,9 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, mobileOpen, onTo
         {openSections[group.key] ? <FiChevronDown className="text-gray-500" /> : <FiChevronRight className="text-gray-500" />}
       </button>
 
-      {openSections[group.key] && (
-        <ul className="pl-10 mt-1 space-y-1">
-          {group.items.map((item) => renderNavItem(item, true))}
-        </ul>
-      )}
+      {openSections[group.key] && <ul className="pl-10 mt-1 space-y-1">{group.items.map((item) => renderNavItem(item, true))}</ul>}
     </li>
   );
-
-  function toggleSection(key: string): void {
-    setOpenSections((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-  }
 
   return (
     <>
@@ -113,10 +98,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, mobileOpen, onTo
         onClose={() => setModalState({ isOpen: false, message: "" })}
         className="p-0"
         actions={
-          <button 
-            onClick={() => setModalState({ isOpen: false, message: "" })} 
-            className="px-6 py-2 font-medium text-white transition-all bg-indigo-600 rounded-md shadow-md hover:bg-indigo-700"
-          >
+          <button onClick={() => setModalState({ isOpen: false, message: "" })} className="px-6 py-2 font-medium text-white transition-all bg-indigo-600 rounded-md shadow-md hover:bg-indigo-700">
             Close
           </button>
         }
@@ -128,10 +110,10 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, mobileOpen, onTo
       </Modal>
 
       {/* Mobile overlay */}
-      <div 
+      <div
         className={`fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden transition-opacity 
-          ${mobileOpen ? "opacity-50 visible" : "opacity-0 invisible"}`} 
-        onClick={onMobileClose} 
+          ${mobileOpen ? "opacity-50 visible" : "opacity-0 invisible"}`}
+        onClick={onMobileClose}
       />
 
       <aside
@@ -152,27 +134,21 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, mobileOpen, onTo
             {/* Main Menu */}
             <div className="mb-6">
               <p className="px-5 mb-2 text-xs font-semibold tracking-wider text-gray-400 uppercase">Main</p>
-              <ul className="space-y-1">
-                {mainMenu.map((item) => renderNavItem(item))}
-              </ul>
+              <ul className="space-y-1">{mainMenu.map((item) => renderNavItem(item))}</ul>
             </div>
 
             {/* RBAC Groups */}
             {rbacGroups.length > 0 && (
               <div className="mb-6">
                 <p className="px-5 mb-2 text-xs font-semibold tracking-wider text-gray-400 uppercase">Management</p>
-                <ul className="space-y-1">
-                  {rbacGroups.map(renderGroup)}
-                </ul>
+                <ul className="space-y-1">{rbacGroups.map(renderGroup)}</ul>
               </div>
             )}
 
             {/* Frameworks */}
             <div>
               <p className="px-5 mb-2 text-xs font-semibold tracking-wider text-gray-400 uppercase">Framework</p>
-              <ul className="space-y-1">
-                {frameworks.map(renderGroup)}
-              </ul>
+              <ul className="space-y-1">{frameworks.map(renderGroup)}</ul>
             </div>
           </nav>
         </div>

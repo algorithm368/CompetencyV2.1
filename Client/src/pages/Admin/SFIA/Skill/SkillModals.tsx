@@ -25,6 +25,7 @@ export const AddEditSkillModal: React.FC<AddEditSkillModalProps> = ({
     }, [initialCode]);
 
     const title = mode === "add" ? "Add Skill" : "Edit Skill";
+    
     return (
         <Modal
             className="z-50"

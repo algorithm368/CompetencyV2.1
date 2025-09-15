@@ -27,8 +27,8 @@ export class BackupService {
     const timestamp = new Date().toISOString().replace(/:/g, "-");
     const filename = `${dbName}_${timestamp}.sql`;
     const filepath = path.join(this.backupDir, filename);
-
-    const command = `mysqldump --opt -h${this.dbHost} -u${this.dbUser} -p"${this.dbPass}" ${dbName} > "${filepath}"`;
+    const MYSQLDUMP_PATH = "/usr/bin/mysqldump";
+    const command = `${MYSQLDUMP_PATH} --opt -h${this.dbHost} -u${this.dbUser} -p"${this.dbPass}" ${dbName} > "${filepath}"`;
 
     try {
       const { stderr } = await execPromise(command);

@@ -12,11 +12,11 @@ export class BackupService {
   private dbPass: string;
   private backupDir: string;
 
-  constructor(dbHost: string, dbUser: string, dbPass: string, backupDir: string = "backups") {
+  constructor(dbHost: string, dbUser: string, dbPass: string) {
     this.dbHost = dbHost;
     this.dbUser = dbUser;
     this.dbPass = dbPass;
-    this.backupDir = path.join(__dirname, "..", "..", "..", "..", backupDir);
+    this.backupDir = "/var/backups/competency";
 
     if (!fs.existsSync(this.backupDir)) {
       fs.mkdirSync(this.backupDir, { recursive: true });

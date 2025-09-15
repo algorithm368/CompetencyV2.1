@@ -81,7 +81,7 @@ export async function getUserSummaryByUserId(userId: string): Promise<UserSummar
     // Query user summaries with all related information using the email
     const summaryData = await prismaSfia.sfiaSummary.findMany({
       where: {
-        userId: userId, // Use the email from competency database
+        userId: userId,
       },
       include: {
         skill: {

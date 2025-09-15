@@ -17,8 +17,8 @@ export const adminRoutes: RouteItem[] = [
   { path: "/sfia/level", element: <ExportPages.LevelPage />, resource: "Level" },
   { path: "/sfia/subcategory", element: <ExportPages.SubcategoryPage />, resource: "Subcategory" },
   { path: "/sfia/description", element: <ExportPages.DescriptionPage />, resource: "Description" },
-  { path: "/sfia/skill", element: <ExportPages.SFIASkillPage />, resource: "Skill" },
-
+  // { path: "/sfia/skill", element: <ExportPages.SFIASkillPage />, resource: "Skill" },
+  { path: "/sfia/sfiasummary", element:<ExportPages.SFIASummaryPage />, resource: "SFIASummary"},
 
   // TPQI
   { path: "/tpqi/career", element: <ExportPages.CareerPage />, resource: "Career" },

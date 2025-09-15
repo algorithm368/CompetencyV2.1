@@ -40,6 +40,7 @@ export const frameworks: Group[] = [
       { label: "Levels", path: "/admin/sfia/level", resource: "Level" },
       { label: "Skills", path: "/admin/sfia/skill", resource: "Skill" },
       { label: "SubCategories", path: "/admin/sfia/subcategory", resource: "Subcategory" },
+      { label: "SFIA Summary", path: "/admin/sfia/sfiasummary", resource: "SFIAsummary" },
     ],
   },
   {

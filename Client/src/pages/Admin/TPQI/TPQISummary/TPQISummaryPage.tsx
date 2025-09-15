@@ -26,7 +26,7 @@ export default function TpqiSummaryPage() {
   const handleToast = (message: string, type: "success" | "error" | "info" = "info") =>
     setToast({ message, type });
 
-  const { fetchPage, tpqiSummaryQuery } = useTPQISummaryManager(
+  const { fetchPage } = useTPQISummaryManager(
     { search: debouncedSearchText, page, perPage },handleToast);
 
   const columns = useMemo(

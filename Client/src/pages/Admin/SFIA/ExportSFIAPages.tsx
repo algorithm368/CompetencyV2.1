@@ -3,3 +3,4 @@ export { default as LevelPage } from "./Level/LevelPage";
 export { default as SubcategoryPage } from "./Subcategory/SubcategoryPage";
 export { default as DescriptionPage } from "./Description/DescriptionPage";
 export { default as SFIASkillPage } from "./Skill/SkillPage"
+export { default as SFIASummaryPage } from "./SFIASummary/SFIASummaryPage"

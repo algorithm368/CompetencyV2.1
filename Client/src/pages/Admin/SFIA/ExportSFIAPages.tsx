@@ -5,3 +5,4 @@ export { default as DescriptionPage } from "./Description/DescriptionPage";
 export { default as SFIASkillPage } from "./Skill/SkillPage"
 export { default as SFIASummaryPage } from "./SFIASummary/SFIASummaryPage"
 export { default as InformationPage } from "./Information/InformationPage"
+export { default as SubSkillPage } from "./SubSkill/SubSkillPage"

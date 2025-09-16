@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { PrismaClient } from "@prisma/client_competency";
 import { verifyToken } from "@Utils/tokenUtils";
-
+import { Role } from "./authEnums";
 const prisma = new PrismaClient();
 
 export interface AuthenticatedRequest extends Request {
@@ -13,6 +13,7 @@ export interface AuthenticatedRequest extends Request {
   };
 }
 
+// ตรวจสอบ token และ attach user
 export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const token = req.headers.authorization?.startsWith("Bearer ") ? req.headers.authorization.split(" ")[1] : req.cookies?.token;
@@ -54,18 +55,31 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
   }
 };
 
+// ตรวจสอบ role เฉพาะบาง role
 export const authorizeRole = (allowedRoles: string | string[]) => {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     if (!req.user) return res.status(401).json({ message: "Unauthorized" });
-    if (req.user.roles.includes("Admin")) return next();
+    if (req.user.roles.includes(Role.Admin)) return next();
 
     const rolesToCheck = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
-    if (!req.user.roles.some((r) => rolesToCheck.includes(r))) return res.status(403).json({ message: "Forbidden: insufficient role" });
+    if (!req.user.roles.some((r) => rolesToCheck.includes(r))) {
+      return res.status(403).json({ message: "Forbidden: insufficient role" });
+    }
 
     next();
   };
 };
 
+// **Middleware สำหรับบล็อก role "User"**
+export const blockUserRole = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  if (!req.user) return res.status(401).json({ message: "Unauthorized" });
+  if (req.user.roles.includes(Role.User)) {
+    return res.status(403).json({ message: "Forbidden: Users cannot access this resource" });
+  }
+  next();
+};
+
+// ตรวจสอบ permission
 export const authorizePermission = (requiredPermissions: string | string[]) => {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const user = req.user;
@@ -81,11 +95,13 @@ export const authorizePermission = (requiredPermissions: string | string[]) => {
   };
 };
 
+// ตรวจสอบ instance
 export const authorizeInstance = (resource: string, action: string) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     const user = (req as AuthenticatedRequest).user;
     if (!user) return res.status(401).json({ message: "Unauthorized" });
     if (user.roles.includes("Admin")) return next();
+
     try {
       const userAssetInstance = await prisma.userAssetInstance.findFirst({
         where: { userId: user.userId, assetInstance: { asset: { tableName: resource } } },

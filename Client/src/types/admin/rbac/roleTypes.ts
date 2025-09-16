@@ -24,3 +24,9 @@ export interface UpdateRoleDto {
   description?: string;
   parentRoleId?: number;
 }
+
+export enum RoleName {
+  Admin = "Admin",
+  Manager = "Manager",
+  User = "User",
+}

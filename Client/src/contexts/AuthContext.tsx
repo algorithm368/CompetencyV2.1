@@ -36,7 +36,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const inactivityTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const INACTIVITY_LIMIT = 15 * 60 * 1000;
 
-  // เพิ่ม state สำหรับจัดการ Modal
   const [modal, setModal] = useState({
     isOpen: false,
     message: "",

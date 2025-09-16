@@ -68,10 +68,11 @@ export class UserService extends BaseService<User, keyof User> {
 
   async searchUsersByEmail(email: string, limit = 10): Promise<User[]> {
     if (!email.trim()) return [];
+    const query = email.trim().toLowerCase();
     const users = await this.repo.findMany({
-      where: { email: { contains: email.trim(), mode: "insensitive" } },
+      where: { email: { contains: query } },
       take: limit,
     });
-    return users;
+    return users.filter((u: User) => u.email.toLowerCase().includes(query));
   }
 }

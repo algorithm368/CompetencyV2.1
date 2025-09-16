@@ -8,11 +8,11 @@ router.post("/users", withAuth({ resource: "User", action: "create" }, UserContr
 
 router.get("/users", withAuth({ resource: "User", action: "read" }, UserController.getAll));
 
+router.get("/users/search-by-email", withAuth({ resource: "User", action: "read" }, UserController.searchUsersByEmail));
+
 router.get("/users/:id", withAuth({ resource: "User", action: "read" }, UserController.getUserById));
 
 router.get("/users/by-email", withAuth({ resource: "User", action: "read" }, UserController.getUserByEmail));
-
-router.get("/users/search-by-email", withAuth({ resource: "User", action: "read" }, UserController.searchUsersByEmail));
 
 router.put("/users/:id", withAuth({ resource: "User", action: "update" }, UserController.updateUser));
 

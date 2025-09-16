@@ -13,7 +13,7 @@ const httpServer: Server = createServer(app);
 // Middleware
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:5174","http://ec2-47-130-154-67.ap-southeast-1.compute.amazonaws.com:5173"],
+    origin: ["http://localhost:5173", "http://localhost:5174", "http://ec2-47-130-154-67.ap-southeast-1.compute.amazonaws.com:5173"],
     credentials: true,
   })
 );

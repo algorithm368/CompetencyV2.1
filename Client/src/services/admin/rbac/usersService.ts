@@ -61,9 +61,10 @@ export const UsersService = {
     return res.data;
   },
   searchUsersByEmail: async (email: string): Promise<User[]> => {
-    const params = new URLSearchParams();
-    params.append("email", email);
-    const res: AxiosResponse<User[]> = await api.get("/admin/rbac/users/search-by-email", { params });
+    if (!email.trim()) return [];
+    const res: AxiosResponse<User[]> = await api.get("/admin/rbac/users/search-by-email", {
+      params: { email },
+    });
     return res.data;
   },
 };

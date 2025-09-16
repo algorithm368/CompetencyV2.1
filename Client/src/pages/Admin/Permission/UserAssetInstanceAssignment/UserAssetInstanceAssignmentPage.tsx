@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { FiPlus, FiSearch, FiSettings } from "react-icons/fi";
 import { RowActions, Button, Input, Toast, DataTable } from "@Components/Common/ExportComponent";
 import { useUserAssetInstanceManager } from "@Hooks/admin/rbac/useUserAssetInstanceManager";
+import { useAssetInstanceManager } from "@Hooks/admin/rbac/useAssetInstanceManager";
 import { UserAssetInstance, UserAssetInstanceAssignmentDto } from "@Types/admin/rbac/userAssetInstanceTypes";
 import { AssignAssetModal, RevokeAssetModal } from "./UserAssetInstanceModals";
 import { AdminLayout } from "@Layouts/AdminLayout";
@@ -27,7 +28,12 @@ export default function UserAssetInstanceAssignmentPage() {
     setToast({ message, type });
   };
 
+  // Use a hook to manage user-asset instance assignments
   const { fetchPage, assignAssetInstancesToUser, revokeAssetInstanceFromUser } = useUserAssetInstanceManager({ search: debouncedSearchText, page, perPage }, handleToast);
+
+  // Use a separate hook to fetch ALL available asset instances
+  const { assetInstancesQuery } = useAssetInstanceManager();
+  const availableAssets = assetInstancesQuery.data?.data || [];
 
   // Modal handlers
   const openAssignModal = (assetInstance?: UserAssetInstance) => {
@@ -71,7 +77,7 @@ export default function UserAssetInstanceAssignmentPage() {
       { accessorKey: "id", header: "ID" },
       { accessorFn: (row: UserAssetInstance) => row.userId, header: "User ID" },
       { accessorFn: (row: UserAssetInstance) => row.assetInstance?.recordId ?? "", header: "Asset Record ID" },
-      { accessorFn: (row: UserAssetInstance) => row.assetInstance?.assetId ?? "", header: "Asset ID" },
+      { accessorFn: (row: UserAssetInstance) => row.assetInstance?.assetName ?? "", header: "Asset Name" },
       { accessorFn: (row: UserAssetInstance) => new Date(row.assignedAt).toLocaleString(), header: "Assigned At" },
       {
         id: "actions",
@@ -118,6 +124,7 @@ export default function UserAssetInstanceAssignmentPage() {
       <AssignAssetModal
         isOpen={modalType === "assign"}
         selectedAsset={selectedAssetInstance}
+        availableAssets={availableAssets}
         onClose={closeModal}
         onConfirm={confirmAssign}
         isLoading={assignAssetInstancesToUser.status === "pending"}

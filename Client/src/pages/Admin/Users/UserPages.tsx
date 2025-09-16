@@ -133,7 +133,7 @@ export default function UserPage() {
         </div>
 
         <DataTable<User>
-          key={debouncedSearchText + page}
+          key={debouncedSearchText}
           resetTrigger={debouncedSearchText}
           fetchPage={fetchPage}
           columns={columns}

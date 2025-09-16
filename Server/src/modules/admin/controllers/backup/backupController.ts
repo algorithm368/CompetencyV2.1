@@ -11,7 +11,7 @@ const DB_PASS = process.env.DB_PASS as string;
 const ALL_DATABASES = (process.env.DATABASES_TO_BACKUP || "").split(",");
 
 // Create a single instance of the service
-const backupService = new BackupService(DB_HOST, DB_USER, DB_PASS, "backups");
+const backupService = new BackupService(DB_HOST, DB_USER, DB_PASS);
 
 export class BackupController {
   /**

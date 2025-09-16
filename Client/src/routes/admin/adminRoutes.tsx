@@ -20,6 +20,7 @@ export const adminRoutes: RouteItem[] = [
   { path: "/sfia/sfiasummary", element:<ExportPages.SFIASummaryPage />, resource: "SFIASummary"},
   { path: "/sfia/skill", element: <ExportPages.SFIASkillPage />, resource: "Skill" },
   { path: "/sfia/information", element: <ExportPages.InformationPage />, resource: "Information"},
+  { path: "/sfia/subskill", element: <ExportPages.SubSkillPage />, resource: "SubSkill"},
 
 
   // TPQI

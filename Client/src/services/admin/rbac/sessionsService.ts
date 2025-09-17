@@ -10,6 +10,7 @@ export const SessionsService = {
     if (search) params.append("search", search);
 
     const res: AxiosResponse<SessionPageResult> = await api.get("/admin/rbac/sessions", { params });
+
     return res.data;
   },
 

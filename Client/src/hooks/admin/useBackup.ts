@@ -4,7 +4,7 @@ import { BackupService, BackupInitiationResponse } from "@Services/admin/BackupS
 const globalState = {
   isLoading: false,
   error: null as string | null,
-  backupData: null as BackupInitiationResponse | null,
+  backupData: [] as BackupInitiationResponse[],
   isFetchingDatabases: true,
   availableDatabases: [] as string[],
 };
@@ -20,12 +20,12 @@ const notifyStateChange = () => {
 export const backupProcess = async (databases: string[]) => {
   globalState.isLoading = true;
   globalState.error = null;
-  globalState.backupData = null;
+  globalState.backupData = [];
   notifyStateChange();
 
   try {
     const response = await BackupService.initiateBackup(databases);
-    globalState.backupData = response;
+    globalState.backupData.push(response);
   } catch (error) {
     console.error("Backup failed:", error);
     globalState.error = "Failed to initiate backup. Please check the server logs.";

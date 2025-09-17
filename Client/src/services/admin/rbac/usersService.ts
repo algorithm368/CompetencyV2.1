@@ -2,10 +2,10 @@ import { AxiosResponse } from "axios";
 import api from "@Services/api";
 import { User } from "@Types/admin/rbac/userTypes";
 import { Role } from "@Types/admin/rbac/roleTypes";
-import { SessionView } from "@Types/admin/rbac/sessionTypes";
+import { Session } from "@Types/admin/rbac/sessionTypes";
 
 export interface UserWithStatus extends User {
-  sessions?: SessionView[];
+  sessions?: Session[];
   status: "online" | "offline";
 }
 export interface UserPageResult {

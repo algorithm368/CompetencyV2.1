@@ -146,14 +146,6 @@ class AuthService {
     const accessToken = generateToken({ userId: userWithRoles.id, email: userWithRoles.email, role: primaryRole });
     const csrfToken = generateCsrfToken();
 
-    const now = new Date();
-    const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-
-    await client.session.update({
-      where: { id: storedSession.id },
-      data: { refreshToken: newRefreshToken, accessToken, csrfToken, updatedAt: now, expiresAt },
-    });
-
     return { accessToken, refreshToken: newRefreshToken, csrfToken };
   }
 

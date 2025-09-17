@@ -1,36 +1,50 @@
 import type { Session } from "@prisma/client_competency";
 import { BaseService } from "@Utils/BaseService";
 import { SessionRepository } from "@/modules/admin/repositories/RoleRepository";
+import { UserRepository } from "@/modules/admin/repositories/RoleRepository";
 import { mapSessionView } from "@/utils/sessionStatus";
-import type { PrismaClient, Prisma } from "@prisma/client_competency";
 
 export class SessionService extends BaseService<Session, "id"> {
+  private userRepo: UserRepository;
   constructor() {
     super(new SessionRepository(), ["userId"], "id");
+    this.userRepo = new UserRepository();
   }
 
   async getAllWithEmail(search?: string, page?: number, perPage?: number) {
     const where: any = {};
-    if (search?.trim()) where.OR = [{ userId: { contains: search.trim() } }];
+    if (search?.trim()) {
+      where.OR = [{ id: { contains: search.trim() } }, { email: { contains: search.trim() } }];
+    }
 
-    const commonQuery: any = { where, include: { user: { select: { email: true } } } };
+    // ดึง users พร้อม sessions
+    const users =
+      page !== undefined && perPage !== undefined
+        ? await this.userRepo.findMany({
+            where,
+            include: { sessions: true },
+            skip: (page - 1) * perPage,
+            take: perPage,
+          })
+        : await this.userRepo.findMany({ where, include: { sessions: true } });
 
-    const data = page !== undefined && perPage !== undefined ? await this.repo.findMany({ ...commonQuery, skip: (page - 1) * perPage, take: perPage }) : await this.repo.findMany(commonQuery);
+    const total = page && perPage ? await this.userRepo.manager.count({ where }) : users.length;
 
-    const total = page && perPage ? await this.repo.manager.count({ where }) : data.length;
+    const data = users.map((u: any) => {
+      const latestSession = u.sessions?.sort((a: any, b: any) => (b.lastActivityAt?.getTime() || 0) - (a.lastActivityAt?.getTime() || 0))[0];
 
-    return {
-      data: data.map((s: Session & { user?: { email: string } }) =>
-        mapSessionView({
-          id: s.id,
-          userId: s.userId,
-          email: s.user?.email || "",
-          expiresAt: s.expiresAt,
-          lastActivityAt: s.lastActivityAt,
-        })
-      ),
-      total,
-    };
+      const sessionView = mapSessionView({
+        id: latestSession?.id || null,
+        userId: u.id,
+        email: u.email || "",
+        expiresAt: latestSession?.expiresAt || null,
+        lastActivityAt: latestSession?.lastActivityAt || null,
+      });
+
+      return sessionView;
+    });
+
+    return { data, total };
   }
 
   async getByIdWithEmail(id: string) {

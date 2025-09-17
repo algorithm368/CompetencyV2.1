@@ -1,4 +1,4 @@
-export interface SessionView {
+export interface Session {
   id: string;
   userId: string;
   email: string;
@@ -7,6 +7,6 @@ export interface SessionView {
 }
 
 export interface SessionPageResult {
-  data: SessionView[];
+  data: Session[];
   total: number;
 }

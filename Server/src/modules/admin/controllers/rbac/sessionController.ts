@@ -7,13 +7,21 @@ interface AuthenticatedRequest extends Request {
   user?: { userId?: string };
 }
 
-function SessionView(session: { id: string; userId: string; email: string; expiresAt?: Date | null }) {
-  const status = session.expiresAt && session.expiresAt.getTime() <= Date.now() ? "offline" : "online";
+function SessionView(session: { id?: string | null; userId: string; email: string; expiresAt?: Date | null; lastActivityAt?: Date | null }) {
+  const now = Date.now();
+  const ONLINE_THRESHOLD = 5 * 60 * 1000;
+
+  const status =
+    !session.id || !session.lastActivityAt || (session.expiresAt && new Date(session.expiresAt).getTime() <= now) || now - new Date(session.lastActivityAt).getTime() > ONLINE_THRESHOLD
+      ? "offline"
+      : "online";
+
   return {
     id: session.id,
     userId: session.userId,
     email: session.email,
     expiresAt: session.expiresAt,
+    lastActivityAt: session.lastActivityAt,
     status,
   };
 }
@@ -27,7 +35,6 @@ export class SessionController {
 
       const items = await service.getAllWithEmail(search, Number.isNaN(page) ? undefined : page, Number.isNaN(perPage) ? undefined : perPage);
 
-      // ระบุ type ให้ map
       res.json({
         data: items.data.map((s: any) =>
           SessionView({
@@ -35,6 +42,7 @@ export class SessionController {
             userId: s.userId,
             email: s.email,
             expiresAt: s.expiresAt ? new Date(s.expiresAt) : undefined,
+            lastActivityAt: s.lastActivityAt ? new Date(s.lastActivityAt) : undefined,
           })
         ),
         total: items.total,
@@ -65,7 +73,7 @@ export class SessionController {
 
       res.status(201).json(
         SessionView({
-          id: session.id,
+          id: session.id || "",
           userId: session.userId,
           email: session.email,
           expiresAt: session.expiresAt ? new Date(session.expiresAt) : undefined,
@@ -83,7 +91,7 @@ export class SessionController {
 
       res.json(
         SessionView({
-          id: session.id,
+          id: session.id || "",
           userId: session.userId,
           email: session.email,
           expiresAt: session.expiresAt ? new Date(session.expiresAt) : undefined,
@@ -104,7 +112,7 @@ export class SessionController {
 
       res.json(
         SessionView({
-          id: session.id,
+          id: session.id || "",
           userId: session.userId,
           email: session.email,
           expiresAt: session.expiresAt ? new Date(session.expiresAt) : undefined,
@@ -125,7 +133,7 @@ export class SessionController {
 
       res.json(
         SessionView({
-          id: session.id,
+          id: session.id || "",
           userId: session.userId,
           email: session.email,
           expiresAt: session.expiresAt ? new Date(session.expiresAt) : undefined,

@@ -1,7 +1,7 @@
 import { DatabaseManagement } from "@Utils/databaseUtils";
 
 export class BaseRepository<T extends Record<string, any>, K extends keyof T> {
-  constructor(protected readonly manager: DatabaseManagement<any>, private readonly pkField: K) {}
+  constructor(public readonly manager: DatabaseManagement<any>, private readonly pkField: K) {}
 
   /** Create a new record. */
   create(data: Omit<T, K>, actor?: string, requestId?: string, txClient?: any): Promise<T> {

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FiSearch } from "react-icons/fi";
 import { AdminLayout } from "@Layouts/AdminLayout";
 import { useSessionManager } from "@Hooks/admin/rbac/useSessions";
-import { SessionView } from "@Types/admin/rbac/sessionTypes";
+import { Session } from "@Types/admin/rbac/sessionTypes";
 import { DataTable, RowActions, Input, Toast } from "@Components/Common/ExportComponent";
 import { DeleteSessionModal } from "./SessionModals";
 
@@ -11,7 +11,7 @@ export default function SessionPage() {
   const [debouncedSearchText, setDebouncedSearchText] = useState("");
   const [page, setPage] = useState(1);
   const perPage = 10;
-  const [selectedSession, setSelectedSession] = useState<SessionView | null>(null);
+  const [selectedSession, setSelectedSession] = useState<Session | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
 
@@ -24,7 +24,7 @@ export default function SessionPage() {
 
   const { fetchPage, deleteSession } = useSessionManager({ page, perPage, search: debouncedSearchText }, handleToast);
 
-  const openDeleteModal = (session: SessionView) => {
+  const openDeleteModal = (session: Session) => {
     setSelectedSession(session);
     setModalOpen(true);
   };
@@ -51,7 +51,7 @@ export default function SessionPage() {
     {
       id: "status",
       header: "Status",
-      cell: ({ row }: { row: { original: SessionView & { status?: "online" | "offline" } } }) => (
+      cell: ({ row }: { row: { original: Session & { status?: "online" | "offline" } } }) => (
         <div className="flex items-center gap-2">
           <span className={`w-2 h-2 rounded-full mt-1 ${row.original.status === "online" ? "bg-green-500" : "bg-gray-400"}`} />
           <span>{row.original.status}</span>
@@ -61,7 +61,7 @@ export default function SessionPage() {
     {
       id: "actions",
       header: "Actions",
-      cell: ({ row }: { row: { original: SessionView & { status: string } } }) => (
+      cell: ({ row }: { row: { original: Session & { status: string } } }) => (
         <div className="text-right">
           <RowActions onDelete={() => openDeleteModal(row.original)} />
         </div>
@@ -80,7 +80,7 @@ export default function SessionPage() {
           </div>
         </div>
 
-        <DataTable<SessionView>
+        <DataTable<Session>
           key={debouncedSearchText + page}
           resetTrigger={debouncedSearchText}
           fetchPage={fetchPage}

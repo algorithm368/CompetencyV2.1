@@ -23,11 +23,8 @@ export const BackupPage: React.FC = () => {
 
   const handleBackupAll = async () => {
     if (availableDatabases.length === 0) return;
-
-    for (const dbName of availableDatabases) {
-      setCurrentBackupDb(dbName);
-      await initiateBackup([dbName]);
-    }
+    setCurrentBackupDb("all");
+    await initiateBackup(availableDatabases);
     setCurrentBackupDb(null);
   };
 
@@ -117,21 +114,24 @@ export const BackupPage: React.FC = () => {
 
           {backupData && (
             <div className="space-y-4">
-              <div className="flex items-center gap-2 text-green-600 font-semibold">
-                <FaCheckCircle className="text-2xl" />
-                <p>{backupData.message}</p>
-              </div>
-              <ul className="space-y-2">
-                {backupData.backupFiles.map((filename, index) => (
-                  <li key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <p className="font-mono text-sm text-gray-700">{filename}</p>
-                    <button onClick={() => handleDownload(filename)} className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors">
-                      <BiDownload className="text-lg" />
-                      Download
-                    </button>
-                  </li>
-                ))}
-              </ul>
+              {backupData.map((backupResult, index) => (
+                <div key={index}>
+                  <div className="flex items-center gap-2 text-green-600 font-semibold">
+                    <FaCheckCircle className="text-2xl" /> <p>{backupResult.message}</p>
+                  </div>
+
+                  <ul className="space-y-2 mt-2">
+                    {backupResult.backupFiles.map((filename, fileIndex) => (
+                      <li key={fileIndex} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <p className="font-mono text-sm text-gray-700">{filename}</p>
+                        <button onClick={() => handleDownload(filename)} className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors">
+                          <BiDownload className="text-lg" /> Download
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
             </div>
           )}
 

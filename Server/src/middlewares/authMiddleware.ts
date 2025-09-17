@@ -40,10 +40,23 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
             },
           },
         },
+        sessions: true,
       },
     });
 
     if (!user) return res.status(401).json({ message: "Unauthorized: User not found" });
+
+    if (user.sessions?.length) {
+      const now = new Date();
+      const latestSession = user.sessions.filter((s) => !s.expiresAt || s.expiresAt > now).sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())[0];
+
+      if (latestSession) {
+        await prisma.session.update({
+          where: { id: latestSession.id },
+          data: { lastActivityAt: now },
+        });
+      }
+    }
 
     const permissions = user.userRoles.flatMap((ur) => ur.role?.rolePermissions?.map((rp) => `${rp.permission.asset.tableName}:${rp.permission.operation.name}`) || []);
     const roles = user.userRoles.map((ur) => ur.role?.name).filter(Boolean) as string[];

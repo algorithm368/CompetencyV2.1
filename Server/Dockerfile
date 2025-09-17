@@ -1,5 +1,5 @@
 FROM node:20-bullseye
-
+RUN apt-get update && apt-get install -y default-mysql-client
 WORKDIR /app
 
 COPY package*.json ./

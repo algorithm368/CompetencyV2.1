@@ -47,6 +47,6 @@ export default defineConfig({
     port: 5173,
   },
   preview: {
-    allowedHosts: ["client_app", "localhost", "127.0.0.1", "nginx", "172.19.0.4", "ec2-47-130-154-67.ap-southeast-1.compute.amazonaws.com"],
+    allowedHosts: ["client_app", "localhost", "127.0.0.1", "nginx", "172.19.0.4", "ec2-13-54-113-16.ap-southeast-2.compute.amazonaws.com"],
   },
 });

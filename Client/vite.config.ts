@@ -27,17 +27,13 @@ export default defineConfig({
           // Split each major page into its own chunk
           home: ["src/pages/Home/HomePage.tsx"],
           about: ["src/pages/About/AboutPage.tsx"],
-          "competency-detail": [
-            "src/pages/competencyDetail/CompetencyDetailPage.tsx",
-          ],
+          "competency-detail": ["src/pages/competencyDetail/CompetencyDetailPage.tsx"],
           "search-results": ["src/pages/SearchResults/SearchResultsPage.tsx"],
           profile: ["src/pages/ProfilePage/ProfilePage.tsx"],
           // Admin pages
           "admin-dashboard": ["src/pages/Admin/Dashboard/DashboardPage.tsx"],
           "admin-users": ["src/pages/Admin/Users/UserPages.tsx"],
-          "admin-permissions": [
-            "src/pages/Admin/Permission/PermissionPage.tsx",
-          ],
+          "admin-permissions": ["src/pages/Admin/Permission/PermissionPage.tsx"],
           // Admin SFIA/TPQI exports
           "admin-sfia": ["src/pages/Admin/SFIA/ExportSFIAPages.tsx"],
           "admin-tpqi": ["src/pages/Admin/TPQI/ExportTPQIPages.tsx"],
@@ -46,27 +42,11 @@ export default defineConfig({
     },
   },
   server: {
-    allowedHosts: [
-      "client_app",
-      "ec2-47-130-154-67.ap-southeast-1.compute.amazonaws.com",
-    ],
+    allowedHosts: ["client_app", "ec2-13-54-113-16.ap-southeast-2.compute.amazonaws.com"],
     host: "0.0.0.0",
     port: 5173,
   },
   preview: {
-    allowedHosts: [
-      "client_app",
-      "localhost",
-      "127.0.0.1",
-      "nginx",
-      "172.19.0.4",
-      "ec2-47-130-154-67.ap-southeast-1.compute.amazonaws.com",
-    ],
-  },
-
-  test: {
-    globals: true,
-    environment: "jsdom",
-    setupFiles: ["./src/test/setup.ts"],
+    allowedHosts: ["client_app", "localhost", "127.0.0.1", "nginx", "172.19.0.4", "ec2-47-130-154-67.ap-southeast-1.compute.amazonaws.com"],
   },
 });

@@ -59,7 +59,7 @@ export class UserService extends BaseService<User, keyof User> {
     }
 
     const dataWithStatus: (User & { sessions?: Session[]; status: "online" | "offline" })[] = data.map((user) => {
-      const online = user.sessions?.some(getSessionStatus);
+      const online = user.sessions?.some((s) => getSessionStatus(s) === "online");
       return { ...user, status: online ? "online" : "offline" };
     });
 

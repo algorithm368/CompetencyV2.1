@@ -81,7 +81,7 @@ export default function SessionPage() {
         </div>
 
         <DataTable<Session>
-          key={debouncedSearchText + page}
+          key={debouncedSearchText}
           resetTrigger={debouncedSearchText}
           fetchPage={fetchPage}
           columns={columns}

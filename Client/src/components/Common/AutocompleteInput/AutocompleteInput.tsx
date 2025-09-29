@@ -44,6 +44,13 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
     setShowDropdown(false);
   };
 
+  const handleKeyDown = (event: React.KeyboardEvent, option: string) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleSelect(option);
+    }
+  };
+
   return (
     <div ref={containerRef} className="relative w-full">
       <input
@@ -64,12 +71,16 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
         </div>
       )}
       {showDropdown && options.length > 0 && (
-        <ul className="absolute z-50 w-full max-h-60 overflow-y-auto mt-1 bg-white border rounded shadow-lg">
+        <ul className="absolute z-50 w-full max-h-60 overflow-y-auto mt-1 bg-white border rounded shadow-lg" role="listbox">
           {options.map((opt, idx) => (
             <li
               key={idx}
-              className="px-3 py-2 hover:bg-indigo-100 cursor-pointer"
+              className="px-3 py-2 hover:bg-indigo-100 cursor-pointer focus:bg-indigo-100 focus:outline-none"
               onClick={() => handleSelect(opt)}
+              onKeyDown={(e) => handleKeyDown(e, opt)}
+              role="option"
+              tabIndex={0}
+              aria-selected={value === opt}
             >
               {opt}
             </li>

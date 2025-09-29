@@ -23,6 +23,13 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
   onLogin,
   onLogout,
 }) => {
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onClose();
+    }
+  };
+
   return (
     <>
       {/* Backdrop */}
@@ -31,6 +38,9 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
           menuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
         onClick={onClose}
+        onKeyDown={handleKeyDown}
+        role="button"
+        tabIndex={menuOpen ? 0 : -1}
         aria-label="Close menu overlay"
       />
 

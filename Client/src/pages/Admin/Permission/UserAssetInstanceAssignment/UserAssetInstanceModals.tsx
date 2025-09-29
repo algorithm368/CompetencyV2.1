@@ -57,6 +57,13 @@ export const AssignAssetModal: React.FC<AssignAssetModalProps> = ({ isOpen, sele
     setShowSearchResults(false);
   }, []);
 
+  const handleKeyDown = (event: React.KeyboardEvent, action: () => void) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      action();
+    }
+  };
+
   return (
     <Modal
       className="z-50"
@@ -96,7 +103,15 @@ export const AssignAssetModal: React.FC<AssignAssetModalProps> = ({ isOpen, sele
               {usersError && <div className="p-2 text-red-500">Error searching users.</div>}
               {!usersLoading && users.length === 0 && <div className="p-2 text-gray-500">No users found.</div>}
               {users.map((user) => (
-                <div key={user.id} className="p-2 cursor-pointer hover:bg-gray-100" onClick={() => handleSelectUser(user)}>
+                <div 
+                  key={user.id} 
+                  className="p-2 cursor-pointer hover:bg-gray-100 focus:bg-gray-100 focus:outline-none" 
+                  onClick={() => handleSelectUser(user)}
+                  onKeyDown={(e) => handleKeyDown(e, () => handleSelectUser(user))}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Select user ${user.email}`}
+                >
                   <div>{user.email}</div>
                   <div className="text-sm text-gray-500">{user.id}</div>
                 </div>

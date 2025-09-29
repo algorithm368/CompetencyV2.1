@@ -60,17 +60,23 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ collapsed, mobileOpen, onTo
     const paddingClasses = isNested ? "px-4 py-2" : "px-5 py-3";
 
     return (
-      <li key={item.path}>
-        <button onClick={() => handleNavigation(item)} className={`${baseClasses} ${paddingClasses}`} disabled={loadingPaths[item.path]}>
-          {item.icon && <span className="text-lg">{item.icon}</span>}
-          <span className={isNested ? "text-sm" : ""}>{item.label}</span>
-          {loadingPaths[item.path] && (
-            <div className="ml-auto">
-              <div className="w-4 h-4 border-2 border-gray-300 rounded-full border-t-indigo-600 animate-spin"></div>
-            </div>
-          )}
-        </button>
-      </li>
+      <>
+        <li key={item.path}>
+          <button
+            onClick={() => handleNavigation(item)}
+            className={`${baseClasses} ${paddingClasses}`}
+            disabled={loadingPaths[item.path]}
+          >
+            {item.icon && <span className="text-lg">{item.icon}</span>}
+            <span className={isNested ? "text-sm" : ""}>{item.label}</span>
+            {loadingPaths[item.path] && (
+              <div className="ml-auto">
+                <div className="w-4 h-4 border-2 border-gray-300 rounded-full border-t-indigo-600 animate-spin"></div>
+              </div>
+            )}
+          </button>
+        </li>
+      </>
     );
   };
 

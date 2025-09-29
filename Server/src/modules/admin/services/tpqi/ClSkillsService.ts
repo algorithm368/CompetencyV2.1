@@ -4,8 +4,7 @@ import { BaseService } from "@Utils/BaseService";
 
 export class ClSkillsService extends BaseService<CareerLevelSkill, keyof CareerLevelSkill> {
   constructor() {
-    super(new CareerLevelSkillRepo(), ["skill.name", "careerLevel.career.name", "careerLevel.level.name"], "id"),
-      { skill: true, careerLevel: true };
+    super(new CareerLevelSkillRepo(), ["skill.name", "careerLevel.career.name", "careerLevel.level.name"], "id");
   }
 
   async getAll(search?: string, page?: number, perPage?: number): Promise<{ data: CareerLevelSkill[]; total: number }> {
